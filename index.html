@@ -7,283 +7,197 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg: #1e1e1e; --card: #2a2a2a; --primary: #4facfe; --success: #43e97b;
-            --text: #ffffff; --text-sec: #aaaaaa;
-        }
+        :root { --bg: #121212; --card: #1e1e1e; --primary: #4facfe; --success: #43e97b; --text: #fff; --sec: #888; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; }
-        .header { text-align: center; margin-bottom: 25px; }
-        .echidna { width: 110px; height: 110px; background: #fff; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 55px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        h1 { font-size: 26px; margin-bottom: 5px; }
-        .subtitle { color: var(--text-sec); font-size: 14px; }
-        .btn { width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.1s; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .echidna { width: 100px; height: 100px; background: #fff; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 50px; }
+        h1 { margin-bottom: 5px; }
+        .subtitle { color: var(--sec); font-size: 13px; }
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; transition: transform 0.1s; }
         .btn:active { transform: scale(0.98); }
-        .btn-primary { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .btn-success { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        .btn-secondary { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .room-info { flex: 1; }
-        .room-stake { font-weight: bold; color: #ffd700; }
-        .room-time { font-size: 12px; color: var(--text-sec); }
-        .choices { display: flex; justify-content: space-around; margin-top: 30px; gap: 15px; }
-        .choice-btn { flex: 1; height: 90px; border: none; border-radius: 16px; font-size: 36px; background: var(--card); color: white; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.2s; }
-        .choice-btn:active { transform: scale(0.95); }
-        .choice-btn.selected { background: #ffd700; transform: scale(1.05); box-shadow: 0 0 15px #ffd700; }
-        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .status-box { background: var(--card); padding: 15px; border-radius: 12px; margin: 20px 0; text-align: center; font-size: 16px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
+        .btn-primary { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .btn-success { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .btn-sec { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .card { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .choices { display: flex; justify-content: space-around; margin-top: 20px; gap: 10px; }
+        .choice-btn { flex: 1; height: 80px; border: none; border-radius: 14px; font-size: 32px; background: var(--card); color: white; cursor: pointer; }
+        .choice-btn.selected { background: #ffd700; transform: scale(1.05); }
+        .choice-btn:disabled { opacity: 0.4; }
+        .status { background: var(--card); padding: 12px; border-radius: 10px; margin: 15px 0; text-align: center; min-height: 40px; }
         .hidden { display: none !important; }
-        .stats { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; display: flex; justify-content: space-around; text-align: center; }
-        .stat-item span { display: block; font-weight: bold; font-size: 18px; margin-top: 4px; }
-        .debug-banner { background: #ff4757; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; display: none; }
+        .debug { background: #ff4757; color: white; padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; text-align: center; display: none; }
+        .log-box { background: #000; color: #0f0; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; max-height: 120px; overflow-y: auto; margin-top: 10px; display: none; border: 1px solid #333; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="debugBanner" class="debug-banner">⚠️ ВСТАВЬ РЕАЛЬНЫЕ КЛЮЧИ SUPABASE В КОД!</div>
-        
-        <!-- ГЛАВНОЕ МЕНЮ -->
+        <div id="debugBanner" class="debug">⚠️ Ключи Supabase не заполнены! Работа в демо-режиме.</div>
+        <div id="logBox" class="log-box"></div>
+
         <div id="menuScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h1>Ехидна Naklz</h1>
                 <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
             </div>
-            
-            <div class="stats">
-                <div class="stat-item">Побед<span id="statWins">0</span></div>
-                <div class="stat-item">Игр<span id="statGames">0</span></div>
-                <div class="stat-item">Скин<span id="statSkin">1</span></div>
-            </div>
-
+            <!-- Имена функций в onclick совпадают с JS -->
             <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
-            <button class="btn btn-primary" onclick="loadRooms()"> Найти комнату</button>
-            <div id="roomsList" style="margin-top: 15px;"></div>
+            <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
+            <div id="roomsList"></div>
         </div>
 
-        <!-- ЭКРАН ИГРЫ -->
         <div id="gameScreen" class="hidden">
             <div class="header">
-                <div class="echidna">🦔</div>
-                <h2>Битва началась!</h2>
+                <div class="echidna"></div>
+                <h2>Битва!</h2>
             </div>
-            <div class="status-box" id="gameStatus">Ожидание хода...</div>
-            <div class="choices" id="choicesArea">
+            <div class="status" id="gameStatus">Ожидание...</div>
+            <div class="choices">
                 <button class="choice-btn" onclick="makeMove('fist')">✊</button>
                 <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
                 <button class="choice-btn" onclick="makeMove('crystal')"></button>
             </div>
-            <button class="btn btn-secondary" style="margin-top: 25px;" onclick="exitGame()">🚪 Выйти в меню</button>
+            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToMenu()">🚪 Назад</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // ⚠️ ЗАМЕНИ ЭТИ СТРОКИ НА СВОИ ДАННЫЕ ИЗ SUPABASE ⚠️
-        // ==========================================
-        const SUPABASE_URL = 'https://kzlzbjmajonvdefszmip.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_Vqf03Ri6TTM3MvZTT_lbug_SHhxcxto';
-        // ==========================================
+        // Система логов
+        function log(msg) {
+            const box = document.getElementById('logBox');
+            box.style.display = 'block';
+            box.innerHTML += `> ${msg}<br>`;
+            box.scrollTop = box.scrollHeight;
+            console.log(msg);
+        }
+
+        log('🚀 Скрипт запущен');
 
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        if (!tg) { log(' Telegram SDK не найден'); }
+        else { tg.ready(); tg.expand(); log('✅ Telegram SDK готов'); }
 
-        if (tg.themeParams.bg_color) {
-            document.documentElement.style.setProperty('--bg', tg.themeParams.bg_color);
-            document.documentElement.style.setProperty('--card', tg.themeParams.secondary_bg_color || '#2a2a2a');
-            document.body.style.color = tg.themeParams.text_color || '#fff';
+        // ==========================================
+        // ⚠️ ЗАМЕНИ НА СВОИ ДАННЫЕ ИЗ SUPABASE ️
+        // ==========================================
+        const SUPABASE_URL = 'https://ВАШ_ПРОЕКТ.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOi...ВАШ_КЛЮЧ';
+        // ==========================================
+
+        let supabase = null;
+        try {
+            if (SUPABASE_URL.includes('ВАШ_ПРОЕКТ') || SUPABASE_KEY.includes('ВАШ_КЛЮЧ')) {
+                document.getElementById('debugBanner').style.display = 'block';
+                log('️ Используются заглушки ключей. Работа в демо-режиме (БД отключена).');
+            } else {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                log('✅ Supabase клиент инициализирован');
+            }
+        } catch (e) {
+            log('❌ Ошибка инициализации Supabase: ' + e.message);
         }
-
-        // Проверка ключей
-        if (SUPABASE_URL.includes('ВАШ_ПРОЕКТ') || SUPABASE_KEY.includes('ВАШ_КЛЮЧ')) {
-            document.getElementById('debugBanner').style.display = 'block';
-            tg.showAlert('❌ Ошибка: В коде стоят заглушки ключей. Замени их на реальные из Supabase!');
-        }
-
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const user = tg.initDataUnsafe?.user;
-        if (!user) tg.showAlert('Ошибка: Запустите игру через Telegram');
 
         let currentRoom = null;
-        let pollInterval = null;
+        const user = tg.initDataUnsafe?.user || { id: 123456, username: 'TestUser' };
+        log(`👤 Пользователь: ${user.username} (ID: ${user.id})`);
 
-        // Авто-вход по ссылке (start_param)
-        const startParam = tg.initDataUnsafe?.start_param;
-        if (startParam) {
-            setTimeout(() => joinRoom(startParam), 500);
-        }
-
-        async function initUser() {
-            if (!user) return;
-            const { data, error } = await supabase
-                .from('users')
-                .upsert({ telegram_id: user.id, username: user.username || `User${user.id}` }, { onConflict: 'telegram_id' })
-                .select()
-                .single();
-            if (!error && data) {
-                document.getElementById('statWins').innerText = data.wins || 0;
-                document.getElementById('statGames').innerText = (data.wins || 0) + (data.losses || 0);
-                document.getElementById('statSkin').innerText = data.skin_level || 1;
-            }
-        }
-
+        // === ФУНКЦИИ (имена совпадают с onclick) ===
         async function createRoom() {
-            if (!user) return;
-            const { data, error } = await supabase
-                .from('rooms')
-                .insert([{ creator_tg_id: user.id, stake: 0.1, status: 'waiting' }])
-                .select()
-                .single();
-
-            if (error) {
-                tg.showAlert('Ошибка БД: ' + error.message);
-                console.error(error);
+            log('🖱 Нажата кнопка "Создать комнату"');
+            if (!supabase) {
+                currentRoom = { id: 'demo-' + Date.now(), creator_tg_id: user.id, stake: 0.1, status: 'waiting' };
+                log('🟡 Демо-комната создана: ' + currentRoom.id);
+                tg.showAlert(`Демо-режим:\nСсылка для друга:\nhttps://t.me/EkhidnaNaklzBot?start=${currentRoom.id}`);
+                showGame();
                 return;
             }
-            
-            currentRoom = data;
-            const shareLink = `https://t.me/EkhidnaNaklzBot?start=${data.id}`;
-            
-            tg.showAlert(`✅ Комната создана!\n\n Ссылка для друга:\n${shareLink}\n\nСкопируй её и отправь сопернику.`);
-            
-            showScreen('game');
-            updateStatus('Комната создана! Ожидание соперника...');
-            startPolling();
+            try {
+                const { data, error } = await supabase.from('rooms').insert([{ creator_tg_id: user.id, stake: 0.1, status: 'waiting' }]).select().single();
+                if (error) throw error;
+                currentRoom = data;
+                log('✅ Комната в БД: ' + data.id);
+                tg.showAlert(`✅ Комната создана!\nСсылка для друга:\nhttps://t.me/EkhidnaNaklzBot?start=${data.id}`);
+                showGame();
+            } catch (e) {
+                log('❌ Ошибка создания: ' + e.message);
+                tg.showAlert('Ошибка БД: ' + e.message);
+            }
         }
 
         async function loadRooms() {
-            const { data, error } = await supabase
-                .from('rooms')
-                .select('*')
-                .eq('status', 'waiting')
-                .neq('creator_tg_id', user.id)
-                .order('created_at', { ascending: false });
-
+            log('🖱 Нажата кнопка "Найти комнату"');
             const list = document.getElementById('roomsList');
-            list.innerHTML = '';
-
-            if (error) {
-                list.innerHTML = `<div style="color:#ff6b6b; padding:10px;">Ошибка: ${error.message}</div>`;
-                return;
-            }
-            if (!data || data.length === 0) {
-                list.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">Нет активных комнат. Создай свою!</div>';
-                return;
-            }
-
-            data.forEach(room => {
-                const el = document.createElement('div');
-                el.className = 'card';
-                el.innerHTML = `
-                    <div class="room-info">
-                        <div class="room-stake">${room.stake} TON</div>
-                        <div class="room-time">${new Date(room.created_at).toLocaleTimeString()}</div>
-                    </div>
-                    <button class="btn btn-primary" style="width:auto; padding:10px 20px; margin:0;" onclick="joinRoom('${room.id}')">Войти</button>
-                `;
-                list.appendChild(el);
-            });
-        }
-
-        async function joinRoom(roomId) {
-            const { data, error } = await supabase
-                .from('rooms')
-                .update({ opponent_tg_id: user.id, status: 'playing' })
-                .eq('id', roomId)
-                .eq('status', 'waiting')
-                .select()
-                .single();
-
-            if (error || !data) {
-                tg.showAlert('Комната уже занята, удалена или не найдена.');
-                return;
-            }
+            list.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">Загрузка...</div>';
             
-            currentRoom = data;
-            document.getElementById('roomsList').innerHTML = '';
-            showScreen('game');
-            updateStatus('Вы вошли в игру! Сделайте ход 👇');
-            startPolling();
-        }
-
-        async function makeMove(choice) {
-            if (!currentRoom) return;
-            const isCreator = currentRoom.creator_tg_id === user.id;
-            const col = isCreator ? 'creator_choice' : 'opponent_choice';
-
-            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
-            document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
-            event.target.classList.add('selected');
-            updateStatus('Ход записан. Ждем соперника...');
-
-            const { error } = await supabase.from('rooms').update({ [col]: choice }).eq('id', currentRoom.id);
-            if (error) {
-                tg.showAlert('Ошибка хода: ' + error.message);
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+            if (!supabase) {
+                list.innerHTML = '<div class="card"><div>Демо-комната<br><small>0.1 TON</small></div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="joinDemo()">Войти</button></div>';
+                log('🟡 Показана демо-комната');
+                return;
             }
-        }
-
-        function startPolling() {
-            if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(async () => {
-                if (!currentRoom) return;
-                const { data } = await supabase.from('rooms').select('*').eq('id', currentRoom.id).single();
-                if (!data) { clearInterval(pollInterval); return; }
-                currentRoom = data;
-
-                if (data.status === 'playing' && data.creator_choice && data.opponent_choice) {
-                    clearInterval(pollInterval);
-                    await resolveWinner(data);
-                } else if (data.status === 'finished') {
-                    clearInterval(pollInterval);
-                    showResult(data);
-                } else if (data.status === 'waiting') {
-                    updateStatus('Ожидание соперника...');
+            try {
+                const { data, error } = await supabase.from('rooms').select('*').eq('status', 'waiting').neq('creator_tg_id', user.id);
+                if (error) throw error;
+                list.innerHTML = '';
+                if (!data.length) {
+                    list.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">Нет комнат. Создай свою!</div>';
+                    log('📋 Комнат не найдено');
+                    return;
                 }
-            }, 2000);
-        }
-
-        async function resolveWinner(room) {
-            const { error } = await supabase.rpc('resolve_game', { p_room_id: room.id });
-            if (error) console.error('RPC Error:', error);
-        }
-
-        function showResult(room) {
-            const isCreator = room.creator_tg_id === user.id;
-            let msg = '', emoji = '';
-            
-            if (room.creator_choice === room.opponent_choice) {
-                msg = ' Ничья! Переигровка...';
-            } else {
-                const creatorWin = (
-                    (room.creator_choice === 'fist' && room.opponent_choice === 'spike') ||
-                    (room.creator_choice === 'spike' && room.opponent_choice === 'crystal') ||
-                    (room.creator_choice === 'crystal' && room.opponent_choice === 'fist')
-                );
-                if (creatorWin) { msg = isCreator ? '🏆 Вы победили!' : '😢 Вы проиграли'; }
-                else { msg = isCreator ? '😢 Вы проиграли' : '🏆 Вы победили!'; }
+                data.forEach(r => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    el.innerHTML = `<div>${r.stake} TON</div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="joinRoom('${r.id}')">Войти</button>`;
+                    list.appendChild(el);
+                });
+                log(` Найдено комнат: ${data.length}`);
+            } catch (e) {
+                list.innerHTML = `<div style="color:#ff6b6b;padding:10px;">Ошибка: ${e.message}</div>`;
+                log('❌ Ошибка поиска: ' + e.message);
             }
-            
-            updateStatus(msg);
-            setTimeout(() => exitGame(), 3000);
         }
 
-        function updateStatus(text) { document.getElementById('gameStatus').innerHTML = text; }
-        function showScreen(screen) {
-            document.getElementById('menuScreen').classList.toggle('hidden', screen !== 'menu');
-            document.getElementById('gameScreen').classList.toggle('hidden', screen !== 'game');
+        function joinDemo() {
+            currentRoom = { id: 'demo-join', creator_tg_id: 99999, opponent_tg_id: user.id, status: 'playing' };
+            log('🎮 Вход в демо-комнату');
+            showGame();
         }
-        function exitGame() {
-            if (pollInterval) clearInterval(pollInterval);
+
+        async function joinRoom(id) {
+            log(`🚪 Вход в комнату: ${id}`);
+            if (!supabase) { joinDemo(); return; }
+            try {
+                const { data, error } = await supabase.from('rooms').update({ opponent_tg_id: user.id, status: 'playing' }).eq('id', id).eq('status', 'waiting').select().single();
+                if (error || !data) throw new Error('Комната занята или не найдена');
+                currentRoom = data;
+                log('✅ Успешный вход');
+                showGame();
+            } catch (e) {
+                tg.showAlert(e.message);
+                log('❌ Ошибка входа: ' + e.message);
+            }
+        }
+
+        function makeMove(choice) {
+            log(`✊ Выбор хода: ${choice}`);
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+            document.getElementById('gameStatus').innerText = 'Ход принят. Ждем соперника...';
+            // Здесь будет отправка в БД на следующем этапе
+        }
+
+        function showGame() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameStatus').innerText = 'Сделайте ход 👇';
+        }
+
+        function backToMenu() {
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
             currentRoom = null;
-            document.querySelectorAll('.choice-btn').forEach(b => { b.disabled = false; b.classList.remove('selected'); });
-            showScreen('menu');
-            initUser();
         }
-
-        initUser();
     </script>
 </body>
 </html>
