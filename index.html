@@ -3,86 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ехидна Naklz - Тест</title>
+    <title>Ехидна Naklz</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Стили те же */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: #1e3c72; color: white; padding: 20px; text-align: center; min-height: 100vh; }
-        .echidna { width: 100px; height: 100px; background: #fff; border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 50px; }
-        h1 { margin-bottom: 20px; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; background: #4facfe; color: white; }
-        .choice-box { display: flex; justify-content: space-around; margin-top: 30px; }
-        .choice-btn { width: 70px; height: 70px; border-radius: 50%; border: none; font-size: 30px; background: rgba(255,255,255,0.2); color: white; cursor: pointer; }
-        .hidden { display: none; }
-        .status { margin: 20px 0; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        :root {
+            --bg: #1e1e1e;
+            --card: #2a2a2a;
+            --primary: #4facfe;
+            --success: #43e97b;
+            --text: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container { width: 100%; max-width: 400px; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .echidna { 
+            width: 110px; height: 110px; background: #fff; border-radius: 50%; 
+            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; 
+            font-size: 55px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); 
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        h1 { font-size: 26px; margin-bottom: 5px; }
+        .subtitle { color: var(--text-secondary); font-size: 14px; }
+        
+        .btn {
+            width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 14px;
+            font-size: 16px; font-weight: 600; cursor: pointer; color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .btn-success { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .btn-secondary { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        
+        .card {
+            background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .room-info { flex: 1; }
+        .room-stake { font-weight: bold; color: #ffd700; }
+        .room-time { font-size: 12px; color: var(--text-secondary); }
+        
+        .choices { display: flex; justify-content: space-around; margin-top: 30px; gap: 15px; }
+        .choice-btn {
+            flex: 1; height: 90px; border: none; border-radius: 16px;
+            font-size: 36px; background: var(--card); color: white; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.2s;
+        }
+        .choice-btn:active { transform: scale(0.95); }
+        .choice-btn.selected { background: #ffd700; transform: scale(1.05); box-shadow: 0 0 15px #ffd700; }
+        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .status-box {
+            background: var(--card); padding: 15px; border-radius: 12px; margin: 20px 0;
+            text-align: center; font-size: 16px; min-height: 50px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .hidden { display: none !important; }
+        .loader {
+            border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid #fff;
+            border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite;
+            display: inline-block; margin-right: 8px; vertical-align: middle;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .stats {
+            background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 20px;
+            font-size: 14px; display: flex; justify-content: space-around; text-align: center;
+        }
+        .stat-item span { display: block; font-weight: bold; font-size: 18px; margin-top: 4px; }
     </style>
 </head>
 <body>
-    <div id="menu">
-        <div class="echidna">🦔</div>
-        <h1>Ехидна Naklz</h1>
-        <p>Тестовая версия (Без базы данных)</p>
-        <button class="btn" onclick="startGame()">Начать игру</button>
-    </div>
+    <div class="container">
+        <!-- ГЛАВНОЕ МЕНЮ -->
+        <div id="menuScreen">
+            <div class="header">
+                <div class="echidna">🦔</div>
+                <h1>Ехидна Naklz</h1>
+                <div class="subtitle">Кулак ✊ • Шип  • Кристалл 💎</div>
+            </div>
+            
+            <div class="stats" id="userStats">
+                <div class="stat-item">Побед<span id="statWins">0</span></div>
+                <div class="stat-item">Игр<span id="statGames">0</span></div>
+                <div class="stat-item">Скин<span id="statSkin">1</span></div>
+            </div>
 
-    <div id="game" class="hidden">
-        <div class="echidna"></div>
-        <h2>Битва!</h2>
-        <div class="status" id="status">Выбери ход:</div>
-        <div class="choice-box">
-            <button class="choice-btn" onclick="play('fist')">✊</button>
-            <button class="choice-btn" onclick="play('spike')">🌵</button>
-            <button class="choice-btn" onclick="play('crystal')"></button>
+            <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
+            <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
+            <div id="roomsList" style="margin-top: 15px;"></div>
         </div>
-        <button class="btn" style="margin-top: 30px; background: #ff6b6b;" onclick="backToMenu()">Выйти</button>
+
+        <!-- ЭКРАН ИГРЫ -->
+        <div id="gameScreen" class="hidden">
+            <div class="header">
+                <div class="echidna">🦔</div>
+                <h2>Битва началась!</h2>
+            </div>
+            <div class="status-box" id="gameStatus">Ожидание хода...</div>
+            <div class="choices" id="choicesArea">
+                <button class="choice-btn" onclick="makeMove('fist')">✊</button>
+                <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
+                <button class="choice-btn" onclick="makeMove('crystal')"></button>
+            </div>
+            <button class="btn btn-secondary" style="margin-top: 25px;" onclick="exitGame()">🚪 Выйти в меню</button>
+        </div>
     </div>
 
     <script>
+        // ==========================================
+        // ⚠️ ВСТАВЬ СЮДА СВОИ КЛЮЧИ SUPABASE ⚠️
+        // ==========================================
+        const SUPABASE_URL = 'https://kzlzbjmajonvdefszmip.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_Vqf03Ri6TTM3MvZTT_lbug_SHhxcxto';
+        // ==========================================
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Получаем имя пользователя для теста
-        const user = tg.initDataUnsafe?.user?.first_name || "Игрок";
-        alert(`Привет, ${user}! Игра загружена.`);
-
-        function startGame() {
-            document.getElementById('menu').classList.add('hidden');
-            document.getElementById('game').classList.remove('hidden');
-            document.getElementById('status').innerText = "Твой ход!";
+        // Применяем тему Telegram
+        if (tg.themeParams.bg_color) {
+            document.documentElement.style.setProperty('--bg', tg.themeParams.bg_color);
+            document.documentElement.style.setProperty('--card', tg.themeParams.secondary_bg_color || '#2a2a2a');
+            document.body.style.color = tg.themeParams.text_color || '#fff';
         }
 
-        function play(myChoice) {
-            document.getElementById('status').innerText = "Соперник думает...";
+        const user = tg.initDataUnsafe?.user;
+        if (!user) {
+            tg.showAlert('Ошибка: Запустите игру через Telegram');
+        }
+
+        let currentRoom = null;
+        let pollInterval = null;
+
+        // Инициализация пользователя в БД
+        async function initUser() {
+            if (!user) return;
+            const { data, error } = await supabase
+                .from('users')
+                .upsert({ telegram_id: user.id, username: user.username || `User${user.id}` }, { onConflict: 'telegram_id' })
+                .select()
+                .single();
             
-            // Имитация задержки (как будто ждем другого игрока)
-            setTimeout(() => {
-                const moves = ['fist', 'spike', 'crystal'];
-                const opponentChoice = moves[Math.floor(Math.random() * 3)];
+            if (!error && data) {
+                document.getElementById('statWins').innerText = data.wins || 0;
+                document.getElementById('statGames').innerText = (data.wins || 0) + (data.losses || 0);
+                document.getElementById('statSkin').innerText = data.skin_level || 1;
+            }
+        }
+
+        async function createRoom() {
+            if (!user) return;
+            tg.showConfirm('Создать комнату со ставкой 0.1 TON?', async (confirmed) => {
+                if (!confirmed) return;
+                tg.HapticFeedback.impactOccurred('medium');
                 
-                let resultText = "";
-                if (myChoice === opponentChoice) {
-                    resultText = "🤝 Ничья!";
-                } else if (
-                    (myChoice === 'fist' && opponentChoice === 'spike') ||
-                    (myChoice === 'spike' && opponentChoice === 'crystal') ||
-                    (myChoice === 'crystal' && opponentChoice === 'fist')
-                ) {
-                    resultText = "🏆 Ты победил!";
-                } else {
-                    resultText = "😢 Ты проиграл!";
+                const { data, error } = await supabase
+                    .from('rooms')
+                    .insert([{ creator_tg_id: user.id, stake: 0.1, status: 'waiting' }])
+                    .select()
+                    .single();
+
+                if (error) return tg.showAlert('Ошибка БД: ' + error.message);
+                
+                currentRoom = data;
+                showScreen('game');
+                updateStatus('Комната создана! Ожидание соперника...');
+                startPolling();
+            });
+        }
+
+        async function loadRooms() {
+            tg.HapticFeedback.selectionChanged();
+            const { data, error } = await supabase
+                .from('rooms')
+                .select('*')
+                .eq('status', 'waiting')
+                .neq('creator_tg_id', user.id)
+                .order('created_at', { ascending: false });
+
+            const list = document.getElementById('roomsList');
+            list.innerHTML = '';
+
+            if (error || !data.length) {
+                list.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">Нет активных комнат</div>';
+                return;
+            }
+
+            data.forEach(room => {
+                const el = document.createElement('div');
+                el.className = 'card';
+                el.innerHTML = `
+                    <div class="room-info">
+                        <div class="room-stake">${room.stake} TON</div>
+                        <div class="room-time">${new Date(room.created_at).toLocaleTimeString()}</div>
+                    </div>
+                    <button class="btn btn-primary" style="width:auto; padding:10px 20px; margin:0;" onclick="joinRoom('${room.id}')">Войти</button>
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        async function joinRoom(roomId) {
+            const { data, error } = await supabase
+                .from('rooms')
+                .update({ opponent_tg_id: user.id, status: 'playing' })
+                .eq('id', roomId)
+                .eq('status', 'waiting')
+                .select()
+                .single();
+
+            if (error || !data) return tg.showAlert('Комната уже занята или удалена');
+            
+            currentRoom = data;
+            document.getElementById('roomsList').innerHTML = '';
+            showScreen('game');
+            updateStatus('Вы вошли в игру! Сделайте ход 👇');
+            startPolling();
+        }
+
+        async function makeMove(choice) {
+            if (!currentRoom) return;
+            tg.HapticFeedback.impactOccurred('light');
+            
+            const isCreator = currentRoom.creator_tg_id === user.id;
+            const col = isCreator ? 'creator_choice' : 'opponent_choice';
+
+            // Блокируем кнопки
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+            document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            updateStatus('Ход записан. Ждем соперника...');
+
+            const { error } = await supabase
+                .from('rooms')
+                .update({ [col]: choice })
+                .eq('id', currentRoom.id);
+                
+            if (error) {
+                tg.showAlert('Ошибка хода: ' + error.message);
+                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+                return;
+            }
+        }
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(async () => {
+                if (!currentRoom) return;
+                
+                const { data } = await supabase
+                    .from('rooms')
+                    .select('*')
+                    .eq('id', currentRoom.id)
+                    .single();
+
+                if (!data) { clearInterval(pollInterval); return; }
+                currentRoom = data;
+
+                if (data.status === 'playing' && data.creator_choice && data.opponent_choice) {
+                    clearInterval(pollInterval);
+                    await resolveWinner(data);
+                } else if (data.status === 'finished') {
+                    clearInterval(pollInterval);
+                    showResult(data);
+                } else if (data.status === 'waiting') {
+                    updateStatus('Ожидание соперника...');
                 }
-
-                document.getElementById('status').innerText = `Ты: ${myChoice} | Соперник: ${opponentChoice}\n${resultText}`;
-                tg.showAlert(resultText);
-            }, 1500);
+            }, 2000);
         }
 
-        function backToMenu() {
-            document.getElementById('menu').classList.remove('hidden');
-            document.getElementById('game').classList.add('hidden');
+        async function resolveWinner(room) {
+            // Вызываем SQL функцию для расчета
+            const { error } = await supabase.rpc('resolve_game', { p_room_id: room.id });
+            if (error) console.error('RPC Error:', error);
+            
+            // После расчета статус изменится на finished, pollInterval подхватит
         }
+
+        function showResult(room) {
+            const isCreator = room.creator_tg_id === user.id;
+            let msg = '', emoji = '';
+            
+            if (room.creator_choice === room.opponent_choice) {
+                msg = 'Ничья! Переигровка...'; emoji = '';
+                // В реальной игре тут лучше перезапустить раунд, пока просто уведомляем
+            } else {
+                const creatorWin = (
+                    (room.creator_choice === 'fist' && room.opponent_choice === 'spike') ||
+                    (room.creator_choice === 'spike' && room.opponent_choice === 'crystal') ||
+                    (room.creator_choice === 'crystal' && room.opponent_choice === 'fist')
+                );
+                if (creatorWin) {
+                    msg = isCreator ? 'Вы победили!' : 'Вы проиграли';
+                    emoji = isCreator ? '🏆' : '😢';
+                } else {
+                    msg = isCreator ? 'Вы проиграли' : 'Вы победили!';
+                    emoji = isCreator ? '😢' : '🏆';
+                }
+            }
+            
+            updateStatus(`${emoji} ${msg}`);
+            tg.HapticFeedback.notificationOccurred(isCreator && msg.includes('победили') ? 'success' : 'error');
+            
+            // Обновляем статистику локально
+            initUser();
+            
+            setTimeout(() => exitGame(), 3000);
+        }
+
+        function updateStatus(text) {
+            document.getElementById('gameStatus').innerHTML = text;
+        }
+
+        function showScreen(screen) {
+            document.getElementById('menuScreen').classList.toggle('hidden', screen !== 'menu');
+            document.getElementById('gameScreen').classList.toggle('hidden', screen !== 'game');
+        }
+
+        function exitGame() {
+            if (pollInterval) clearInterval(pollInterval);
+            currentRoom = null;
+            document.querySelectorAll('.choice-btn').forEach(b => {
+                b.disabled = false;
+                b.classList.remove('selected');
+            });
+            showScreen('menu');
+        }
+
+        // Запуск
+        initUser();
     </script>
 </body>
 </html>
