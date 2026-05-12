@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ехидна Naklz - SAFE MODE</title>
+    <title>Ехидна Naklz</title>
     <style>
-        /* Стили остались те же */
-        :root { --bg: #121212; --card: #1e1e1e; --primary: #4facfe; --success: #43e97b; --text: #fff; --sec: #888; }
+        :root { --bg: #121212; --card: #1e1e1e; --primary: #4facfe; --success: #43e97b; --error: #ff4757; --text: #fff; --sec: #888; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; }
@@ -17,7 +16,7 @@
         .subtitle { color: var(--sec); font-size: 13px; }
         
         .btn { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.95); background: #555; } /* Визуальный отклик */
+        .btn:active { transform: scale(0.96); filter: brightness(0.9); }
         .btn-primary { background: linear-gradient(135deg, #4facfe, #00f2fe); }
         .btn-success { background: linear-gradient(135deg, #43e97b, #38f9d7); }
         .btn-error { background: linear-gradient(135deg, #ff4757, #ff6b81); }
@@ -25,27 +24,31 @@
         
         .card { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .choices { display: flex; justify-content: space-around; margin-top: 20px; gap: 10px; }
-        .choice-btn { flex: 1; height: 80px; border: none; border-radius: 14px; font-size: 32px; background: var(--card); color: white; cursor: pointer; }
-        .status { background: var(--card); padding: 12px; border-radius: 10px; margin: 15px 0; text-align: center; min-height: 40px; }
+        .choice-btn { flex: 1; height: 80px; border: none; border-radius: 14px; font-size: 32px; background: var(--card); color: white; cursor: pointer; transition: 0.2s; }
+        .choice-btn:active { transform: scale(0.95); }
+        .choice-btn.selected { background: #ffd700; transform: scale(1.05); box-shadow: 0 0 15px #ffd700; }
+        .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .status { background: var(--card); padding: 12px; border-radius: 10px; margin: 15px 0; text-align: center; min-height: 40px; font-size: 15px; }
         .hidden { display: none !important; }
-        .banner { background: #ff4757; color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: bold; display: none; }
+        
+        .error-box { background: var(--error); color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; text-align: center; display: none; animation: shake 0.4s; }
+        .error-box.show { display: block; }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="banner" class="banner">️ SAFE MODE: Библиотеки отключены</div>
+        <div id="errorBox" class="error-box"></div>
 
         <div id="menuScreen">
             <div class="header">
                 <div class="echidna"></div>
                 <h1>Ехидна Naklz</h1>
-                <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
+                <div class="subtitle">Кулак ✊ • Шип  • Кристалл 💎</div>
             </div>
             
-            <!-- Простые вызовы функций -->
-            <button class="btn btn-success" onclick="testCreate()">💎 Создать комнату (Тест)</button>
-            <button class="btn btn-primary" onclick="testFind()">🔍 Найти комнату (Тест)</button>
-            <button class="btn btn-error" onclick="alert('Кнопка 3 работает!')">🧪 Кнопка 3</button>
+            <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
+            <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
             <div id="roomsList"></div>
         </div>
 
@@ -56,64 +59,197 @@
             </div>
             <div class="status" id="gameStatus">Ожидание...</div>
             <div class="choices">
-                <button class="choice-btn" onclick="testMove('fist')">✊</button>
-                <button class="choice-btn" onclick="testMove('spike')">🌵</button>
-                <button class="choice-btn" onclick="testMove('crystal')"></button>
+                <button class="choice-btn" onclick="makeMove('fist')">✊</button>
+                <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
+                <button class="choice-btn" onclick="makeMove('crystal')"></button>
             </div>
-            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToMenu()">🚪 Назад</button>
+            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToMenu()"> Назад</button>
         </div>
     </div>
 
     <script>
-        console.log("🚀 Скрипт запущен!");
-        alert("👋 Привет! Скрипт работает.");
+        // ==========================================
+        // ⚠️ ВСТАВЬ СВОИ КЛЮЧИ SUPABASE СЮДА ⚠️
+        // ==========================================
+        const SUPABASE_URL = 'https://kzlzbjmajonvdefszmip.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_Vqf03Ri6TTM3MvZTT_lbug_SHhxcxto';
+        // ==========================================
 
-        // Проверка Telegram
-        let tg = null;
-        try {
-            if (window.Telegram && window.Telegram.WebApp) {
-                tg = window.Telegram.WebApp;
-                tg.ready();
-                console.log("✅ Telegram SDK найден");
-            } else {
-                console.log("⚠️ Telegram SDK не найден");
+        // --- Helper: Прямые запросы к Supabase REST API (без внешних библиотек) ---
+        async function db(table, method = 'GET', data = null, query = '') {
+            if (SUPABASE_URL.includes('ВАШ_ПРОЕКТ') || SUPABASE_KEY.includes('ВАШ_КЛЮЧ')) {
+                throw new Error('Ключи Supabase не заполнены в коде!');
             }
-        } catch(e) {
-            console.error("Ошибка TG:", e);
+            const url = `${SUPABASE_URL}/rest/v1/${table}${query}`;
+            const headers = {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                Prefer: 'return=representation'
+            };
+            const opts = { method, headers };
+            if (data) opts.body = JSON.stringify(data);
+            
+            const res = await fetch(url, opts);
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`DB ${res.status}: ${errText}`);
+            }
+            return method === 'GET' ? res.json() : (await res.json())[0];
         }
 
-        // === ФУНКЦИИ (Простые, без Supabase) ===
+        // --- Telegram Init ---
+        const tg = window.Telegram?.WebApp;
+        if (tg) { tg.ready(); tg.expand(); }
+        const user = tg?.initDataUnsafe?.user || { id: 999999, username: 'TestUser', first_name: 'Тест' };
 
-        function testCreate() {
-            console.log("Нажата Создать комнату");
-            alert("✅ Кнопка 'Создать комнату' работает!");
+        // --- Game State ---
+        let currentRoom = null;
+        let pollInterval = null;
+
+        function showError(msg) {
+            const box = document.getElementById('errorBox');
+            box.textContent = msg;
+            box.classList.add('show');
+            console.error('[Ekhidna]', msg);
+            tg?.showAlert?.(msg);
+        }
+
+        // --- Actions ---
+        async function createRoom() {
+            try {
+                const room = await db('rooms', 'POST', [{
+                    creator_tg_id: user.id,
+                    stake: 0.1,
+                    status: 'waiting'
+                }]);
+                currentRoom = room;
+                tg?.showAlert?.(`✅ Комната создана!\nСсылка для друга:\nt.me/EkhidnaNaklzBot?start=${room.id}`);
+                showGame('Комната создана! Ждём соперника...');
+                startPolling();
+            } catch (e) { showError(e.message); }
+        }
+
+        async function loadRooms() {
+            try {
+                const rooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${user.id}`);
+                const list = document.getElementById('roomsList');
+                list.innerHTML = '';
+                if (!rooms.length) {
+                    list.innerHTML = '<div style="text-align:center;color:#aaa;padding:15px;">Нет свободных комнат</div>';
+                    return;
+                }
+                rooms.forEach(r => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    el.innerHTML = `<div>${r.stake} TON</div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="joinRoom('${r.id}')">Войти</button>`;
+                    list.appendChild(el);
+                });
+            } catch (e) { showError(e.message); }
+        }
+
+        async function joinRoom(id) {
+            try {
+                // Блокируем комнату только если она всё ещё waiting
+                const room = await db('rooms', 'PATCH', { opponent_tg_id: user.id, status: 'playing' }, `?id=eq.${id}&status=eq.waiting`);
+                if (!room) throw new Error('Комната уже занята');
+                currentRoom = room;
+                document.getElementById('roomsList').innerHTML = '';
+                showGame('Вы в игре! Сделайте ход 👇');
+                startPolling();
+            } catch (e) { showError(e.message); }
+        }
+
+        async function makeMove(choice) {
+            if (!currentRoom) return;
+            const isCreator = currentRoom.creator_tg_id === user.id;
+            const col = isCreator ? 'creator_choice' : 'opponent_choice';
             
-            // Переход в игру
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+            document.getElementById('gameStatus').innerText = 'Ход записан...';
+            
+            try {
+                await db('rooms', 'PATCH', { [col]: choice }, `?id=eq.${currentRoom.id}`);
+                document.getElementById('gameStatus').innerText = 'Ждём соперника...';
+            } catch (e) { showError(e.message); }
+        }
+
+        // --- Polling & Logic ---
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(async () => {
+                if (!currentRoom) return;
+                try {
+                    const room = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`);
+                    currentRoom = room[0];
+                    
+                    if (currentRoom.status === 'finished') {
+                        clearInterval(pollInterval);
+                        showResult(currentRoom);
+                        return;
+                    }
+                    if (currentRoom.creator_choice && currentRoom.opponent_choice && currentRoom.status === 'playing') {
+                        clearInterval(pollInterval);
+                        await finishGame(currentRoom);
+                    }
+                } catch (e) { console.warn('Poll error:', e); }
+            }, 2000);
+        }
+
+        async function finishGame(room) {
+            const result = calculateWinner(room);
+            await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
+            
+            // Обновляем статистику победителя
+            if (result.winnerId) {
+                await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}&wins=lt.9999`); 
+                // Примечание: в продакшене лучше использовать RPC или транзакции для инкремента
+            }
+            
+            showResult({ ...room, result: result.msg });
+        }
+
+        function calculateWinner(room) {
+            const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
+            if (c1 === c2) return { msg: '🤝 Ничья!', winnerId: null };
+            
+            const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
+            const c1Wins = beats[c1] === c2;
+            
+            return {
+                msg: c1Wins ? (user.id === id1 ? ' Ты победил!' : '😢 Ты проиграл') 
+                             : (user.id === id2 ? '🏆 Ты победил!' : '😢 Ты проimples'),
+                winnerId: c1Wins ? id1 : id2
+            };
+        }
+
+        function showResult(room) {
+            const msg = room.result || calculateWinner(room).msg;
+            document.getElementById('gameStatus').innerText = msg;
+            tg?.showAlert?.(msg);
+            setTimeout(backToMenu, 3000);
+        }
+
+        function showGame(statusText) {
             document.getElementById('menuScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
-            document.getElementById('gameStatus').innerText = "Демо-игра. Делай ход!";
-        }
-
-        function testFind() {
-            console.log("Нажата Найти комнату");
-            alert("✅ Кнопка 'Найти комнату' работает!");
-            
-            const list = document.getElementById('roomsList');
-            list.innerHTML = '<div class="card"><div>Демо-комната</div><button class="btn btn-primary" style="width:auto; padding:5px 10px;" onclick="alert(\'Вход выполнен\')">Войти</button></div>';
-        }
-
-        function testMove(choice) {
-            console.log("Ход:", choice);
-            alert("Ты выбрал: " + choice);
-            document.getElementById('gameStatus').innerText = "Ждем соперника...";
+            document.getElementById('gameStatus').innerText = statusText || 'Сделайте ход 👇';
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
         }
 
         function backToMenu() {
+            if (pollInterval) clearInterval(pollInterval);
+            currentRoom = null;
             document.getElementById('menuScreen').classList.remove('hidden');
             document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('roomsList').innerHTML = '';
         }
 
-        console.log("✅ Все функции загружены.");
+        // Auto-join via link
+        const startParam = tg?.initDataUnsafe?.start_param;
+        if (startParam && startParam.startsWith('demo-') === false) {
+            setTimeout(() => joinRoom(startParam), 500);
+        }
     </script>
 </body>
 </html>
