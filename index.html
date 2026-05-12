@@ -6,51 +6,34 @@
     <title>Ехидна Naklz</title>
     <style>
         :root {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --primary: #4facfe;
-            --success: #43e97b;
-            --error: #ff4757;
-            --text: #ffffff;
-            --sec: #888;
+            --bg: #121212; --card: #1e1e1e; --primary: #4facfe; --success: #43e97b;
+            --error: #ff4757; --text: #ffffff; --sec: #888;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
         }
         .container { width: 100%; max-width: 400px; }
         .header { text-align: center; margin-bottom: 20px; }
         .echidna {
-            width: 100px; height: 100px;
-            background: #fff; border-radius: 50%;
-            margin: 0 auto 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 50px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            animation: bounce 2s infinite;
+            width: 100px; height: 100px; background: #fff; border-radius: 50%;
+            margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); animation: bounce 2s infinite;
         }
         @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         h1 { margin-bottom: 5px; font-size: 24px; }
         .subtitle { color: var(--sec); font-size: 13px; }
         
         .btn {
-            width: 100%; padding: 14px; margin: 8px 0;
-            border: none; border-radius: 12px;
-            font-size: 15px; font-weight: 600;
-            cursor: pointer; color: #fff;
+            width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 600; cursor: pointer; color: #fff;
             transition: transform 0.1s, filter 0.1s;
         }
         .btn:active { transform: scale(0.96); filter: brightness(0.9); }
         .btn-primary { background: linear-gradient(135deg, #4facfe, #00f2fe); }
         .btn-success { background: linear-gradient(135deg, #43e97b, #38f9d7); }
-        .btn-error { background: linear-gradient(135deg, #ff4757, #ff6b81); }
         .btn-sec { background: linear-gradient(135deg, #fa709a, #fee140); color: #000; }
         
         .card {
@@ -60,11 +43,9 @@
         .choices { display: flex; justify-content: space-around; margin-top: 20px; gap: 10px; }
         .choice-btn {
             flex: 1; height: 80px; border: none; border-radius: 14px;
-            font-size: 32px; background: var(--card); color: white; cursor: pointer;
-            transition: transform 0.2s;
+            font-size: 32px; background: var(--card); color: white; cursor: pointer; transition: transform 0.2s;
         }
         .choice-btn:active { transform: scale(0.95); }
-        .choice-btn.selected { background: #ffd700; transform: scale(1.05); box-shadow: 0 0 15px #ffd700; }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         
         .status {
@@ -73,29 +54,29 @@
         }
         .hidden { display: none !important; }
         
-        .error-box {
-            background: var(--error); color: white; padding: 10px;
-            border-radius: 8px; margin-bottom: 10px; font-size: 13px;
-            text-align: center; display: none; animation: shake 0.4s;
+        /* Блок с ссылкой */
+        .share-box {
+            background: #2a2a2a; padding: 15px; border-radius: 12px; margin: 15px 0;
+            text-align: center; border: 1px dashed #444;
         }
-        .error-box.show { display: block; }
-        @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+        .share-box p { font-size: 13px; color: var(--sec); margin-bottom: 8px; }
+        .link-text {
+            background: #000; padding: 10px; border-radius: 8px; word-break: break-all;
+            font-family: monospace; font-size: 12px; margin-bottom: 10px; color: #4facfe;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="errorBox" class="error-box"></div>
-
         <!-- ГЛАВНОЕ МЕНЮ -->
         <div id="menuScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h1>Ехидна Naklz</h1>
-                <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
+                <div class="subtitle">Кулак ✊ • Шип  • Кристалл 💎</div>
             </div>
-            
             <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
-            <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
+            <button class="btn btn-primary" onclick="loadRooms()"> Найти комнату</button>
             <div id="roomsList"></div>
         </div>
 
@@ -105,7 +86,16 @@
                 <div class="echidna">🦔</div>
                 <h2>Битва!</h2>
             </div>
+            
             <div class="status" id="gameStatus">Ожидание...</div>
+            
+            <!-- Блок ссылки (появляется только при создании комнаты) -->
+            <div id="shareBox" class="share-box hidden">
+                <p>📤 Отправь эту ссылку другу:</p>
+                <div id="roomLink" class="link-text"></div>
+                <button class="btn btn-primary" style="padding: 10px;" onclick="copyLink()">📋 Скопировать ссылку</button>
+            </div>
+
             <div class="choices">
                 <button class="choice-btn" onclick="makeMove('fist')">✊</button>
                 <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
@@ -123,38 +113,26 @@
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         // ==========================================
 
-        // === REST API клиент для Supabase (без внешних библиотек) ===
         async function db(table, method, payload = null, filters = '') {
-            // Проверка ключей
             if (!SUPABASE_URL.startsWith('https://') || SUPABASE_KEY.length < 20 || SUPABASE_KEY.includes('ТВОЙ')) {
-                throw new Error('❌ Ключи Supabase не заполнены! Проверь код.');
+                throw new Error('❌ Ключи Supabase не заполнены!');
             }
-            
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
             const headers = {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation',
-                'Accept': 'application/json'
+                'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json', 'Prefer': 'return=representation', 'Accept': 'application/json'
             };
-            
             const options = { method, headers };
             if (payload) options.body = JSON.stringify(payload);
             
             const response = await fetch(url, options);
             const text = await response.text();
-            
-            if (!response.ok) {
-                throw new Error(`Supabase ${response.status}: ${text}`);
-            }
-            
+            if (!response.ok) throw new Error(`Supabase ${response.status}: ${text}`);
             if (!text) return null;
             const data = JSON.parse(text);
             return Array.isArray(data) && data.length === 1 ? data[0] : data;
         }
 
-        // === Telegram WebApp ===
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready(); tg.expand(); }
         const user = tg?.initDataUnsafe?.user || { id: 999999, username: 'Test', first_name: 'Тест' };
@@ -163,100 +141,70 @@
         let pollInterval = null;
 
         function showError(msg) {
-            const box = document.getElementById('errorBox');
-            box.textContent = msg;
-            box.classList.add('show');
+            alert('⚠️ ' + msg); // Используем обычный alert для надёжности
             console.error('[Ekhidna]', msg);
-            tg?.showAlert?.(msg);
         }
 
-        // === Создание комнаты ===
         async function createRoom() {
             try {
                 const room = await db('rooms', 'POST', [{
-                    creator_tg_id: user.id,
-                    stake: 0.10,
-                    status: 'waiting',
-                    creator_choice: null,
-                    opponent_choice: null
+                    creator_tg_id: user.id, stake: 0.10, status: 'waiting',
+                    creator_choice: null, opponent_choice: null
                 }]);
-                
                 currentRoom = room;
                 const link = `https://t.me/EkhidnaNaklzBot?start=${room.id}`;
                 
-                tg?.showAlert?.(`✅ Комната создана!\nСтавка: 0.1 TON\n\nСсылка для друга:\n${link}`);
-                showGame('Комната создана! Ждём соперника...');
+                // Показываем ссылку на экране
+                document.getElementById('roomLink').innerText = link;
+                document.getElementById('shareBox').classList.remove('hidden');
+                
+                showGame('✅ Комната создана! Ждём соперника...');
                 startPolling();
-            } catch (e) {
-                showError(e.message);
-            }
+            } catch (e) { showError(e.message); }
         }
 
-        // === Поиск комнат ===
         async function loadRooms() {
             try {
-                const rooms = await db('rooms', 'GET', null, 
-                    `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc`);
-                
+                const rooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc`);
                 const list = document.getElementById('roomsList');
                 list.innerHTML = '';
-                
                 if (!rooms || rooms.length === 0) {
                     list.innerHTML = '<div style="text-align:center;color:#aaa;padding:15px;">Нет свободных комнат</div>';
                     return;
                 }
-                
                 rooms.forEach(r => {
                     const el = document.createElement('div');
                     el.className = 'card';
-                    el.innerHTML = `
-                        <div>💰 ${r.stake} TON</div>
-                        <button class="btn btn-primary" style="width:auto;padding:8px 15px;" 
-                                onclick="joinRoom('${r.id}')">Войти</button>`;
+                    el.innerHTML = `<div>💰 ${r.stake} TON</div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="joinRoom('${r.id}')">Войти</button>`;
                     list.appendChild(el);
                 });
-            } catch (e) {
-                showError(e.message);
-            }
+            } catch (e) { showError(e.message); }
         }
 
-        // === Вход в комнату ===
         async function joinRoom(id) {
             try {
-                const room = await db('rooms', 'PATCH', { 
-                    opponent_tg_id: user.id, 
-                    status: 'playing' 
-                }, `?id=eq.${id}&status=eq.waiting`);
-                
+                const room = await db('rooms', 'PATCH', { opponent_tg_id: user.id, status: 'playing' }, `?id=eq.${id}&status=eq.waiting`);
                 if (!room) throw new Error('Комната уже занята');
-                
                 currentRoom = room;
                 document.getElementById('roomsList').innerHTML = '';
+                document.getElementById('shareBox').classList.add('hidden'); // Скрываем блок ссылки при входе
                 showGame('Вы в игре! Сделайте ход 👇');
                 startPolling();
-            } catch (e) {
-                showError(e.message);
-            }
+            } catch (e) { showError(e.message); }
         }
 
-        // === Сделать ход ===
         async function makeMove(choice) {
             if (!currentRoom) return;
             const isCreator = currentRoom.creator_tg_id === user.id;
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
-            
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('gameStatus').innerText = 'Ход записан...';
-            
             try {
                 await db('rooms', 'PATCH', { [col]: choice }, `?id=eq.${currentRoom.id}`);
                 document.getElementById('gameStatus').innerText = 'Ждём соперника...';
-            } catch (e) {
-                showError(e.message);
-            }
+            } catch (e) { showError(e.message); }
         }
 
-        // === Опрос состояния игры ===
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(async () => {
@@ -266,11 +214,9 @@
                     const room = rooms?.[0];
                     if (!room) return;
                     currentRoom = room;
-                    
                     if (room.status === 'finished') {
                         clearInterval(pollInterval);
-                        showResult(room);
-                        return;
+                        showResult(room); return;
                     }
                     if (room.creator_choice && room.opponent_choice && room.status === 'playing') {
                         clearInterval(pollInterval);
@@ -280,44 +226,30 @@
             }, 2000);
         }
 
-        // === Определение победителя ===
         async function finishGame(room) {
             const result = calculateWinner(room);
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
-            
-            // Обновляем статистику (упрощённо)
             if (result.winnerId) {
-                try {
-                    await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`);
-                } catch(e) { console.warn('Stats error:', e); }
+                try { await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`); } catch(e) {}
             }
             showResult({ ...room, result: result.msg });
         }
 
         function calculateWinner(room) {
             const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
-            
             if (c1 === c2) return { msg: '🤝 Ничья! Переигровка...', winnerId: null };
-            
-            // Правила: Кулак > Шип > Кристалл > Кулак
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
-            
-            let msg, winnerId;
-            if (creatorWins) {
-                msg = (user.id === id1) ? '🏆 Ты победил!' : '😢 Ты проиграл';
-                winnerId = id1;
-            } else {
-                msg = (user.id === id2) ? '🏆 Ты победил!' : '😢 Ты проиграл';
-                winnerId = id2;
-            }
-            return { msg, winnerId };
+            return {
+                msg: (creatorWins ? (user.id === id1) : (user.id === id2)) ? '🏆 Ты победил!' : '😢 Ты проиграл',
+                winnerId: creatorWins ? id1 : id2
+            };
         }
 
         function showResult(room) {
             const msg = room.result || calculateWinner(room).msg;
             document.getElementById('gameStatus').innerText = msg;
-            tg?.showAlert?.(msg);
+            alert(msg);
             setTimeout(backToMenu, 3000);
         }
 
@@ -334,9 +266,20 @@
             document.getElementById('menuScreen').classList.remove('hidden');
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('roomsList').innerHTML = '';
+            document.getElementById('shareBox').classList.add('hidden');
         }
 
-        // === Авто-вход по ссылке из бота ===
+        function copyLink() {
+            const link = document.getElementById('roomLink').innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link).then(() => alert('📋 Ссылка скопирована! Отправь её другу.'));
+            } else {
+                const ta = document.createElement('textarea'); ta.value = link; document.body.appendChild(ta);
+                ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                alert('📋 Ссылка скопирована!');
+            }
+        }
+
         const startParam = tg?.initDataUnsafe?.start_param;
         if (startParam && !startParam.startsWith('demo-')) {
             setTimeout(() => joinRoom(startParam), 500);
