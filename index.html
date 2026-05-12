@@ -66,6 +66,9 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
+        console.log("Telegram WebApp loaded");
+        console.log("User:", tg.initDataUnsafe?.user);
+        setTimeout(() => alert("🦔 Интерфейс загружен! Версия: 2.0"), 1000);
         tg.ready(); 
         tg.expand();
 
