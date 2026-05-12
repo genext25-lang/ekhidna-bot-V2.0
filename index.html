@@ -30,13 +30,9 @@
         .share-box { background: #2a2a2a; padding: 15px; border-radius: 12px; margin: 15px 0; text-align: center; border: 1px dashed #444; }
         .share-box p { font-size: 13px; color: var(--sec); margin-bottom: 8px; }
         .link-text { background: #000; padding: 10px; border-radius: 8px; word-break: break-all; font-family: monospace; font-size: 12px; margin-bottom: 10px; color: #4facfe; }
-        
-        /* Отладочная панель */
         .debug-panel { background: #1a1a2e; border: 1px solid #444; border-radius: 10px; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 11px; color: #0f0; max-height: 150px; overflow-y: auto; display: none; }
         .debug-panel.show { display: block; }
         .debug-toggle { background: #333; color: #aaa; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; margin-bottom: 5px; }
-        
-        /* Поле ручного ввода */
         .manual-join { background: var(--card); padding: 12px; border-radius: 10px; margin: 10px 0; }
         .manual-join input { width: 70%; padding: 10px; border: none; border-radius: 8px; background: #000; color: #fff; font-size: 14px; }
         .manual-join button { width: 25%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; }
@@ -44,45 +40,36 @@
 </head>
 <body>
     <div class="container">
-        <!-- Отладочная панель (скрыта по умолчанию) -->
         <button class="debug-toggle" onclick="toggleDebug()">🔧 Показать отладку</button>
         <div id="debugPanel" class="debug-panel"></div>
 
-        <!-- ГЛАВНОЕ МЕНЮ -->
         <div id="menuScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h1>Ехидна Naklz</h1>
                 <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
             </div>
-            
             <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
             <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
-            
-            <!-- Ручной вход по ID (запасной вариант) -->
             <div class="manual-join">
                 <div style="font-size:12px;color:#aaa;margin-bottom:8px;">Или войдите по ID комнаты:</div>
                 <input type="text" id="manualRoomId" placeholder="Введите ID комнаты">
                 <button onclick="manualJoin()">Войти</button>
             </div>
-            
             <div id="roomsList"></div>
         </div>
 
-        <!-- ЭКРАН ИГРЫ -->
         <div id="gameScreen" class="hidden">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h2>Битва!</h2>
             </div>
             <div class="status" id="gameStatus">Ожидание...</div>
-            
             <div id="shareBox" class="share-box hidden">
                 <p>📤 Отправь эту ссылку другу:</p>
                 <div id="roomLink" class="link-text"></div>
                 <button class="btn btn-primary" style="padding: 10px;" onclick="copyLink()">📋 Скопировать ссылку</button>
             </div>
-
             <div class="choices">
                 <button class="choice-btn" onclick="makeMove('fist')">✊</button>
                 <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
@@ -101,12 +88,11 @@
         const BOT_SHORT_NAME = 'game';
         // ==========================================
 
-        // Логгер для отладки
         function debug(msg, data = null) {
             const panel = document.getElementById('debugPanel');
             const time = new Date().toLocaleTimeString();
             let line = `[${time}] ${msg}`;
-            if (data) line += ' → ' + JSON.stringify(data);
+            if (data) line += ' → ' + JSON.stringify(data).slice(0, 200);
             panel.innerHTML += line + '<br>';
             panel.scrollTop = panel.scrollHeight;
             console.log('[Ekhidna]', msg, data);
@@ -116,11 +102,76 @@
             const panel = document.getElementById('debugPanel');
             panel.classList.toggle('show');
             if (panel.classList.contains('show')) {
-                // Показать текущие данные при открытии
-                debug('Telegram SDK', { hasTg: !!window.Telegram?.WebApp });
-                debug('initDataUnsafe', window.Telegram?.WebApp?.initDataUnsafe);
                 debug('URL', window.location.href);
+                debug('Hash', window.location.hash);
+                debug('Telegram object', { hasTg: !!window.Telegram?.WebApp });
             }
+        }
+
+        // === ПАРСЕР tgWebAppData ИЗ ХЕША ===
+        function parseTgWebAppData() {
+            try {
+                // Ищем tgWebAppData в хеше (#...) или в поиске (?...)
+                const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+                const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search;
+                const fullParams = `${hash}&${search}`;
+                
+                const params = new URLSearchParams(fullParams);
+                const tgData = params.get('tgWebAppData');
+                
+                if (!tgData) {
+                    debug('No tgWebAppData found in URL');
+                    return null;
+                }
+                
+                debug('Found tgWebAppData (raw)', tgData.slice(0, 100) + '...');
+                
+                // Парсим как query string: query_id=xxx&user={...}&start_param=yyy
+                const dataParams = new URLSearchParams(tgData);
+                const result = {};
+                for (const [key, value] of dataParams.entries()) {
+                    try {
+                        // Пробуем декодировать JSON-поля (user, auth_date и т.д.)
+                        result[key] = value.startsWith('{') || value.startsWith('[') ? JSON.parse(decodeURIComponent(value)) : decodeURIComponent(value);
+                    } catch {
+                        result[key] = value;
+                    }
+                }
+                
+                debug('Parsed tgWebAppData', result);
+                return result;
+            } catch (e) {
+                debug('Error parsing tgWebAppData', e.message);
+                return null;
+            }
+        }
+
+        // === ПОЛУЧЕНИЕ start_param ИЗ ВСЕХ ИСТОЧНИКОВ ===
+        function getStartParam() {
+            // 1. Telegram SDK (если доступен)
+            if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
+                debug('Found start_param in Telegram SDK', window.Telegram.WebApp.initDataUnsafe.start_param);
+                return window.Telegram.WebApp.initDataUnsafe.start_param;
+            }
+            
+            // 2. Ручной парсинг tgWebAppData
+            const tgData = parseTgWebAppData();
+            if (tgData?.start_param) {
+                debug('Found start_param in parsed tgWebAppData', tgData.start_param);
+                return tgData.start_param;
+            }
+            
+            // 3. Прямой параметр в URL (?startapp=xxx)
+            const urlParams = new URLSearchParams(window.location.search);
+            const qsParam = urlParams.get('startapp') || urlParams.get('start');
+            if (qsParam) { debug('Found start_param in query string', qsParam); return qsParam; }
+            
+            // 4. В хеше (#startapp=xxx)
+            const hashParams = new URLSearchParams(window.location.hash.slice(1));
+            const hashParam = hashParams.get('startapp') || hashParams.get('start');
+            if (hashParam) { debug('Found start_param in hash', hashParam); return hashParam; }
+            
+            return null;
         }
 
         async function db(table, method, payload = null, filters = '') {
@@ -139,10 +190,26 @@
             return Array.isArray(data) && data.length === 1 ? data[0] : data;
         }
 
+        // === Инициализация пользователя ===
+        let user = { id: 999999, username: 'Test', first_name: 'Тест' };
         const tg = window.Telegram?.WebApp;
-        if (tg) { tg.ready(); tg.expand(); debug('Telegram WebApp initialized'); }
-        const user = tg?.initDataUnsafe?.user || { id: 999999, username: 'Test', first_name: 'Тест' };
-        debug('User', user);
+        
+        if (tg) {
+            tg.ready?.();
+            tg.expand?.();
+            debug('Telegram WebApp initialized via SDK');
+            if (tg.initDataUnsafe?.user) {
+                user = tg.initDataUnsafe.user;
+            }
+        } else {
+            debug('Telegram SDK not available, trying to parse from URL');
+            const tgData = parseTgWebAppData();
+            if (tgData?.user) {
+                user = typeof tgData.user === 'string' ? JSON.parse(tgData.user) : tgData.user;
+                debug('User parsed from URL', user);
+            }
+        }
+        debug('Final user object', user);
 
         let currentRoom = null;
         let pollInterval = null;
@@ -150,30 +217,11 @@
 
         function showError(msg) { alert('⚠️ ' + msg); debug('Error', msg); }
 
-        // === УНИВЕРСАЛЬНЫЙ ПАРСЕР startapp ===
-        function getStartParam() {
-            // 1. Telegram initData (основной)
-            if (tg?.initDataUnsafe?.start_param) {
-                debug('Found start_param in initDataUnsafe', tg.initDataUnsafe.start_param);
-                return tg.initDataUnsafe.start_param;
-            }
-            // 2. URL query string
-            const urlParams = new URLSearchParams(window.location.search);
-            const qsParam = urlParams.get('startapp') || urlParams.get('start');
-            if (qsParam) { debug('Found start_param in query string', qsParam); return qsParam; }
-            // 3. URL hash
-            const hashParams = new URLSearchParams(window.location.hash.slice(1));
-            const hashParam = hashParams.get('startapp') || hashParams.get('start');
-            if (hashParam) { debug('Found start_param in hash', hashParam); return hashParam; }
-            return null;
-        }
-
-        // === Попытка авто-входа с повторами ===
         async function tryAutoJoin() {
             const param = getStartParam();
             debug('tryAutoJoin', { param, attempts: autoJoinAttempts });
             
-            if (param && param.length > 10) { // UUID обычно длинный
+            if (param && param.length > 10) {
                 debug('✅ Valid start_param found, attempting join', param);
                 try {
                     await joinRoom(param);
@@ -183,7 +231,6 @@
                 }
             }
             
-            // Если не получилось и прошло меньше 3 секунд — пробуем ещё раз
             if (autoJoinAttempts < 6) {
                 autoJoinAttempts++;
                 debug(`🔄 Retry #${autoJoinAttempts} in 500ms...`);
@@ -243,12 +290,8 @@
 
         function manualJoin() {
             const id = document.getElementById('manualRoomId').value.trim();
-            if (id) {
-                debug('Manual join', id);
-                joinRoom(id);
-            } else {
-                alert('Введите ID комнаты');
-            }
+            if (id) { debug('Manual join', id); joinRoom(id); }
+            else { alert('Введите ID комнаты'); }
         }
 
         async function makeMove(choice) {
@@ -324,22 +367,18 @@
             navigator.clipboard.writeText(link).then(() => alert('📋 Ссылка скопирована!'));
         }
 
-        // === ЗАПУСК АВТО-ВХОДА ===
-        // Ждём полной инициализации Telegram SDK
-        if (tg) {
-            // Подписываемся на событие готовности (если ещё не готово)
-            if (tg.isReady) {
-                setTimeout(tryAutoJoin, 300);
-            } else {
-                tg.onEvent('main_button_pressed', () => {}); // "Будим" SDK
-                setTimeout(tryAutoJoin, 800);
-            }
-        } else {
-            // Если не в Telegram — пробуем сразу из URL
-            tryAutoJoin();
+        // === ЗАПУСК ===
+        window.addEventListener('load', () => {
+            debug('Window loaded, starting auto-join');
+            setTimeout(tryAutoJoin, 300);
+        });
+        
+        // Если load уже прошёл — запускаем сразу
+        if (document.readyState === 'complete') {
+            setTimeout(tryAutoJoin, 300);
         }
-
-        debug('App initialized', { url: window.location.href, userAgent: navigator.userAgent });
+        
+        debug('App init started', { url: window.location.href });
     </script>
 </body>
 </html>
