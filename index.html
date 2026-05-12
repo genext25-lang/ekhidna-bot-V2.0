@@ -8,102 +8,58 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg: #1e1e1e;
-            --card: #2a2a2a;
-            --primary: #4facfe;
-            --success: #43e97b;
-            --text: #ffffff;
-            --text-secondary: #aaaaaa;
+            --bg: #1e1e1e; --card: #2a2a2a; --primary: #4facfe; --success: #43e97b;
+            --text: #ffffff; --text-sec: #aaaaaa;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { width: 100%; max-width: 400px; }
         .header { text-align: center; margin-bottom: 25px; }
-        .echidna { 
-            width: 110px; height: 110px; background: #fff; border-radius: 50%; 
-            margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; 
-            font-size: 55px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); 
-            animation: float 3s ease-in-out infinite;
-        }
+        .echidna { width: 110px; height: 110px; background: #fff; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 55px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); animation: float 3s ease-in-out infinite; }
         @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         h1 { font-size: 26px; margin-bottom: 5px; }
-        .subtitle { color: var(--text-secondary); font-size: 14px; }
-        
-        .btn {
-            width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 14px;
-            font-size: 16px; font-weight: 600; cursor: pointer; color: #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.1s;
-        }
+        .subtitle { color: var(--text-sec); font-size: 14px; }
+        .btn { width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.1s; }
         .btn:active { transform: scale(0.98); }
         .btn-primary { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
         .btn-success { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
         .btn-secondary { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        
-        .card {
-            background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .room-info { flex: 1; }
         .room-stake { font-weight: bold; color: #ffd700; }
-        .room-time { font-size: 12px; color: var(--text-secondary); }
-        
+        .room-time { font-size: 12px; color: var(--text-sec); }
         .choices { display: flex; justify-content: space-around; margin-top: 30px; gap: 15px; }
-        .choice-btn {
-            flex: 1; height: 90px; border: none; border-radius: 16px;
-            font-size: 36px; background: var(--card); color: white; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.2s;
-        }
+        .choice-btn { flex: 1; height: 90px; border: none; border-radius: 16px; font-size: 36px; background: var(--card); color: white; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.2s; }
         .choice-btn:active { transform: scale(0.95); }
         .choice-btn.selected { background: #ffd700; transform: scale(1.05); box-shadow: 0 0 15px #ffd700; }
         .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .status-box {
-            background: var(--card); padding: 15px; border-radius: 12px; margin: 20px 0;
-            text-align: center; font-size: 16px; min-height: 50px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .status-box { background: var(--card); padding: 15px; border-radius: 12px; margin: 20px 0; text-align: center; font-size: 16px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
         .hidden { display: none !important; }
-        .loader {
-            border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid #fff;
-            border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite;
-            display: inline-block; margin-right: 8px; vertical-align: middle;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .stats {
-            background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 20px;
-            font-size: 14px; display: flex; justify-content: space-around; text-align: center;
-        }
+        .stats { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; display: flex; justify-content: space-around; text-align: center; }
         .stat-item span { display: block; font-weight: bold; font-size: 18px; margin-top: 4px; }
+        .debug-banner { background: #ff4757; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; display: none; }
     </style>
 </head>
 <body>
     <div class="container">
+        <div id="debugBanner" class="debug-banner">⚠️ ВСТАВЬ РЕАЛЬНЫЕ КЛЮЧИ SUPABASE В КОД!</div>
+        
         <!-- ГЛАВНОЕ МЕНЮ -->
         <div id="menuScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h1>Ехидна Naklz</h1>
-                <div class="subtitle">Кулак ✊ • Шип  • Кристалл 💎</div>
+                <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
             </div>
             
-            <div class="stats" id="userStats">
+            <div class="stats">
                 <div class="stat-item">Побед<span id="statWins">0</span></div>
                 <div class="stat-item">Игр<span id="statGames">0</span></div>
                 <div class="stat-item">Скин<span id="statSkin">1</span></div>
             </div>
 
             <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
-            <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
+            <button class="btn btn-primary" onclick="loadRooms()"> Найти комнату</button>
             <div id="roomsList" style="margin-top: 15px;"></div>
         </div>
 
@@ -125,33 +81,40 @@
 
     <script>
         // ==========================================
-        // ⚠️ ВСТАВЬ СЮДА СВОИ КЛЮЧИ SUPABASE ⚠️
+        // ⚠️ ЗАМЕНИ ЭТИ СТРОКИ НА СВОИ ДАННЫЕ ИЗ SUPABASE ⚠️
         // ==========================================
         const SUPABASE_URL = 'https://kzlzbjmajonvdefszmip.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Vqf03Ri6TTM3MvZTT_lbug_SHhxcxto';
         // ==========================================
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
-        // Применяем тему Telegram
         if (tg.themeParams.bg_color) {
             document.documentElement.style.setProperty('--bg', tg.themeParams.bg_color);
             document.documentElement.style.setProperty('--card', tg.themeParams.secondary_bg_color || '#2a2a2a');
             document.body.style.color = tg.themeParams.text_color || '#fff';
         }
 
-        const user = tg.initDataUnsafe?.user;
-        if (!user) {
-            tg.showAlert('Ошибка: Запустите игру через Telegram');
+        // Проверка ключей
+        if (SUPABASE_URL.includes('ВАШ_ПРОЕКТ') || SUPABASE_KEY.includes('ВАШ_КЛЮЧ')) {
+            document.getElementById('debugBanner').style.display = 'block';
+            tg.showAlert('❌ Ошибка: В коде стоят заглушки ключей. Замени их на реальные из Supabase!');
         }
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const user = tg.initDataUnsafe?.user;
+        if (!user) tg.showAlert('Ошибка: Запустите игру через Telegram');
 
         let currentRoom = null;
         let pollInterval = null;
 
-        // Инициализация пользователя в БД
+        // Авто-вход по ссылке (start_param)
+        const startParam = tg.initDataUnsafe?.start_param;
+        if (startParam) {
+            setTimeout(() => joinRoom(startParam), 500);
+        }
+
         async function initUser() {
             if (!user) return;
             const { data, error } = await supabase
@@ -159,7 +122,6 @@
                 .upsert({ telegram_id: user.id, username: user.username || `User${user.id}` }, { onConflict: 'telegram_id' })
                 .select()
                 .single();
-            
             if (!error && data) {
                 document.getElementById('statWins').innerText = data.wins || 0;
                 document.getElementById('statGames').innerText = (data.wins || 0) + (data.losses || 0);
@@ -169,27 +131,29 @@
 
         async function createRoom() {
             if (!user) return;
-            tg.showConfirm('Создать комнату со ставкой 0.1 TON?', async (confirmed) => {
-                if (!confirmed) return;
-                tg.HapticFeedback.impactOccurred('medium');
-                
-                const { data, error } = await supabase
-                    .from('rooms')
-                    .insert([{ creator_tg_id: user.id, stake: 0.1, status: 'waiting' }])
-                    .select()
-                    .single();
+            const { data, error } = await supabase
+                .from('rooms')
+                .insert([{ creator_tg_id: user.id, stake: 0.1, status: 'waiting' }])
+                .select()
+                .single();
 
-                if (error) return tg.showAlert('Ошибка БД: ' + error.message);
-                
-                currentRoom = data;
-                showScreen('game');
-                updateStatus('Комната создана! Ожидание соперника...');
-                startPolling();
-            });
+            if (error) {
+                tg.showAlert('Ошибка БД: ' + error.message);
+                console.error(error);
+                return;
+            }
+            
+            currentRoom = data;
+            const shareLink = `https://t.me/EkhidnaNaklzBot?start=${data.id}`;
+            
+            tg.showAlert(`✅ Комната создана!\n\n Ссылка для друга:\n${shareLink}\n\nСкопируй её и отправь сопернику.`);
+            
+            showScreen('game');
+            updateStatus('Комната создана! Ожидание соперника...');
+            startPolling();
         }
 
         async function loadRooms() {
-            tg.HapticFeedback.selectionChanged();
             const { data, error } = await supabase
                 .from('rooms')
                 .select('*')
@@ -200,8 +164,12 @@
             const list = document.getElementById('roomsList');
             list.innerHTML = '';
 
-            if (error || !data.length) {
-                list.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">Нет активных комнат</div>';
+            if (error) {
+                list.innerHTML = `<div style="color:#ff6b6b; padding:10px;">Ошибка: ${error.message}</div>`;
+                return;
+            }
+            if (!data || data.length === 0) {
+                list.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">Нет активных комнат. Создай свою!</div>';
                 return;
             }
 
@@ -228,7 +196,10 @@
                 .select()
                 .single();
 
-            if (error || !data) return tg.showAlert('Комната уже занята или удалена');
+            if (error || !data) {
+                tg.showAlert('Комната уже занята, удалена или не найдена.');
+                return;
+            }
             
             currentRoom = data;
             document.getElementById('roomsList').innerHTML = '';
@@ -239,27 +210,18 @@
 
         async function makeMove(choice) {
             if (!currentRoom) return;
-            tg.HapticFeedback.impactOccurred('light');
-            
             const isCreator = currentRoom.creator_tg_id === user.id;
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
 
-            // Блокируем кнопки
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
             event.target.classList.add('selected');
-            
             updateStatus('Ход записан. Ждем соперника...');
 
-            const { error } = await supabase
-                .from('rooms')
-                .update({ [col]: choice })
-                .eq('id', currentRoom.id);
-                
+            const { error } = await supabase.from('rooms').update({ [col]: choice }).eq('id', currentRoom.id);
             if (error) {
                 tg.showAlert('Ошибка хода: ' + error.message);
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
-                return;
             }
         }
 
@@ -267,13 +229,7 @@
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(async () => {
                 if (!currentRoom) return;
-                
-                const { data } = await supabase
-                    .from('rooms')
-                    .select('*')
-                    .eq('id', currentRoom.id)
-                    .single();
-
+                const { data } = await supabase.from('rooms').select('*').eq('id', currentRoom.id).single();
                 if (!data) { clearInterval(pollInterval); return; }
                 currentRoom = data;
 
@@ -290,11 +246,8 @@
         }
 
         async function resolveWinner(room) {
-            // Вызываем SQL функцию для расчета
             const { error } = await supabase.rpc('resolve_game', { p_room_id: room.id });
             if (error) console.error('RPC Error:', error);
-            
-            // После расчета статус изменится на finished, pollInterval подхватит
         }
 
         function showResult(room) {
@@ -302,52 +255,34 @@
             let msg = '', emoji = '';
             
             if (room.creator_choice === room.opponent_choice) {
-                msg = 'Ничья! Переигровка...'; emoji = '';
-                // В реальной игре тут лучше перезапустить раунд, пока просто уведомляем
+                msg = ' Ничья! Переигровка...';
             } else {
                 const creatorWin = (
                     (room.creator_choice === 'fist' && room.opponent_choice === 'spike') ||
                     (room.creator_choice === 'spike' && room.opponent_choice === 'crystal') ||
                     (room.creator_choice === 'crystal' && room.opponent_choice === 'fist')
                 );
-                if (creatorWin) {
-                    msg = isCreator ? 'Вы победили!' : 'Вы проиграли';
-                    emoji = isCreator ? '🏆' : '😢';
-                } else {
-                    msg = isCreator ? 'Вы проиграли' : 'Вы победили!';
-                    emoji = isCreator ? '😢' : '🏆';
-                }
+                if (creatorWin) { msg = isCreator ? '🏆 Вы победили!' : '😢 Вы проиграли'; }
+                else { msg = isCreator ? '😢 Вы проиграли' : '🏆 Вы победили!'; }
             }
             
-            updateStatus(`${emoji} ${msg}`);
-            tg.HapticFeedback.notificationOccurred(isCreator && msg.includes('победили') ? 'success' : 'error');
-            
-            // Обновляем статистику локально
-            initUser();
-            
+            updateStatus(msg);
             setTimeout(() => exitGame(), 3000);
         }
 
-        function updateStatus(text) {
-            document.getElementById('gameStatus').innerHTML = text;
-        }
-
+        function updateStatus(text) { document.getElementById('gameStatus').innerHTML = text; }
         function showScreen(screen) {
             document.getElementById('menuScreen').classList.toggle('hidden', screen !== 'menu');
             document.getElementById('gameScreen').classList.toggle('hidden', screen !== 'game');
         }
-
         function exitGame() {
             if (pollInterval) clearInterval(pollInterval);
             currentRoom = null;
-            document.querySelectorAll('.choice-btn').forEach(b => {
-                b.disabled = false;
-                b.classList.remove('selected');
-            });
+            document.querySelectorAll('.choice-btn').forEach(b => { b.disabled = false; b.classList.remove('selected'); });
             showScreen('menu');
+            initUser();
         }
 
-        // Запуск
         initUser();
     </script>
 </body>
