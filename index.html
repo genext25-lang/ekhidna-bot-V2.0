@@ -14,68 +14,83 @@
         @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         h1 { margin-bottom: 5px; font-size: 24px; }
         .subtitle { color: var(--sec); font-size: 13px; }
-        .btn { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; transition: transform 0.1s, filter 0.1s; }
-        .btn:active { transform: scale(0.96); filter: brightness(0.9); }
+        
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.96); }
         .btn-primary { background: linear-gradient(135deg, #4facfe, #00f2fe); }
         .btn-success { background: linear-gradient(135deg, #43e97b, #38f9d7); }
         .btn-sec { background: linear-gradient(135deg, #fa709a, #fee140); color: #000; }
-        .btn-sm { padding: 8px 12px; font-size: 13px; width: auto; }
-        .card { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; width: auto; }
+        
+        /* Карточка комнаты в лобби */
+        .room-card {
+            background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+        .room-info { flex: 1; }
+        .room-stake { font-size: 18px; font-weight: bold; color: #ffd700; }
+        .room-creator { font-size: 13px; color: var(--sec); margin: 4px 0; }
+        .room-time { font-size: 11px; color: #666; }
+        .room-join-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .room-join-btn:active { transform: scale(0.95); }
+        
+        /* Экран игры */
         .choices { display: flex; justify-content: space-around; margin-top: 20px; gap: 10px; }
         .choice-btn { flex: 1; height: 80px; border: none; border-radius: 14px; font-size: 32px; background: var(--card); color: white; cursor: pointer; transition: transform 0.2s; }
         .choice-btn:active { transform: scale(0.95); }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .status { background: var(--card); padding: 12px; border-radius: 10px; margin: 15px 0; text-align: center; min-height: 40px; font-size: 15px; }
         .hidden { display: none !important; }
-        .share-box { background: #2a2a2a; padding: 15px; border-radius: 12px; margin: 15px 0; text-align: center; border: 1px dashed #444; }
-        .share-box p { font-size: 13px; color: var(--sec); margin-bottom: 8px; }
-        .link-text { background: #000; padding: 10px; border-radius: 8px; word-break: break-all; font-family: monospace; font-size: 12px; margin-bottom: 10px; color: #4facfe; }
-        .debug-panel { background: #1a1a2e; border: 1px solid #444; border-radius: 10px; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 11px; color: #0f0; max-height: 150px; overflow-y: auto; display: none; }
-        .debug-panel.show { display: block; }
-        .debug-toggle { background: #333; color: #aaa; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; margin-bottom: 5px; }
-        .manual-join { background: var(--card); padding: 12px; border-radius: 10px; margin: 10px 0; }
-        .manual-join input { width: 70%; padding: 10px; border: none; border-radius: 8px; background: #000; color: #fff; font-size: 14px; }
-        .manual-join button { width: 25%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; }
+        
+        /* Загрузка */
+        .loader { text-align: center; padding: 20px; color: var(--sec); }
+        .spinner { border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Пустой список */
+        .empty-list { text-align: center; color: var(--sec); padding: 30px 10px; }
+        .empty-list button { margin-top: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <button class="debug-toggle" onclick="toggleDebug()">🔧 Показать отладку</button>
-        <div id="debugPanel" class="debug-panel"></div>
-
-        <div id="menuScreen">
+        <!-- ГЛАВНОЕ МЕНЮ / ЛОББИ -->
+        <div id="lobbyScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h1>Ехидна Naklz</h1>
                 <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
             </div>
+            
             <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
-            <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
-            <div class="manual-join">
-                <div style="font-size:12px;color:#aaa;margin-bottom:8px;">Или войдите по ID комнаты:</div>
-                <input type="text" id="manualRoomId" placeholder="Введите ID комнаты">
-                <button onclick="manualJoin()">Войти</button>
+            <button class="btn btn-primary" onclick="loadRooms()">🔄 Обновить список комнат</button>
+            
+            <div style="margin: 15px 0; font-size: 14px; color: var(--sec);">
+                📋 Активные комнаты:
             </div>
-            <div id="roomsList"></div>
+            <div id="roomsList">
+                <div class="loader">
+                    <div class="spinner"></div>
+                    Загрузка комнат...
+                </div>
+            </div>
         </div>
 
+        <!-- ЭКРАН ИГРЫ -->
         <div id="gameScreen" class="hidden">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h2>Битва!</h2>
             </div>
-            <div class="status" id="gameStatus">Ожидание...</div>
-            <div id="shareBox" class="share-box hidden">
-                <p>📤 Отправь эту ссылку другу:</p>
-                <div id="roomLink" class="link-text"></div>
-                <button class="btn btn-primary" style="padding: 10px;" onclick="copyLink()">📋 Скопировать ссылку</button>
-            </div>
+            <div class="status" id="gameStatus">Ожидание соперника...</div>
+            
             <div class="choices">
                 <button class="choice-btn" onclick="makeMove('fist')">✊</button>
                 <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
                 <button class="choice-btn" onclick="makeMove('crystal')">💎</button>
             </div>
-            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToMenu()">🚪 Назад</button>
+            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToLobby()">🚪 Выйти в лобби</button>
         </div>
     </div>
 
@@ -85,86 +100,20 @@
         // ==========================================
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
-        const BOT_SHORT_NAME = 'game';
         // ==========================================
-
-        function debug(msg, data = null) {
-            const panel = document.getElementById('debugPanel');
-            const time = new Date().toLocaleTimeString();
-            let line = `[${time}] ${msg}`;
-            if (data) line += ' → ' + JSON.stringify(data).slice(0, 200);
-            panel.innerHTML += line + '<br>';
-            panel.scrollTop = panel.scrollHeight;
-            console.log('[Ekhidna]', msg, data);
-        }
-
-        function toggleDebug() {
-            const panel = document.getElementById('debugPanel');
-            panel.classList.toggle('show');
-            if (panel.classList.contains('show')) {
-                debug('Полный URL', window.location.href);
-                debug('Hash', window.location.hash);
-                debug('Search', window.location.search);
-            }
-        }
-
-        // === ГЛАВНАЯ ФУНКЦИЯ: поиск startapp в чистом виде из любой части URL ===
-        function extractStartAppFromURL() {
-            const fullURL = window.location.href;
-            debug('🔍 Ищем startapp в URL', fullURL);
-            
-            // Ищем паттерн: startapp=ИЛИ start= (в любом месте строки)
-            const patterns = [
-                /[?&#]startapp=([^&]+)/i,
-                /[?&#]start=([^&]+)/i
-            ];
-            
-            for (const pattern of patterns) {
-                const match = fullURL.match(pattern);
-                if (match && match[1]) {
-                    const value = decodeURIComponent(match[1]);
-                    debug('✅ Найдено через regex', { param: value, pattern: pattern.toString() });
-                    return value;
-                }
-            }
-            
-            debug('❌ startapp не найден в URL');
-            return null;
-        }
-
-        // === Инициализация пользователя ===
-        let user = { id: 999999, username: 'Test', first_name: 'Тест' };
-        
-        // Пробуем получить пользователя из Telegram SDK
-        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-            user = window.Telegram.WebApp.initDataUnsafe.user;
-            debug('User from Telegram SDK', user);
-        } else {
-            // Пробуем распарсить из tgWebAppData в хеше
-            try {
-                const hash = window.location.hash;
-                const tgDataMatch = hash.match(/tgWebAppData=([^&]+)/);
-                if (tgDataMatch) {
-                    const params = new URLSearchParams(decodeURIComponent(tgDataMatch[1]));
-                    const userJSON = params.get('user');
-                    if (userJSON) {
-                        const parsed = JSON.parse(decodeURIComponent(userJSON));
-                        user = parsed;
-                        debug('User parsed from tgWebAppData', user);
-                    }
-                }
-            } catch(e) {
-                debug('Error parsing user from URL', e.message);
-            }
-        }
-        debug('Final user', user);
 
         async function db(table, method, payload = null, filters = '') {
             if (!SUPABASE_URL.startsWith('https://') || SUPABASE_KEY.length < 20 || SUPABASE_KEY.includes('ВСТАВЬ')) {
                 throw new Error('❌ SUPABASE_KEY не заполнен!');
             }
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
-            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', 'Accept': 'application/json' };
+            const headers = {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation',
+                'Accept': 'application/json'
+            };
             const options = { method, headers };
             if (payload) options.body = JSON.stringify(payload);
             const response = await fetch(url, options);
@@ -175,177 +124,237 @@
             return Array.isArray(data) && data.length === 1 ? data[0] : data;
         }
 
+        // === Telegram ===
+        const tg = window.Telegram?.WebApp;
+        if (tg) { tg.ready?.(); tg.expand?.(); }
+        const user = tg?.initDataUnsafe?.user || { id: 999999, username: 'Guest', first_name: 'Гость' };
+
         let currentRoom = null;
         let pollInterval = null;
-        let autoJoinAttempts = 0;
 
-        function showError(msg) { alert('⚠️ ' + msg); debug('Error', msg); }
-
-        // === Попытка авто-входа ===
-        async function tryAutoJoin() {
-            // Ищем startapp ТОЛЬКО через прямой поиск в строке URL
-            const startParam = extractStartAppFromURL();
-            
-            debug('tryAutoJoin', { param: startParam, attempts: autoJoinAttempts });
-            
-            if (startParam && startParam.length > 10) { // UUID обычно 36 символов
-                debug('✅ Валидный startapp найден, пытаемся войти', startParam);
-                try {
-                    await joinRoom(startParam);
-                    return true;
-                } catch (e) {
-                    debug('❌ Ошибка входа', e.message);
-                }
-            }
-            
-            // Повторяем до 6 раз с интервалом 500мс (на случай если страница ещё грузится)
-            if (autoJoinAttempts < 6) {
-                autoJoinAttempts++;
-                debug(`🔄 Повтор #${autoJoinAttempts} через 500мс...`);
-                setTimeout(tryAutoJoin, 500);
-            } else {
-                debug('⚠️ Авто-вход остановлен после 6 попыток');
-            }
-            return false;
+        function showError(msg) { 
+            alert('⚠️ ' + msg); 
+            console.error('[Ekhidna]', msg);
         }
 
+        // === СОЗДАТЬ КОМНАТУ ===
         async function createRoom() {
             try {
-                debug('createRoom вызвана');
-                const room = await db('rooms', 'POST', [{ creator_tg_id: user.id, stake: 0.10, status: 'waiting', creator_choice: null, opponent_choice: null }]);
+                const room = await db('rooms', 'POST', [{
+                    creator_tg_id: user.id,
+                    creator_username: user.username,
+                    stake: 0.10,
+                    status: 'waiting',
+                    creator_choice: null,
+                    opponent_choice: null
+                }]);
+                
                 currentRoom = room;
-                const link = `https://t.me/EkhidnaNaklzBot/${BOT_SHORT_NAME}?startapp=${room.id}`;
-                document.getElementById('roomLink').innerText = link;
-                document.getElementById('shareBox').classList.remove('hidden');
-                debug('Комната создана', room.id);
-                showGame('✅ Комната создана! Ждём соперника...');
+                showGame('✅ Комната создана! Ожидание соперника...');
                 startPolling();
-            } catch (e) { showError(e.message); }
-        }
-
-        async function loadRooms() {
-            try {
-                debug('loadRooms вызвана');
-                const rooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc`);
-                const list = document.getElementById('roomsList');
-                list.innerHTML = '';
-                if (!rooms || rooms.length === 0) { list.innerHTML = '<div style="text-align:center;color:#aaa;padding:15px;">Нет свободных комнат</div>'; return; }
-                rooms.forEach(r => {
-                    const el = document.createElement('div'); el.className = 'card';
-                    el.innerHTML = `<div>💰 ${r.stake} TON</div><button class="btn btn-primary btn-sm" onclick="joinRoom('${r.id}')">Войти</button>`;
-                    list.appendChild(el);
-                });
-                debug(`Найдено комнат: ${rooms.length}`);
-            } catch (e) { showError(e.message); }
-        }
-
-        async function joinRoom(id) {
-            debug('joinRoom вызвана', id);
-            try {
-                const room = await db('rooms', 'PATCH', { opponent_tg_id: user.id, status: 'playing' }, `?id=eq.${id}&status=eq.waiting`);
-                if (!room) throw new Error('Комната уже занята');
-                currentRoom = room;
-                document.getElementById('roomsList').innerHTML = '';
-                document.getElementById('shareBox').classList.add('hidden');
-                debug('✅ Успешный вход в комнату', id);
-                showGame('✅ Вы в игре! Сделайте ход 👇');
-                startPolling();
-            } catch (e) { 
-                debug('❌ Ошибка joinRoom', e.message);
-                showError(e.message); 
+            } catch (e) {
+                showError(e.message);
             }
         }
 
-        function manualJoin() {
-            const id = document.getElementById('manualRoomId').value.trim();
-            if (id) { debug('Ручной вход', id); joinRoom(id); }
-            else { alert('Введите ID комнаты'); }
+        // === ЗАГРУЗИТЬ СПИСОК КОМНАТ ===
+        async function loadRooms() {
+            const list = document.getElementById('roomsList');
+            list.innerHTML = `<div class="loader"><div class="spinner"></div>Загрузка...</div>`;
+            
+            try {
+                // Получаем все комнаты со статусом "waiting", кроме своих
+                const rooms = await db('rooms', 'GET', null, 
+                    `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc&limit=20`);
+                
+                list.innerHTML = '';
+                
+                if (!rooms || rooms.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-list">
+                            <div>📭 Нет активных комнат</div>
+                            <button class="btn btn-success" onclick="createRoom()">💎 Создать свою</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                rooms.forEach(room => {
+                    const el = document.createElement('div');
+                    el.className = 'room-card';
+                    el.innerHTML = `
+                        <div class="room-info">
+                            <div class="room-stake">💰 ${room.stake} TON</div>
+                            <div class="room-creator">@${room.creator_username || 'Аноним'}</div>
+                            <div class="room-time">🕐 ${formatTime(room.created_at)}</div>
+                        </div>
+                        <button class="room-join-btn" onclick="joinRoom('${room.id}')">Войти</button>
+                    `;
+                    list.appendChild(el);
+                });
+            } catch (e) {
+                list.innerHTML = `<div style="color:var(--error);padding:15px;">Ошибка: ${e.message}</div>`;
+                console.error('Load rooms error:', e);
+            }
         }
 
+        // === ВХОД В КОМНАТУ ===
+        async function joinRoom(roomId) {
+            try {
+                // Пытаемся занять комнату (только если она ещё waiting)
+                const room = await db('rooms', 'PATCH', { 
+                    opponent_tg_id: user.id,
+                    opponent_username: user.username,
+                    status: 'playing'
+                }, `?id=eq.${roomId}&status=eq.waiting`);
+                
+                if (!room) {
+                    showError('Эта комната уже занята. Выберите другую.');
+                    loadRooms(); // Обновить список
+                    return;
+                }
+                
+                currentRoom = room;
+                showGame('✅ Вы в игре! Сделайте первый ход 👇');
+                startPolling();
+            } catch (e) {
+                showError(e.message);
+            }
+        }
+
+        // === СДЕЛАТЬ ХОД ===
         async function makeMove(choice) {
             if (!currentRoom) return;
+            
             const isCreator = currentRoom.creator_tg_id === user.id;
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
+            
+            // Блокируем кнопки
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
-            document.getElementById('gameStatus').innerText = 'Ход записан...';
+            document.getElementById('gameStatus').innerText = 'Ход записан. Ждём соперника...';
+            
             try {
                 await db('rooms', 'PATCH', { [col]: choice }, `?id=eq.${currentRoom.id}`);
-                document.getElementById('gameStatus').innerText = 'Ждём соперника...';
-            } catch (e) { showError(e.message); }
+            } catch (e) {
+                showError(e.message);
+                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+            }
         }
 
+        // === ОПРОС СОСТОЯНИЯ ИГРЫ ===
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
+            
             pollInterval = setInterval(async () => {
                 if (!currentRoom) return;
+                
                 try {
                     const rooms = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`);
                     const room = rooms?.[0];
                     if (!room) return;
+                    
                     currentRoom = room;
-                    if (room.status === 'finished') { clearInterval(pollInterval); showResult(room); return; }
+                    
+                    // Если игра закончена
+                    if (room.status === 'finished') {
+                        clearInterval(pollInterval);
+                        showResult(room);
+                        return;
+                    }
+                    
+                    // Если оба сделали ход — считаем результат
                     if (room.creator_choice && room.opponent_choice && room.status === 'playing') {
                         clearInterval(pollInterval);
                         await finishGame(room);
                     }
-                } catch (e) { debug('Ошибка polling', e); }
+                    // Если ждём соперника
+                    else if (!room.opponent_choice && room.creator_choice) {
+                        document.getElementById('gameStatus').innerText = 'Соперник думает...';
+                    }
+                } catch (e) {
+                    console.warn('Poll error:', e);
+                }
             }, 2000);
         }
 
+        // === ОПРЕДЕЛЕНИЕ ПОБЕДИТЕЛЯ ===
         async function finishGame(room) {
             const result = calculateWinner(room);
+            
+            // Обновляем статус комнаты
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
-            if (result.winnerId) { try { await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`); } catch(e) {} }
+            
+            // Обновляем статистику победителя
+            if (result.winnerId) {
+                try {
+                    await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`);
+                } catch(e) { console.warn('Stats update error:', e); }
+            }
+            
             showResult({ ...room, result: result.msg });
         }
 
         function calculateWinner(room) {
             const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
+            
             if (c1 === c2) return { msg: '🤝 Ничья! Переигровка...', winnerId: null };
+            
+            // Правила: Кулак > Шип > Кристалл > Кулак
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
-            return { msg: (creatorWins ? (user.id === id1) : (user.id === id2)) ? '🏆 Ты победил!' : '😢 Ты проиграл', winnerId: creatorWins ? id1 : id2 };
+            
+            let msg, winnerId;
+            if (creatorWins) {
+                msg = (user.id === id1) ? '🏆 Ты победил!' : '😢 Ты проиграл';
+                winnerId = id1;
+            } else {
+                msg = (user.id === id2) ? '🏆 Ты победил!' : '😢 Ты проиграл';
+                winnerId = id2;
+            }
+            return { msg, winnerId };
         }
 
         function showResult(room) {
             const msg = room.result || calculateWinner(room).msg;
             document.getElementById('gameStatus').innerText = msg;
             alert(msg);
-            setTimeout(backToMenu, 3000);
+            setTimeout(backToLobby, 3000);
         }
 
+        // === ПЕРЕХОДЫ МЕЖДУ ЭКРАНАМИ ===
         function showGame(statusText) {
-            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('lobbyScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
             document.getElementById('gameStatus').innerText = statusText || 'Сделайте ход 👇';
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
         }
 
-        function backToMenu() {
+        function backToLobby() {
             if (pollInterval) clearInterval(pollInterval);
             currentRoom = null;
-            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('lobbyScreen').classList.remove('hidden');
             document.getElementById('gameScreen').classList.add('hidden');
-            document.getElementById('roomsList').innerHTML = '';
-            document.getElementById('shareBox').classList.add('hidden');
+            loadRooms(); // Обновить список при возврате
         }
 
-        function copyLink() {
-            const link = document.getElementById('roomLink').innerText;
-            navigator.clipboard.writeText(link).then(() => alert('📋 Ссылка скопирована!'));
+        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        function formatTime(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'только что';
+            if (diff < 3600) return `${Math.floor(diff/60)} мин назад`;
+            if (diff < 86400) return `${Math.floor(diff/3600)} ч назад`;
+            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
         }
 
-        // === ЗАПУСК ПРИ ЗАГРУЗКЕ ===
+        // === ЗАПУСК ===
+        // Загружаем список комнат при старте
         window.addEventListener('load', () => {
-            debug('🚀 Страница загружена, запускаем авто-вход');
-            setTimeout(tryAutoJoin, 300);
+            setTimeout(loadRooms, 300);
         });
-        
-        if (document.readyState === 'complete') {
-            setTimeout(tryAutoJoin, 300);
-        }
-        
-        debug('Инициализация приложения', { url: window.location.href });
     </script>
 </body>
 </html>
