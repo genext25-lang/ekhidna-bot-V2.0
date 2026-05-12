@@ -102,77 +102,62 @@
             const panel = document.getElementById('debugPanel');
             panel.classList.toggle('show');
             if (panel.classList.contains('show')) {
-                debug('URL', window.location.href);
+                debug('Полный URL', window.location.href);
                 debug('Hash', window.location.hash);
-                debug('Telegram object', { hasTg: !!window.Telegram?.WebApp });
+                debug('Search', window.location.search);
             }
         }
 
-        // === ПАРСЕР tgWebAppData ИЗ ХЕША ===
-        function parseTgWebAppData() {
-            try {
-                // Ищем tgWebAppData в хеше (#...) или в поиске (?...)
-                const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
-                const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search;
-                const fullParams = `${hash}&${search}`;
-                
-                const params = new URLSearchParams(fullParams);
-                const tgData = params.get('tgWebAppData');
-                
-                if (!tgData) {
-                    debug('No tgWebAppData found in URL');
-                    return null;
+        // === ГЛАВНАЯ ФУНКЦИЯ: поиск startapp в чистом виде из любой части URL ===
+        function extractStartAppFromURL() {
+            const fullURL = window.location.href;
+            debug('🔍 Ищем startapp в URL', fullURL);
+            
+            // Ищем паттерн: startapp=ИЛИ start= (в любом месте строки)
+            const patterns = [
+                /[?&#]startapp=([^&]+)/i,
+                /[?&#]start=([^&]+)/i
+            ];
+            
+            for (const pattern of patterns) {
+                const match = fullURL.match(pattern);
+                if (match && match[1]) {
+                    const value = decodeURIComponent(match[1]);
+                    debug('✅ Найдено через regex', { param: value, pattern: pattern.toString() });
+                    return value;
                 }
-                
-                debug('Found tgWebAppData (raw)', tgData.slice(0, 100) + '...');
-                
-                // Парсим как query string: query_id=xxx&user={...}&start_param=yyy
-                const dataParams = new URLSearchParams(tgData);
-                const result = {};
-                for (const [key, value] of dataParams.entries()) {
-                    try {
-                        // Пробуем декодировать JSON-поля (user, auth_date и т.д.)
-                        result[key] = value.startsWith('{') || value.startsWith('[') ? JSON.parse(decodeURIComponent(value)) : decodeURIComponent(value);
-                    } catch {
-                        result[key] = value;
-                    }
-                }
-                
-                debug('Parsed tgWebAppData', result);
-                return result;
-            } catch (e) {
-                debug('Error parsing tgWebAppData', e.message);
-                return null;
-            }
-        }
-
-        // === ПОЛУЧЕНИЕ start_param ИЗ ВСЕХ ИСТОЧНИКОВ ===
-        function getStartParam() {
-            // 1. Telegram SDK (если доступен)
-            if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
-                debug('Found start_param in Telegram SDK', window.Telegram.WebApp.initDataUnsafe.start_param);
-                return window.Telegram.WebApp.initDataUnsafe.start_param;
             }
             
-            // 2. Ручной парсинг tgWebAppData
-            const tgData = parseTgWebAppData();
-            if (tgData?.start_param) {
-                debug('Found start_param in parsed tgWebAppData', tgData.start_param);
-                return tgData.start_param;
-            }
-            
-            // 3. Прямой параметр в URL (?startapp=xxx)
-            const urlParams = new URLSearchParams(window.location.search);
-            const qsParam = urlParams.get('startapp') || urlParams.get('start');
-            if (qsParam) { debug('Found start_param in query string', qsParam); return qsParam; }
-            
-            // 4. В хеше (#startapp=xxx)
-            const hashParams = new URLSearchParams(window.location.hash.slice(1));
-            const hashParam = hashParams.get('startapp') || hashParams.get('start');
-            if (hashParam) { debug('Found start_param in hash', hashParam); return hashParam; }
-            
+            debug('❌ startapp не найден в URL');
             return null;
         }
+
+        // === Инициализация пользователя ===
+        let user = { id: 999999, username: 'Test', first_name: 'Тест' };
+        
+        // Пробуем получить пользователя из Telegram SDK
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+            user = window.Telegram.WebApp.initDataUnsafe.user;
+            debug('User from Telegram SDK', user);
+        } else {
+            // Пробуем распарсить из tgWebAppData в хеше
+            try {
+                const hash = window.location.hash;
+                const tgDataMatch = hash.match(/tgWebAppData=([^&]+)/);
+                if (tgDataMatch) {
+                    const params = new URLSearchParams(decodeURIComponent(tgDataMatch[1]));
+                    const userJSON = params.get('user');
+                    if (userJSON) {
+                        const parsed = JSON.parse(decodeURIComponent(userJSON));
+                        user = parsed;
+                        debug('User parsed from tgWebAppData', user);
+                    }
+                }
+            } catch(e) {
+                debug('Error parsing user from URL', e.message);
+            }
+        }
+        debug('Final user', user);
 
         async function db(table, method, payload = null, filters = '') {
             if (!SUPABASE_URL.startsWith('https://') || SUPABASE_KEY.length < 20 || SUPABASE_KEY.includes('ВСТАВЬ')) {
@@ -190,66 +175,49 @@
             return Array.isArray(data) && data.length === 1 ? data[0] : data;
         }
 
-        // === Инициализация пользователя ===
-        let user = { id: 999999, username: 'Test', first_name: 'Тест' };
-        const tg = window.Telegram?.WebApp;
-        
-        if (tg) {
-            tg.ready?.();
-            tg.expand?.();
-            debug('Telegram WebApp initialized via SDK');
-            if (tg.initDataUnsafe?.user) {
-                user = tg.initDataUnsafe.user;
-            }
-        } else {
-            debug('Telegram SDK not available, trying to parse from URL');
-            const tgData = parseTgWebAppData();
-            if (tgData?.user) {
-                user = typeof tgData.user === 'string' ? JSON.parse(tgData.user) : tgData.user;
-                debug('User parsed from URL', user);
-            }
-        }
-        debug('Final user object', user);
-
         let currentRoom = null;
         let pollInterval = null;
         let autoJoinAttempts = 0;
 
         function showError(msg) { alert('⚠️ ' + msg); debug('Error', msg); }
 
+        // === Попытка авто-входа ===
         async function tryAutoJoin() {
-            const param = getStartParam();
-            debug('tryAutoJoin', { param, attempts: autoJoinAttempts });
+            // Ищем startapp ТОЛЬКО через прямой поиск в строке URL
+            const startParam = extractStartAppFromURL();
             
-            if (param && param.length > 10) {
-                debug('✅ Valid start_param found, attempting join', param);
+            debug('tryAutoJoin', { param: startParam, attempts: autoJoinAttempts });
+            
+            if (startParam && startParam.length > 10) { // UUID обычно 36 символов
+                debug('✅ Валидный startapp найден, пытаемся войти', startParam);
                 try {
-                    await joinRoom(param);
+                    await joinRoom(startParam);
                     return true;
                 } catch (e) {
-                    debug('❌ Join failed', e.message);
+                    debug('❌ Ошибка входа', e.message);
                 }
             }
             
+            // Повторяем до 6 раз с интервалом 500мс (на случай если страница ещё грузится)
             if (autoJoinAttempts < 6) {
                 autoJoinAttempts++;
-                debug(`🔄 Retry #${autoJoinAttempts} in 500ms...`);
+                debug(`🔄 Повтор #${autoJoinAttempts} через 500мс...`);
                 setTimeout(tryAutoJoin, 500);
             } else {
-                debug('⚠️ Auto-join gave up after 6 attempts');
+                debug('⚠️ Авто-вход остановлен после 6 попыток');
             }
             return false;
         }
 
         async function createRoom() {
             try {
-                debug('createRoom called');
+                debug('createRoom вызвана');
                 const room = await db('rooms', 'POST', [{ creator_tg_id: user.id, stake: 0.10, status: 'waiting', creator_choice: null, opponent_choice: null }]);
                 currentRoom = room;
                 const link = `https://t.me/EkhidnaNaklzBot/${BOT_SHORT_NAME}?startapp=${room.id}`;
                 document.getElementById('roomLink').innerText = link;
                 document.getElementById('shareBox').classList.remove('hidden');
-                debug('Room created', room.id);
+                debug('Комната создана', room.id);
                 showGame('✅ Комната создана! Ждём соперника...');
                 startPolling();
             } catch (e) { showError(e.message); }
@@ -257,7 +225,7 @@
 
         async function loadRooms() {
             try {
-                debug('loadRooms called');
+                debug('loadRooms вызвана');
                 const rooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc`);
                 const list = document.getElementById('roomsList');
                 list.innerHTML = '';
@@ -267,30 +235,30 @@
                     el.innerHTML = `<div>💰 ${r.stake} TON</div><button class="btn btn-primary btn-sm" onclick="joinRoom('${r.id}')">Войти</button>`;
                     list.appendChild(el);
                 });
-                debug(`Found ${rooms.length} rooms`);
+                debug(`Найдено комнат: ${rooms.length}`);
             } catch (e) { showError(e.message); }
         }
 
         async function joinRoom(id) {
-            debug('joinRoom called', id);
+            debug('joinRoom вызвана', id);
             try {
                 const room = await db('rooms', 'PATCH', { opponent_tg_id: user.id, status: 'playing' }, `?id=eq.${id}&status=eq.waiting`);
                 if (!room) throw new Error('Комната уже занята');
                 currentRoom = room;
                 document.getElementById('roomsList').innerHTML = '';
                 document.getElementById('shareBox').classList.add('hidden');
-                debug('✅ Successfully joined room', id);
+                debug('✅ Успешный вход в комнату', id);
                 showGame('✅ Вы в игре! Сделайте ход 👇');
                 startPolling();
             } catch (e) { 
-                debug('❌ joinRoom error', e.message);
+                debug('❌ Ошибка joinRoom', e.message);
                 showError(e.message); 
             }
         }
 
         function manualJoin() {
             const id = document.getElementById('manualRoomId').value.trim();
-            if (id) { debug('Manual join', id); joinRoom(id); }
+            if (id) { debug('Ручной вход', id); joinRoom(id); }
             else { alert('Введите ID комнаты'); }
         }
 
@@ -320,7 +288,7 @@
                         clearInterval(pollInterval);
                         await finishGame(room);
                     }
-                } catch (e) { debug('Poll error', e); }
+                } catch (e) { debug('Ошибка polling', e); }
             }, 2000);
         }
 
@@ -367,18 +335,17 @@
             navigator.clipboard.writeText(link).then(() => alert('📋 Ссылка скопирована!'));
         }
 
-        // === ЗАПУСК ===
+        // === ЗАПУСК ПРИ ЗАГРУЗКЕ ===
         window.addEventListener('load', () => {
-            debug('Window loaded, starting auto-join');
+            debug('🚀 Страница загружена, запускаем авто-вход');
             setTimeout(tryAutoJoin, 300);
         });
         
-        // Если load уже прошёл — запускаем сразу
         if (document.readyState === 'complete') {
             setTimeout(tryAutoJoin, 300);
         }
         
-        debug('App init started', { url: window.location.href });
+        debug('Инициализация приложения', { url: window.location.href });
     </script>
 </body>
 </html>
