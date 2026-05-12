@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ехидна Naklz</title>
-    <!-- Подключаем Supabase с резервным CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg: #121212; --card: #1e1e1e; --primary: #4facfe; --success: #43e97b; --text: #fff; --sec: #888; }
@@ -29,14 +28,12 @@
         .status { background: var(--card); padding: 12px; border-radius: 10px; margin: 15px 0; text-align: center; min-height: 40px; }
         .hidden { display: none !important; }
         .debug { background: #ff4757; color: white; padding: 8px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; text-align: center; display: none; }
-        .log-box { background: #000; color: #0f0; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; max-height: 120px; overflow-y: auto; margin-top: 10px; display: none; border: 1px solid #333; }
-        .tg-warning { background: #ffa502; color: #000; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; text-align: center; display: none; }
+        .log-box { background: #000; color: #0f0; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; max-height: 100px; overflow-y: auto; margin-top: 10px; display: none; border: 1px solid #333; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="tgWarning" class="tg-warning">⚠️ Запусти игру внутри Telegram, а не в браузере!</div>
-        <div id="debugBanner" class="debug">⚠️ Ключи Supabase не заполнены! Работа в демо-режиме.</div>
+        <div id="debugBanner" class="debug">⚠️ Демо-режим: вставь ключи Supabase для полной работы</div>
         <div id="logBox" class="log-box"></div>
 
         <div id="menuScreen">
@@ -45,8 +42,8 @@
                 <h1>Ехидна Naklz</h1>
                 <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
             </div>
-            <button class="btn btn-success" onclick="app.createRoom()">💎 Создать комнату (0.1 TON)</button>
-            <button class="btn btn-primary" onclick="app.loadRooms()">🔍 Найти комнату</button>
+            <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
+            <button class="btn btn-primary" onclick="loadRooms()">🔍 Найти комнату</button>
             <div id="roomsList"></div>
         </div>
 
@@ -57,11 +54,11 @@
             </div>
             <div class="status" id="gameStatus">Ожидание...</div>
             <div class="choices">
-                <button class="choice-btn" onclick="app.makeMove('fist')">✊</button>
-                <button class="choice-btn" onclick="app.makeMove('spike')">🌵</button>
-                <button class="choice-btn" onclick="app.makeMove('crystal')"></button>
+                <button class="choice-btn" onclick="makeMove('fist')">✊</button>
+                <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
+                <button class="choice-btn" onclick="makeMove('crystal')"></button>
             </div>
-            <button class="btn btn-sec" style="margin-top:15px;" onclick="app.backToMenu()">🚪 Назад</button>
+            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToMenu()">🚪 Назад</button>
         </div>
     </div>
 
@@ -75,186 +72,159 @@
             console.log('[Ekhidna]', msg);
         };
 
-        log('🚀 Запуск приложения...');
+        log('🚀 Старт');
 
-        // === Инициализация Telegram (без внешнего скрипта) ===
-        let tg = null;
-        try {
-            // В Telegram Mini App объект уже есть глобально
-            tg = window.Telegram?.WebApp;
-            if (tg) {
-                tg.ready?.();
-                tg.expand?.();
-                log('✅ Telegram WebApp доступен');
-            } else {
-                document.getElementById('tgWarning').style.display = 'block';
-                log('⚠️ Telegram SDK не найден. Запусти внутри бота!');
-                // Создаём заглушку для тестов в браузере
-                tg = {
-                    ready: () => {},
-                    expand: () => {},
-                    showAlert: (msg) => alert(msg),
-                    showConfirm: (msg, cb) => cb(confirm(msg)),
-                    HapticFeedback: { impactOccurred: () => {}, notificationOccurred: () => {} },
-                    initDataUnsafe: { user: { id: 999999, username: 'BrowserTest', first_name: 'Тест' } },
-                    themeParams: {}
-                };
-            }
-        } catch (e) {
-            log('❌ Ошибка Telegram SDK: ' + e.message);
-            tg = null;
+        // === Telegram: определяем максимально просто ===
+        const isTelegram = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp;
+        const tg = isTelegram ? window.Telegram.WebApp : null;
+        
+        if (isTelegram) {
+            tg.ready();
+            tg.expand();
+            log('✅ Telegram WebApp активен');
+        } else {
+            log('⚠️ Не в Telegram (или объект не найден)');
         }
 
-        // === Настройки Supabase (ЗАМЕНИ НА СВОИ!) ===
-        const CONFIG = {
-            SUPABASE_URL: 'https://kzlzbjmajonvdefszmip.supabase.co',
-            SUPABASE_KEY: 'sb_publishable_Vqf03Ri6TTM3MvZTT_lbug_SHhxcxto'
-        };
+        // === КЛЮЧИ SUPABASE — ЗАМЕНИ НА СВОИ! ===
+        const SUPABASE_URL = 'https://kzlzbjmajonvdefszmip.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_Vqf03Ri6TTM3MvZTT_lbug_SHhxcxto';
+        // ===========================================
 
-        // === Основное приложение (изолированный объект, чтобы не было конфликтов) ===
-        const app = {
-            supabase: null,
-            currentRoom: null,
-            user: tg?.initDataUnsafe?.user || { id: 999999, username: 'TestUser' },
+        // Проверка: если ключи не заменены — демо-режим
+        const isDemo = SUPABASE_URL.includes('ВАШ_ПРОЕКТ') || SUPABASE_KEY.includes('ВАШ_КЛЮЧ');
+        if (isDemo) {
+            document.getElementById('debugBanner').style.display = 'block';
+            log('🟡 Демо-режим: ключи не заполнены');
+        }
 
-            init() {
-                log(`👤 Пользователь: ${this.user.username} (ID: ${this.user.id})`);
-                
-                // Проверка ключей
-                if (CONFIG.SUPABASE_URL.includes('ВАШ_ПРОЕКТ') || CONFIG.SUPABASE_KEY.includes('ВАШ_КЛЮЧ')) {
-                    document.getElementById('debugBanner').style.display = 'block';
-                    log('🟡 Демо-режим: ключи Supabase не заполнены');
-                    return;
-                }
-                
-                // Инициализация клиента
-                try {
-                    if (window.supabase) {
-                        this.supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-                        log('✅ Supabase клиент создан');
-                    } else {
-                        log('❌ Библиотека Supabase не загрузилась');
-                    }
-                } catch (e) {
-                    log('❌ Ошибка Supabase: ' + e.message);
-                }
-            },
-
-            async createRoom() {
-                log('🖱 createRoom()');
-                if (!this.supabase) {
-                    // Демо-режим
-                    this.currentRoom = { id: 'demo-' + Date.now(), creator_tg_id: this.user.id, stake: 0.1, status: 'waiting' };
-                    log('🟡 Демо-комната: ' + this.currentRoom.id);
-                    tg?.showAlert?.(`Демо-режим!\nСсылка для друга:\nhttps://t.me/EkhidnaNaklzBot?start=${this.currentRoom.id}`);
-                    this.showGame();
-                    return;
-                }
-                try {
-                    const { data, error } = await this.supabase
-                        .from('rooms')
-                        .insert([{ creator_tg_id: this.user.id, stake: 0.1, status: 'waiting' }])
-                        .select()
-                        .single();
-                    if (error) throw error;
-                    this.currentRoom = data;
-                    log('✅ Комната создана в БД: ' + data.id);
-                    tg?.showAlert?.(`✅ Комната создана!\nСсылка:\nhttps://t.me/EkhidnaNaklzBot?start=${data.id}`);
-                    this.showGame();
-                } catch (e) {
-                    log('❌ Ошибка: ' + e.message);
-                    tg?.showAlert?.('Ошибка БД: ' + e.message);
-                }
-            },
-
-            async loadRooms() {
-                log('🖱 loadRooms()');
-                const list = document.getElementById('roomsList');
-                list.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">Загрузка...</div>';
-                
-                if (!this.supabase) {
-                    list.innerHTML = `<div class="card"><div>Демо-комната (0.1 TON)</div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="app.joinDemo()">Войти</button></div>`;
-                    log('🟡 Показана демо-комната');
-                    return;
-                }
-                try {
-                    const { data, error } = await this.supabase
-                        .from('rooms')
-                        .select('*')
-                        .eq('status', 'waiting')
-                        .neq('creator_tg_id', this.user.id);
-                    if (error) throw error;
-                    list.innerHTML = '';
-                    if (!data?.length) {
-                        list.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">Нет комнат. Создай свою!</div>';
-                        log('📋 Комнат не найдено');
-                        return;
-                    }
-                    data.forEach(r => {
-                        const el = document.createElement('div');
-                        el.className = 'card';
-                        el.innerHTML = `<div>${r.stake} TON</div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="app.joinRoom('${r.id}')">Войти</button>`;
-                        list.appendChild(el);
-                    });
-                    log(`📋 Найдено комнат: ${data.length}`);
-                } catch (e) {
-                    list.innerHTML = `<div style="color:#ff6b6b;padding:10px;">Ошибка: ${e.message}</div>`;
-                    log('❌ Ошибка поиска: ' + e.message);
-                }
-            },
-
-            joinDemo() {
-                this.currentRoom = { id: 'demo-join', creator_tg_id: 888888, opponent_tg_id: this.user.id, status: 'playing' };
-                log('🎮 Вход в демо-комнату');
-                this.showGame();
-            },
-
-            async joinRoom(id) {
-                log(`🚪 joinRoom(${id})`);
-                if (!this.supabase) { this.joinDemo(); return; }
-                try {
-                    const { data, error } = await this.supabase
-                        .from('rooms')
-                        .update({ opponent_tg_id: this.user.id, status: 'playing' })
-                        .eq('id', id)
-                        .eq('status', 'waiting')
-                        .select()
-                        .single();
-                    if (error || !data) throw new Error('Комната занята');
-                    this.currentRoom = data;
-                    log('✅ Успешный вход');
-                    this.showGame();
-                } catch (e) {
-                    tg?.showAlert?.(e.message);
-                    log('❌ Ошибка входа: ' + e.message);
-                }
-            },
-
-            makeMove(choice) {
-                log(`✊ Ход: ${choice}`);
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
-                document.getElementById('gameStatus').innerText = 'Ход принят. Ждем соперника...';
-                // Здесь будет отправка в БД
-            },
-
-            showGame() {
-                document.getElementById('menuScreen').classList.add('hidden');
-                document.getElementById('gameScreen').classList.remove('hidden');
-                document.getElementById('gameStatus').innerText = 'Сделайте ход 👇';
-            },
-
-            backToMenu() {
-                document.getElementById('menuScreen').classList.remove('hidden');
-                document.getElementById('gameScreen').classList.add('hidden');
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
-                this.currentRoom = null;
+        // === Инициализация Supabase ===
+        let supabase = null;
+        if (!isDemo && window.supabase) {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                log('✅ Supabase подключён');
+            } catch (e) {
+                log('❌ Supabase ошибка: ' + e.message);
             }
-        };
+        }
 
-        // Запуск
-        document.addEventListener('DOMContentLoaded', () => app.init());
-        // Если DOM уже загружен (кейс браузера)
-        if (document.readyState !== 'loading') app.init();
+        // === Данные пользователя ===
+        const user = tg?.initDataUnsafe?.user || { id: 123456, username: 'DemoUser', first_name: 'Демо' };
+        log(`👤 ${user.first_name} (@${user.username})`);
+
+        let currentRoom = null;
+
+        // === ФУНКЦИИ ===
+        async function createRoom() {
+            log('🖱 createRoom');
+            if (isDemo || !supabase) {
+                // Демо: создаём "виртуальную" комнату
+                currentRoom = { id: 'demo-' + Date.now(), creator_tg_id: user.id, stake: 0.1, status: 'waiting' };
+                log('🟡 Демо-комната: ' + currentRoom.id);
+                if (tg?.showAlert) {
+                    tg.showAlert(`🎮 Демо-режим!\nСкопируй ссылку и отправь другу:\n\nt.me/EkhidnaNaklzBot?start=${currentRoom.id}`);
+                } else {
+                    alert(`Демо-режим! Ссылка: t.me/EkhidnaNaklzBot?start=${currentRoom.id}`);
+                }
+                showGame();
+                return;
+            }
+            try {
+                const { data, error } = await supabase
+                    .from('rooms')
+                    .insert([{ creator_tg_id: user.id, stake: 0.1, status: 'waiting' }])
+                    .select()
+                    .single();
+                if (error) throw error;
+                currentRoom = data;
+                log('✅ Комната в БД: ' + data.id);
+                tg?.showAlert?.(`✅ Комната создана!\nСсылка:\nt.me/EkhidnaNaklzBot?start=${data.id}`);
+                showGame();
+            } catch (e) {
+                log('❌ Ошибка: ' + e.message);
+                tg?.showAlert?.('Ошибка: ' + e.message);
+            }
+        }
+
+        async function loadRooms() {
+            log('🖱 loadRooms');
+            const list = document.getElementById('roomsList');
+            list.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">Загрузка...</div>';
+            
+            if (isDemo || !supabase) {
+                list.innerHTML = `<div class="card"><div>Демо-комната (0.1 TON)</div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="joinDemo()">Войти</button></div>`;
+                log('🟡 Показана демо-комната');
+                return;
+            }
+            try {
+                const { data, error } = await supabase
+                    .from('rooms')
+                    .select('*')
+                    .eq('status', 'waiting')
+                    .neq('creator_tg_id', user.id);
+                if (error) throw error;
+                list.innerHTML = '';
+                if (!data?.length) {
+                    list.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">Нет комнат. Создай свою!</div>';
+                    return;
+                }
+                data.forEach(r => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    el.innerHTML = `<div>${r.stake} TON</div><button class="btn btn-primary" style="width:auto;padding:8px 15px;" onclick="joinRoom('${r.id}')">Войти</button>`;
+                    list.appendChild(el);
+                });
+            } catch (e) {
+                list.innerHTML = `<div style="color:#ff6b6b;padding:10px;">Ошибка: ${e.message}</div>`;
+                log('❌ ' + e.message);
+            }
+        }
+
+        function joinDemo() {
+            currentRoom = { id: 'demo-join', creator_tg_id: 999999, opponent_tg_id: user.id, status: 'playing' };
+            log('🎮 Вход в демо');
+            showGame();
+        }
+
+        async function joinRoom(id) {
+            log(`🚪 joinRoom ${id}`);
+            if (isDemo || !supabase) { joinDemo(); return; }
+            try {
+                const { data, error } = await supabase
+                    .from('rooms')
+                    .update({ opponent_tg_id: user.id, status: 'playing' })
+                    .eq('id', id)
+                    .eq('status', 'waiting')
+                    .select()
+                    .single();
+                if (error || !data) throw new Error('Комната занята');
+                currentRoom = data;
+                log('✅ Вошёл');
+                showGame();
+            } catch (e) {
+                tg?.showAlert?.(e.message);
+            }
+        }
+
+        function makeMove(choice) {
+            log(`✊ Ход: ${choice}`);
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+            document.getElementById('gameStatus').innerText = 'Ход принят. Ждём соперника...';
+        }
+
+        function showGame() {
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameStatus').innerText = 'Сделайте ход 👇';
+        }
+
+        function backToMenu() {
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+            currentRoom = null;
+        }
     </script>
 </body>
 </html>
