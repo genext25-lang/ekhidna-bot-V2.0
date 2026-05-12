@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -29,6 +29,8 @@
         .share-box { background: #2a2a2a; padding: 15px; border-radius: 12px; margin: 15px 0; text-align: center; border: 1px dashed #444; }
         .share-box p { font-size: 13px; color: var(--sec); margin-bottom: 8px; }
         .link-text { background: #000; padding: 10px; border-radius: 8px; word-break: break-all; font-family: monospace; font-size: 12px; margin-bottom: 10px; color: #4facfe; }
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -60,7 +62,7 @@
             </div>
 
             <div class="choices">
-                <button class="choice-btn" onclick="makeMove('fist')"></button>
+                <button class="choice-btn" onclick="makeMove('fist')">✊</button>
                 <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
                 <button class="choice-btn" onclick="makeMove('crystal')">💎</button>
             </div>
@@ -70,22 +72,21 @@
 
     <script>
         // ==========================================
-        // ⚠️ ВСТАВЬ СВОЙ SUPABASE_KEY НИЖЕ ️
+        // ⚠️ ВСТАВЬ СВОЙ SUPABASE_KEY НИЖЕ ⚠️
         // ==========================================
-        const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co'; // Твой URL
-        const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe'; // Твой длинный ключ (eyJ...)
-        const BOT_SHORT_NAME = 'game'; // Короткое имя из BotFather
+        const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
+        const BOT_SHORT_NAME = 'game';
         // ==========================================
 
         async function db(table, method, payload = null, filters = '') {
             if (!SUPABASE_URL.startsWith('https://') || SUPABASE_KEY.length < 20 || SUPABASE_KEY.includes('ВСТАВЬ')) {
-                throw new Error('❌ SUPABASE_KEY не заполнен! Проверь код.');
+                throw new Error('❌ SUPABASE_KEY не заполнен!');
             }
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
             const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', 'Accept': 'application/json' };
             const options = { method, headers };
             if (payload) options.body = JSON.stringify(payload);
-            
             const response = await fetch(url, options);
             const text = await response.text();
             if (!response.ok) throw new Error(`Supabase ${response.status}: ${text}`);
@@ -102,6 +103,23 @@
         let pollInterval = null;
 
         function showError(msg) { alert('⚠️ ' + msg); console.error('[Ekhidna]', msg); }
+
+        // === УНИВЕРСАЛЬНЫЙ ПАРСЕР startapp параметра ===
+        function getStartParam() {
+            // 1. Из Telegram initData (основной способ)
+            if (tg?.initDataUnsafe?.start_param) return tg.initDataUnsafe.start_param;
+            
+            // 2. Из URL query string (?startapp=xxx)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('startapp')) return urlParams.get('startapp');
+            if (urlParams.has('start')) return urlParams.get('start');
+            
+            // 3. Из URL hash (#startapp=xxx)
+            const hashParams = new URLSearchParams(window.location.hash.slice(1));
+            if (hashParams.has('startapp')) return hashParams.get('startapp');
+            
+            return null;
+        }
 
         async function createRoom() {
             try {
@@ -136,7 +154,7 @@
                 currentRoom = room;
                 document.getElementById('roomsList').innerHTML = '';
                 document.getElementById('shareBox').classList.add('hidden');
-                showGame('Вы в игре! Сделайте ход 👇');
+                showGame('✅ Вы в игре! Сделайте ход 👇');
                 startPolling();
             } catch (e) { showError(e.message); }
         }
@@ -196,7 +214,7 @@
         function showGame(statusText) {
             document.getElementById('menuScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
-            document.getElementById('gameStatus').innerText = statusText || 'Сделайте ход ';
+            document.getElementById('gameStatus').innerText = statusText || 'Сделайте ход 👇';
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
         }
 
@@ -211,14 +229,39 @@
 
         function copyLink() {
             const link = document.getElementById('roomLink').innerText;
-            navigator.clipboard.writeText(link).then(() => alert('📋 Ссылка скопирована! Отправь её другу.'));
+            navigator.clipboard.writeText(link).then(() => alert('📋 Ссылка скопирована!'));
         }
 
-        // Авто-вход при открытии по ссылке
-        const startParam = tg?.initDataUnsafe?.start_param;
-        if (startParam) {
-            console.log('Auto-join param:', startParam);
-            setTimeout(() => joinRoom(startParam), 500);
+        // === АВТО-ВХОД ПРИ ЗАГРУЗКЕ ===
+        async function tryAutoJoin() {
+            const startParam = getStartParam();
+            console.log('🔍 startParam:', startParam, '| URL:', window.location.href);
+            
+            if (startParam && startParam !== 'demo') {
+                // Показываем загрузку
+                document.getElementById('gameStatus').innerHTML = '<span class="loader"></span>Входим в комнату...';
+                showGame();
+                
+                // Небольшая задержка для надёжности
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                try {
+                    await joinRoom(startParam);
+                    console.log('✅ Авто-вход успешен');
+                } catch (e) {
+                    console.warn('⚠️ Авто-вход не удался:', e.message);
+                    document.getElementById('gameStatus').innerText = 'Не удалось войти. Выберите ход или вернитесь в меню.';
+                }
+            }
+        }
+
+        // Запускаем авто-вход после полной инициализации
+        if (tg) {
+            tg.onEvent('themeChanged', () => {}); // Просто "будим" SDK
+            setTimeout(tryAutoJoin, 500);
+        } else {
+            // Если не в Telegram — пробуем сразу
+            tryAutoJoin();
         }
     </script>
 </body>
