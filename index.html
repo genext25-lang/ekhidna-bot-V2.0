@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ехидна Naklz</title>
     <style>
-        :root { --bg: #121212; --card: #1e1e1e; --primary: #4facfe; --success: #43e97b; --error: #ff4757; --text: #fff; --sec: #888; }
+        :root { --bg: #121212; --card: #1e1e1e; --primary: #4facfe; --success: #43e97b; --error: #ff4757; --text: #fff; --sec: #888; --my-room: #2d3436; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; }
@@ -21,19 +21,29 @@
         .btn-success { background: linear-gradient(135deg, #43e97b, #38f9d7); }
         .btn-sec { background: linear-gradient(135deg, #fa709a, #fee140); color: #000; }
         .btn-sm { padding: 6px 12px; font-size: 13px; width: auto; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         
-        /* Карточка комнаты в лобби */
+        /* Карточка комнаты */
         .room-card {
             background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px;
             display: flex; justify-content: space-between; align-items: center;
             border-left: 4px solid var(--primary);
         }
+        .room-card.my-room {
+            background: var(--my-room); border-left-color: var(--success);
+        }
         .room-info { flex: 1; }
         .room-stake { font-size: 18px; font-weight: bold; color: #ffd700; }
         .room-creator { font-size: 13px; color: var(--sec); margin: 4px 0; }
         .room-time { font-size: 11px; color: #666; }
+        .room-badge { display: inline-block; background: var(--success); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-left: 8px; }
         .room-join-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
         .room-join-btn:active { transform: scale(0.95); }
+        .room-join-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Секции списка */
+        .section-title { font-size: 14px; color: var(--sec); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
+        .section-title::before { content: ''; display: block; width: 3px; height: 14px; background: var(--primary); border-radius: 2px; }
         
         /* Экран игры */
         .choices { display: flex; justify-content: space-around; margin-top: 20px; gap: 10px; }
@@ -50,12 +60,20 @@
         
         /* Пустой список */
         .empty-list { text-align: center; color: var(--sec); padding: 30px 10px; }
-        .empty-list button { margin-top: 15px; }
+        
+        /* Отладка */
+        .debug-info { background: #1a1a2e; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 11px; color: #0f0; font-family: monospace; display: none; }
+        .debug-info.show { display: block; }
+        .debug-toggle { background: #333; color: #aaa; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ГЛАВНОЕ МЕНЮ / ЛОББИ -->
+        <!-- Кнопка отладки -->
+        <button class="debug-toggle" onclick="toggleDebug()">🔧 Отладка</button>
+        <div id="debugInfo" class="debug-info"></div>
+
+        <!-- ЛОББИ -->
         <div id="lobbyScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
@@ -64,39 +82,40 @@
             </div>
             
             <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
-            <button class="btn btn-primary" onclick="loadRooms()">🔄 Обновить список комнат</button>
+            <button class="btn btn-primary" onclick="loadRooms()">🔄 Обновить</button>
             
-            <div style="margin: 15px 0; font-size: 14px; color: var(--sec);">
-                📋 Активные комнаты:
+            <!-- МОИ КОМНАТЫ (ожидающие) -->
+            <div class="section-title">🕐 Мои ожидающие комнаты</div>
+            <div id="myRoomsList">
+                <div class="loader"><div class="spinner"></div>Загрузка...</div>
             </div>
+            
+            <!-- ОБЩИЕ КОМНАТЫ -->
+            <div class="section-title">🌍 Доступные комнаты</div>
             <div id="roomsList">
-                <div class="loader">
-                    <div class="spinner"></div>
-                    Загрузка комнат...
-                </div>
+                <div class="loader"><div class="spinner"></div>Загрузка...</div>
             </div>
         </div>
 
-        <!-- ЭКРАН ИГРЫ -->
+        <!-- ИГРА -->
         <div id="gameScreen" class="hidden">
             <div class="header">
                 <div class="echidna">🦔</div>
                 <h2>Битва!</h2>
             </div>
             <div class="status" id="gameStatus">Ожидание соперника...</div>
-            
             <div class="choices">
                 <button class="choice-btn" onclick="makeMove('fist')">✊</button>
                 <button class="choice-btn" onclick="makeMove('spike')">🌵</button>
                 <button class="choice-btn" onclick="makeMove('crystal')">💎</button>
             </div>
-            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToLobby()">🚪 Выйти в лобби</button>
+            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToLobby()">🚪 В лобби</button>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // ⚠️ ВСТАВЬ СВОЙ SUPABASE_KEY НИЖЕ ⚠️
+        // ⚠️ ВСТАВЬ СВОЙ SUPABASE_KEY ⚠️
         // ==========================================
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
@@ -108,11 +127,8 @@
             }
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
             const headers = {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation',
-                'Accept': 'application/json'
+                'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json', 'Prefer': 'return=representation', 'Accept': 'application/json'
             };
             const options = { method, headers };
             if (payload) options.body = JSON.stringify(payload);
@@ -124,22 +140,39 @@
             return Array.isArray(data) && data.length === 1 ? data[0] : data;
         }
 
-        // === Telegram ===
+        function debug(msg, data = null) {
+            const box = document.getElementById('debugInfo');
+            const time = new Date().toLocaleTimeString();
+            let line = `[${time}] ${msg}`;
+            if (data) line += ' → ' + JSON.stringify(data).slice(0, 150);
+            box.innerHTML += line + '<br>';
+            box.scrollTop = box.scrollHeight;
+            console.log('[Ekhidna]', msg, data);
+        }
+
+        function toggleDebug() {
+            const box = document.getElementById('debugInfo');
+            box.classList.toggle('show');
+            if (box.classList.contains('show')) {
+                debug('User', user);
+                debug('URL', window.location.href);
+            }
+        }
+
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
         const user = tg?.initDataUnsafe?.user || { id: 999999, username: 'Guest', first_name: 'Гость' };
+        debug('Init user', user);
 
         let currentRoom = null;
         let pollInterval = null;
 
-        function showError(msg) { 
-            alert('⚠️ ' + msg); 
-            console.error('[Ekhidna]', msg);
-        }
+        function showError(msg) { alert('⚠️ ' + msg); debug('Error', msg); }
 
         // === СОЗДАТЬ КОМНАТУ ===
         async function createRoom() {
             try {
+                debug('Creating room for user', user.id);
                 const room = await db('rooms', 'POST', [{
                     creator_tg_id: user.id,
                     creator_username: user.username,
@@ -148,170 +181,149 @@
                     creator_choice: null,
                     opponent_choice: null
                 }]);
-                
+                debug('Room created', room);
                 currentRoom = room;
-                showGame('✅ Комната создана! Ожидание соперника...');
+                showGame('✅ Комната создана! Ждём соперника...');
                 startPolling();
+                loadRooms(); // Обновить списки
             } catch (e) {
                 showError(e.message);
+                debug('Create error', e);
             }
         }
 
-        // === ЗАГРУЗИТЬ СПИСОК КОМНАТ ===
+        // === ЗАГРУЗИТЬ СПИСКИ ===
         async function loadRooms() {
-            const list = document.getElementById('roomsList');
-            list.innerHTML = `<div class="loader"><div class="spinner"></div>Загрузка...</div>`;
+            debug('loadRooms called');
             
+            // 1. Мои ожидающие комнаты
             try {
-                // Получаем все комнаты со статусом "waiting", кроме своих
+                const myRooms = await db('rooms', 'GET', null, 
+                    `?status=eq.waiting&creator_tg_id=eq.${user.id}&order=created_at.desc&limit=5`);
+                const myList = document.getElementById('myRoomsList');
+                renderRooms(myList, myRooms, true);
+            } catch (e) {
+                document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`;
+                debug('My rooms error', e);
+            }
+            
+            // 2. Чужие доступные комнаты
+            try {
                 const rooms = await db('rooms', 'GET', null, 
                     `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc&limit=20`);
-                
-                list.innerHTML = '';
-                
-                if (!rooms || rooms.length === 0) {
-                    list.innerHTML = `
-                        <div class="empty-list">
-                            <div>📭 Нет активных комнат</div>
-                            <button class="btn btn-success" onclick="createRoom()">💎 Создать свою</button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                rooms.forEach(room => {
-                    const el = document.createElement('div');
-                    el.className = 'room-card';
-                    el.innerHTML = `
-                        <div class="room-info">
-                            <div class="room-stake">💰 ${room.stake} TON</div>
-                            <div class="room-creator">@${room.creator_username || 'Аноним'}</div>
-                            <div class="room-time">🕐 ${formatTime(room.created_at)}</div>
-                        </div>
-                        <button class="room-join-btn" onclick="joinRoom('${room.id}')">Войти</button>
-                    `;
-                    list.appendChild(el);
-                });
+                const list = document.getElementById('roomsList');
+                renderRooms(list, rooms, false);
             } catch (e) {
-                list.innerHTML = `<div style="color:var(--error);padding:15px;">Ошибка: ${e.message}</div>`;
-                console.error('Load rooms error:', e);
+                document.getElementById('roomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`;
+                debug('Public rooms error', e);
             }
+        }
+
+        function renderRooms(container, rooms, isMy) {
+            container.innerHTML = '';
+            if (!rooms || rooms.length === 0) {
+                container.innerHTML = `<div class="empty-list">${isMy ? 'Нет ожидающих комнат' : 'Нет доступных комнат'}</div>`;
+                return;
+            }
+            rooms.forEach(room => {
+                const el = document.createElement('div');
+                el.className = `room-card${isMy ? ' my-room' : ''}`;
+                el.innerHTML = `
+                    <div class="room-info">
+                        <div class="room-stake">💰 ${room.stake} TON ${isMy ? '<span class="room-badge">ЖДЁТ</span>' : ''}</div>
+                        <div class="room-creator">@${room.creator_username || 'Аноним'}</div>
+                        <div class="room-time">🕐 ${formatTime(room.created_at)}</div>
+                    </div>
+                    <button class="room-join-btn" ${isMy ? 'disabled' : ''} onclick="joinRoom('${room.id}')">
+                        ${isMy ? 'Ожидание...' : 'Войти'}
+                    </button>
+                `;
+                container.appendChild(el);
+            });
+            debug(`Rendered ${rooms.length} rooms (my: ${isMy})`);
         }
 
         // === ВХОД В КОМНАТУ ===
         async function joinRoom(roomId) {
             try {
-                // Пытаемся занять комнату (только если она ещё waiting)
+                debug('Joining room', roomId);
                 const room = await db('rooms', 'PATCH', { 
                     opponent_tg_id: user.id,
                     opponent_username: user.username,
                     status: 'playing'
                 }, `?id=eq.${roomId}&status=eq.waiting`);
                 
-                if (!room) {
-                    showError('Эта комната уже занята. Выберите другую.');
-                    loadRooms(); // Обновить список
-                    return;
-                }
+                if (!room) { showError('Комната уже занята'); loadRooms(); return; }
                 
                 currentRoom = room;
-                showGame('✅ Вы в игре! Сделайте первый ход 👇');
+                debug('Joined successfully', room);
+                showGame('✅ Вы в игре! Сделайте ход 👇');
                 startPolling();
             } catch (e) {
                 showError(e.message);
+                debug('Join error', e);
             }
         }
 
-        // === СДЕЛАТЬ ХОД ===
+        // === ХОД ===
         async function makeMove(choice) {
             if (!currentRoom) return;
-            
             const isCreator = currentRoom.creator_tg_id === user.id;
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
             
-            // Блокируем кнопки
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
-            document.getElementById('gameStatus').innerText = 'Ход записан. Ждём соперника...';
+            document.getElementById('gameStatus').innerText = 'Ход записан...';
             
             try {
                 await db('rooms', 'PATCH', { [col]: choice }, `?id=eq.${currentRoom.id}`);
+                document.getElementById('gameStatus').innerText = 'Ждём соперника...';
             } catch (e) {
                 showError(e.message);
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
             }
         }
 
-        // === ОПРОС СОСТОЯНИЯ ИГРЫ ===
+        // === ОПРОС ===
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
-            
             pollInterval = setInterval(async () => {
                 if (!currentRoom) return;
-                
                 try {
                     const rooms = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`);
                     const room = rooms?.[0];
                     if (!room) return;
-                    
                     currentRoom = room;
                     
-                    // Если игра закончена
-                    if (room.status === 'finished') {
-                        clearInterval(pollInterval);
-                        showResult(room);
-                        return;
-                    }
-                    
-                    // Если оба сделали ход — считаем результат
+                    if (room.status === 'finished') { clearInterval(pollInterval); showResult(room); return; }
                     if (room.creator_choice && room.opponent_choice && room.status === 'playing') {
                         clearInterval(pollInterval);
                         await finishGame(room);
-                    }
-                    // Если ждём соперника
-                    else if (!room.opponent_choice && room.creator_choice) {
+                    } else if (!room.opponent_choice && room.creator_choice) {
                         document.getElementById('gameStatus').innerText = 'Соперник думает...';
                     }
-                } catch (e) {
-                    console.warn('Poll error:', e);
-                }
+                } catch (e) { console.warn('Poll error:', e); }
             }, 2000);
         }
 
-        // === ОПРЕДЕЛЕНИЕ ПОБЕДИТЕЛЯ ===
+        // === ПОБЕДИТЕЛЬ ===
         async function finishGame(room) {
             const result = calculateWinner(room);
-            
-            // Обновляем статус комнаты
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
-            
-            // Обновляем статистику победителя
             if (result.winnerId) {
-                try {
-                    await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`);
-                } catch(e) { console.warn('Stats update error:', e); }
+                try { await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`); } catch(e) {}
             }
-            
             showResult({ ...room, result: result.msg });
         }
 
         function calculateWinner(room) {
             const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
-            
-            if (c1 === c2) return { msg: '🤝 Ничья! Переигровка...', winnerId: null };
-            
-            // Правила: Кулак > Шип > Кристалл > Кулак
+            if (c1 === c2) return { msg: '🤝 Ничья!', winnerId: null };
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
-            
-            let msg, winnerId;
-            if (creatorWins) {
-                msg = (user.id === id1) ? '🏆 Ты победил!' : '😢 Ты проиграл';
-                winnerId = id1;
-            } else {
-                msg = (user.id === id2) ? '🏆 Ты победил!' : '😢 Ты проиграл';
-                winnerId = id2;
-            }
-            return { msg, winnerId };
+            return {
+                msg: (creatorWins ? (user.id === id1) : (user.id === id2)) ? '🏆 Ты победил!' : '😢 Ты проиграл',
+                winnerId: creatorWins ? id1 : id2
+            };
         }
 
         function showResult(room) {
@@ -321,7 +333,6 @@
             setTimeout(backToLobby, 3000);
         }
 
-        // === ПЕРЕХОДЫ МЕЖДУ ЭКРАНАМИ ===
         function showGame(statusText) {
             document.getElementById('lobbyScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
@@ -334,27 +345,19 @@
             currentRoom = null;
             document.getElementById('lobbyScreen').classList.remove('hidden');
             document.getElementById('gameScreen').classList.add('hidden');
-            loadRooms(); // Обновить список при возврате
+            loadRooms();
         }
 
-        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
-        function formatTime(isoString) {
-            if (!isoString) return '';
-            const date = new Date(isoString);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000);
-            
+        function formatTime(iso) {
+            if (!iso) return '';
+            const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
             if (diff < 60) return 'только что';
             if (diff < 3600) return `${Math.floor(diff/60)} мин назад`;
-            if (diff < 86400) return `${Math.floor(diff/3600)} ч назад`;
-            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+            return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
         }
 
-        // === ЗАПУСК ===
-        // Загружаем список комнат при старте
-        window.addEventListener('load', () => {
-            setTimeout(loadRooms, 300);
-        });
+        // Запуск
+        window.addEventListener('load', () => setTimeout(loadRooms, 300));
     </script>
 </body>
 </html>
