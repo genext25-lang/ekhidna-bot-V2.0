@@ -51,29 +51,8 @@
         .loader { text-align: center; padding: 30px; color: var(--sec); }
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .bottom-nav { 
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
-            background: var(--card); 
-            border-top: 2px solid var(--border); 
-            display: flex; 
-            padding: 12px 0; 
-            z-index: 100; 
-        }
-        .nav-btn { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 6px; 
-            background: none; 
-            border: none; 
-            color: var(--sec); 
-            font-size: 12px; 
-            cursor: pointer; 
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 2px solid var(--border); display: flex; padding: 12px 0; z-index: 100; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; color: var(--sec); font-size: 12px; cursor: pointer; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn svg { width: 32px; height: 32px; }
         .nav-spacer { height: 80px; }
@@ -97,6 +76,23 @@
         .skin-modal-features li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
         .skin-modal-req { text-align: center; font-size: 12px; color: var(--sec); padding: 12px; background: rgba(251,191,36,0.1); border-radius: 12px; }
         .skin-modal-req.locked { color: var(--error); background: rgba(239,68,68,0.1); }
+
+        /* Стили для выбора ставки */
+        .stake-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
+        .stake-modal.hidden { display: none; }
+        .stake-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 360px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
+        .stake-modal-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+        .stake-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+        .stake-preset-btn { padding: 12px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .stake-preset-btn:active { transform: scale(0.95); }
+        .stake-preset-btn.selected { border-color: var(--gold); background: rgba(251,191,36,0.15); color: var(--gold); }
+        .stake-input-group { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .stake-input { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-size: 16px; text-align: center; outline: none; }
+        .stake-input:focus { border-color: var(--primary); }
+        .stake-input-label { font-size: 14px; color: var(--sec); font-weight: 600; }
+        .stake-error { font-size: 12px; color: var(--error); text-align: center; margin-bottom: 8px; min-height: 16px; }
+        .stake-confirm-btn { background: linear-gradient(135deg, #10b981, #059669); }
+        .stake-cancel-btn { background: var(--bg); border: 1px solid var(--border); color: var(--sec); }
     </style>
 </head>
 <body>
@@ -112,7 +108,7 @@
                 <div class="stat-box"><div class="stat-val" id="statGames">0</div><div class="stat-lbl">Игр</div></div>
                 <div class="stat-box"><div class="stat-val" id="statLevel">1</div><div class="stat-lbl">Уровень</div><div class="skin-badge" id="statSkinBadge">Обычная</div></div>
             </div>
-            <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату</button>
+            <button class="btn btn-success" onclick="openStakeModal()">💎 Создать комнату</button>
             <button class="btn btn-sec" onclick="loadRooms()">🔄 Обновить</button>
             <div class="section-title">Мои комнаты</div>
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div>
@@ -176,6 +172,33 @@
         </div>
     </div>
 
+    <!-- Модальное окно выбора ставки -->
+    <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)">
+        <div class="stake-modal-content" onclick="event.stopPropagation()">
+            <button class="skin-modal-close" onclick="closeStakeModal()">✕</button>
+            <div class="stake-modal-title">💎 Выбери ставку</div>
+            
+            <div class="stake-presets" id="stakePresets">
+                <button class="stake-preset-btn" data-stake="0.1" onclick="selectStake(0.1, this)">0.1 TON</button>
+                <button class="stake-preset-btn" data-stake="0.5" onclick="selectStake(0.5, this)">0.5 TON</button>
+                <button class="stake-preset-btn" data-stake="1" onclick="selectStake(1, this)">1 TON</button>
+                <button class="stake-preset-btn" data-stake="2" onclick="selectStake(2, this)">2 TON</button>
+                <button class="stake-preset-btn" data-stake="5" onclick="selectStake(5, this)">5 TON</button>
+                <button class="stake-preset-btn" data-stake="10" onclick="selectStake(10, this)">10 TON</button>
+            </div>
+            
+            <div class="stake-input-group">
+                <span class="stake-input-label">Или введи:</span>
+                <input type="number" class="stake-input" id="stakeInput" placeholder="0.1 - 99" min="0.1" max="99" step="0.1" oninput="onStakeInput()">
+            </div>
+            
+            <div class="stake-error" id="stakeError"></div>
+            
+            <button class="btn stake-confirm-btn" onclick="confirmStake()">Создать комнату</button>
+            <button class="btn stake-cancel-btn" onclick="closeStakeModal()" style="margin-top: 8px;">Отмена</button>
+        </div>
+    </div>
+
     <div class="bottom-nav">
         <button class="nav-btn active" onclick="showScreen('lobby')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -199,6 +222,7 @@
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
+        // ✅ Обновлённые требования к скинам
         const SKINS = [
             { 
                 id: 'default', 
@@ -211,7 +235,7 @@
             { 
                 id: 'ice', 
                 name: 'Ледяная', 
-                wins: 3,
+                wins: 30,
                 img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png',
                 desc: 'Загадочная ехидна из ледяных кристаллов. Её взгляд способен заморозить любого соперника! Холодный расчёт и стратегическое мышление — её главные козыри.',
                 features: ['Кристальные иглы сверкают на солнце', 'Холодный расчёт в бою', '+10% к стратегическому мышлению', 'Замораживает соперников взглядом']
@@ -219,7 +243,7 @@
             { 
                 id: 'fire', 
                 name: 'Огненная', 
-                wins: 8,
+                wins: 50,
                 img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png',
                 desc: 'Пламенная натура с огненным темпераментом! Её иглы горят ярким пламенем, а глаза светятся решимостью. Агрессивный стиль игры — её стихия.',
                 features: ['Огненные иглы пугают врагов', 'Быстрая и агрессивная', 'Горит желанием победить', 'Янтарные глаза видят всё']
@@ -227,7 +251,7 @@
             { 
                 id: 'shadow', 
                 name: 'Теневая', 
-                wins: 15,
+                wins: 100,
                 img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png',
                 desc: 'Таинственная ехидна из глубин тьмы. Её фиолетовые глаза видят то, что скрыто от других. Мистическая сила тени даёт ей преимущество в бою.',
                 features: ['Появляется из тени', 'Фиолетовые глаза видят всё', 'Тайная сила тьмы', 'Загадочная аура']
@@ -235,12 +259,14 @@
             { 
                 id: 'golden', 
                 name: 'Золотая', 
-                wins: 30,
+                wins: 300,
                 img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png',
                 desc: 'Легендарная ехидна с золотой короной! Только настоящие чемпионы могут обладать этой редчайшей формой. Золотые кристаллы — символ власти и превосходства.',
-                features: ['Корона победителя', 'Золотые кристаллы — символ власти', 'Только для чемпионов (30+ побед)', 'Легендарная редкость']
+                features: ['Корона победителя', 'Золотые кристаллы — символ власти', 'Только для чемпионов (300+ побед)', 'Легендарная редкость']
             }
         ];
+
+        let selectedStake = 0.1;
 
         async function db(table, method, payload = null, filters = '', single = false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
@@ -280,14 +306,83 @@
             } catch(e) { console.error(e); }
         }
 
-        async function createRoom() {
+        // === Выбор ставки ===
+        function openStakeModal() {
+            selectedStake = 0.1;
+            document.getElementById('stakeInput').value = '';
+            document.getElementById('stakeError').textContent = '';
+            document.querySelectorAll('.stake-preset-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('.stake-preset-btn[data-stake="0.1"]').classList.add('selected');
+            document.getElementById('stakeModal').classList.remove('hidden');
+        }
+
+        function closeStakeModal(e) {
+            if (!e || e.target.id === 'stakeModal' || e.target.className === 'skin-modal-close') {
+                document.getElementById('stakeModal').classList.add('hidden');
+            }
+        }
+
+        function selectStake(value, btn) {
+            selectedStake = value;
+            document.getElementById('stakeInput').value = '';
+            document.getElementById('stakeError').textContent = '';
+            document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        function onStakeInput() {
+            const val = parseFloat(document.getElementById('stakeInput').value);
+            document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected'));
+            
+            if (isNaN(val)) {
+                selectedStake = 0.1;
+                document.getElementById('stakeError').textContent = '';
+                return;
+            }
+            
+            if (val < 0.1) {
+                document.getElementById('stakeError').textContent = 'Минимальная ставка: 0.1 TON';
+                selectedStake = 0.1;
+            } else if (val > 99) {
+                document.getElementById('stakeError').textContent = 'Максимальная ставка: 99 TON';
+                selectedStake = 99;
+            } else {
+                document.getElementById('stakeError').textContent = '';
+                selectedStake = Math.round(val * 100) / 100;
+            }
+        }
+
+        async function confirmStake() {
+            const inputVal = document.getElementById('stakeInput').value;
+            let finalStake = selectedStake;
+            
+            if (inputVal) {
+                const parsed = parseFloat(inputVal);
+                if (parsed < 0.1 || parsed > 99 || isNaN(parsed)) {
+                    document.getElementById('stakeError').textContent = 'Введи ставку от 0.1 до 99 TON';
+                    return;
+                }
+                finalStake = Math.round(parsed * 100) / 100;
+            }
+            
+            document.getElementById('stakeModal').classList.add('hidden');
+            
             try {
-                const room = await db('rooms', 'POST', [{ creator_tg_id: user.id, creator_username: user.username, stake: 0.1, status: 'waiting' }], '', true);
+                const room = await db('rooms', 'POST', [{ 
+                    creator_tg_id: user.id, 
+                    creator_username: user.username, 
+                    stake: finalStake, 
+                    status: 'waiting' 
+                }], '', true);
                 currentRoom = room;
                 showGameScreen();
                 startPolling();
                 loadRooms();
             } catch(e) { alert('Ошибка: ' + e.message); }
+        }
+
+        async function createRoom() {
+            // Эта функция больше не используется напрямую, используется openStakeModal
         }
 
         async function loadRooms() {
@@ -412,7 +507,7 @@
                 const users = await db('users','GET',null,'?select=username,wins,telegram_id&order=wins.desc.nullslast&limit=10');
                 c.innerHTML = '';
                 users.forEach((u,i) => {
-                    const skin = SKINS[Math.min(4, u.wins>=30?4:u.wins>=15?3:u.wins>=8?2:u.wins>=3?1:0)];
+                    const skin = SKINS[Math.min(4, u.wins>=300?4:u.wins>=100?3:u.wins>=50?2:u.wins>=30?1:0)];
                     const el = document.createElement('div');
                     el.className = 'room-card';
                     el.innerHTML = `<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${u.username||'Аноним'}</div><div class="room-creator">${skin.name}</div></div><div style="font-weight:700;color:var(--gold)">${u.wins||0}</div>`;
