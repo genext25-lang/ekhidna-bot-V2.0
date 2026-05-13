@@ -13,7 +13,7 @@
         .container { max-width: 420px; margin: 0 auto; padding: 15px; }
         .header { text-align: center; padding: 10px 0 20px; }
         .header-logo { width: 120px; height: 120px; margin: 0 auto 12px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 30px rgba(99, 102, 241, 0.5); animation: logoFloat 3s ease-in-out infinite; display: flex; align-items: center; justify-content: center; background: var(--card); }
-        .header-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .header-logo svg { width: 90%; height: 90%; }
         @keyframes logoFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.05); } }
         .header h1 { font-size: 22px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); margin-top: 4px; }
@@ -34,7 +34,7 @@
         .room-card:active { transform: scale(0.98); background: var(--card-hover); }
         .room-card.my-room { border-left: 3px solid var(--success); }
         .room-icon { width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; }
-        .room-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .room-icon svg { width: 90%; height: 90%; }
         .room-info { flex: 1; min-width: 0; }
         .room-stake { font-weight: 700; color: var(--gold); font-size: 15px; }
         .room-creator { font-size: 12px; color: var(--sec); }
@@ -46,7 +46,7 @@
         .game-header { text-align: center; padding: 10px 0; }
         .game-players { display: flex; justify-content: space-around; align-items: center; margin: 15px 0; }
         .player-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); box-shadow: 0 0 15px rgba(99,102,241,0.3); background: var(--card); display: flex; align-items: center; justify-content: center; }
-        .player-avatar img { width: 90%; height: 90%; object-fit: contain; }
+        .player-avatar svg { width: 90%; height: 90%; }
         .vs-badge { font-size: 20px; font-weight: 700; color: var(--error); text-shadow: 0 0 10px rgba(239,68,68,0.5); }
         .choices { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
         .choice-btn { width: 90px; height: 90px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -64,7 +64,7 @@
         .lb-row.top-3 { border-color: #cd7f3244; background: linear-gradient(135deg, #cd7f3211, transparent); }
         .lb-rank { font-size: 16px; font-weight: 700; width: 32px; text-align: center; }
         .lb-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin: 0 10px; border: 2px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; }
-        .lb-avatar img { width: 90%; height: 90%; object-fit: contain; }
+        .lb-avatar svg { width: 90%; height: 90%; }
         .lb-info { flex: 1; }
         .lb-name { font-weight: 600; font-size: 14px; }
         .lb-sub { font-size: 10px; color: var(--sec); }
@@ -74,7 +74,7 @@
         .skin-card.active { border-color: var(--gold); box-shadow: 0 0 20px rgba(251,191,36,0.2); }
         .skin-card.locked { opacity: 0.6; }
         .skin-preview { width: 60px; height: 60px; border-radius: 14px; overflow: hidden; flex-shrink: 0; border: 2px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; }
-        .skin-preview img { width: 90%; height: 90%; object-fit: contain; }
+        .skin-preview svg { width: 90%; height: 90%; }
         .skin-info { flex: 1; }
         .skin-name { font-weight: 600; font-size: 15px; }
         .skin-desc { font-size: 11px; color: var(--sec); margin-top: 2px; }
@@ -108,7 +108,7 @@
     <div id="lobbyScreen" class="screen">
         <div class="container">
             <div class="header">
-                <div class="header-logo"><img src="" alt="logo" id="mainLogoImg"></div>
+                <div class="header-logo" id="mainLogo"></div>
                 <h1>Ехидна Naklz</h1>
                 <div class="header-sub">Кулак • Шип • Кристалл</div>
             </div>
@@ -132,9 +132,9 @@
         <div class="container">
             <div class="game-header"><h2>⚔️ Битва!</h2></div>
             <div class="game-players">
-                <div class="player-avatar"><img src="" alt="player" id="playerAvatarImg"></div>
+                <div class="player-avatar" id="playerAvatar"></div>
                 <div class="vs-badge">VS</div>
-                <div class="player-avatar"><img src="" alt="opponent" id="opponentAvatarImg"></div>
+                <div class="player-avatar" id="opponentAvatar"></div>
             </div>
             <div class="status-box" id="gameStatus"><div class="spinner"></div></div>
             <div id="moveResult" style="text-align:center; margin: 10px 0;"></div>
@@ -203,18 +203,18 @@
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         // ==========================================
 
-        // === Скины с GitHub Pages URL ===
+        // === Скины с SVG (гарантированно работают) ===
         const SKINS = [
             { id: 'default', name: 'Обычная', desc: 'Стандартная ехидна 🌸', wins: 0, 
-              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-default.png' },
+              svg: `<svg viewBox="0 0 100 100"><defs><radialGradient id="bg1"><stop offset="0%" stop-color="#fce7f3"/><stop offset="100%" stop-color="#fbcfe8"/></radialGradient></defs><circle cx="50" cy="50" r="45" fill="url(#bg1)"/><g fill="#f9a8d4"><polygon points="50,5 54,15 46,15"/><polygon points="38,8 42,18 34,16"/><polygon points="62,8 66,16 58,18"/><polygon points="28,12 32,22 24,20"/><polygon points="72,12 76,20 68,22"/><polygon points="20,20 26,28 18,28"/><polygon points="80,20 82,28 74,28"/><polygon points="15,32 20,38 14,40"/><polygon points="85,32 86,40 80,38"/><polygon points="12,45 18,50 12,52"/><polygon points="88,45 88,52 82,50"/><polygon points="14,58 20,62 14,64"/><polygon points="86,58 86,64 80,62"/><polygon points="20,70 26,74 20,76"/><polygon points="80,70 80,76 74,74"/><polygon points="28,80 34,82 28,84"/><polygon points="72,80 72,84 66,82"/><polygon points="38,86 42,88 38,90"/><polygon points="62,86 62,90 58,88"/></g><circle cx="38" cy="44" r="8" fill="#fff"/><circle cx="62" cy="44" r="8" fill="#fff"/><circle cx="38" cy="44" r="4" fill="#1e293b"/><circle cx="62" cy="44" r="4" fill="#1e293b"/><circle cx="36" cy="42" r="1.5" fill="#fff"/><circle cx="60" cy="42" r="1.5" fill="#fff"/><ellipse cx="50" cy="54" rx="6" ry="4" fill="#78716c"/><path d="M44 58 Q50 64 56 58" fill="none" stroke="#78716c" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="4" fill="#fda4af" opacity="0.6"/><circle cx="68" cy="50" r="4" fill="#fda4af" opacity="0.6"/></svg>` },
             { id: 'ice', name: 'Ледяная', desc: 'Морозная ехидна ❄️', wins: 3, 
-              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-ice.png' },
+              svg: `<svg viewBox="0 0 100 100"><defs><radialGradient id="bg2"><stop offset="0%" stop-color="#e0f2fe"/><stop offset="100%" stop-color="#bae6fd"/></radialGradient></defs><circle cx="50" cy="50" r="45" fill="url(#bg2)"/><g fill="#7dd3fc"><polygon points="50,5 54,15 46,15"/><polygon points="38,8 42,18 34,16"/><polygon points="62,8 66,16 58,18"/><polygon points="28,12 32,22 24,20"/><polygon points="72,12 76,20 68,22"/><polygon points="20,20 26,28 18,28"/><polygon points="80,20 82,28 74,28"/><polygon points="15,32 20,38 14,40"/><polygon points="85,32 86,40 80,38"/><polygon points="12,45 18,50 12,52"/><polygon points="88,45 88,52 82,50"/><polygon points="14,58 20,62 14,64"/><polygon points="86,58 86,64 80,62"/><polygon points="20,70 26,74 20,76"/><polygon points="80,70 80,76 74,74"/><polygon points="28,80 34,82 28,84"/><polygon points="72,80 72,84 66,82"/><polygon points="38,86 42,88 38,90"/><polygon points="62,86 62,90 58,88"/></g><circle cx="38" cy="44" r="8" fill="#fff"/><circle cx="62" cy="44" r="8" fill="#fff"/><circle cx="38" cy="44" r="4" fill="#0369a1"/><circle cx="62" cy="44" r="4" fill="#0369a1"/><circle cx="36" cy="42" r="1.5" fill="#fff"/><circle cx="60" cy="42" r="1.5" fill="#fff"/><ellipse cx="50" cy="54" rx="6" ry="4" fill="#64748b"/><path d="M44 58 Q50 64 56 58" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="4" fill="#7dd3fc" opacity="0.6"/><circle cx="68" cy="50" r="4" fill="#7dd3fc" opacity="0.6"/><path d="M30 15 L32 20 L28 20Z" fill="#fff" opacity="0.8"/><path d="M70 25 L72 30 L68 30Z" fill="#fff" opacity="0.8"/><path d="M25 75 L27 80 L23 80Z" fill="#fff" opacity="0.8"/></svg>` },
             { id: 'fire', name: 'Огненная', desc: 'Пламенная ехидна 🔥', wins: 8, 
-              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-fire.png' },
+              svg: `<svg viewBox="0 0 100 100"><defs><radialGradient id="bg3"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fde68a"/></radialGradient></defs><circle cx="50" cy="50" r="45" fill="url(#bg3)"/><g fill="#fb923c"><polygon points="50,5 54,15 46,15"/><polygon points="38,8 42,18 34,16"/><polygon points="62,8 66,16 58,18"/><polygon points="28,12 32,22 24,20"/><polygon points="72,12 76,20 68,22"/><polygon points="20,20 26,28 18,28"/><polygon points="80,20 82,28 74,28"/><polygon points="15,32 20,38 14,40"/><polygon points="85,32 86,40 80,38"/><polygon points="12,45 18,50 12,52"/><polygon points="88,45 88,52 82,50"/><polygon points="14,58 20,62 14,64"/><polygon points="86,58 86,64 80,62"/><polygon points="20,70 26,74 20,76"/><polygon points="80,70 80,76 74,74"/><polygon points="28,80 34,82 28,84"/><polygon points="72,80 72,84 66,82"/><polygon points="38,86 42,88 38,90"/><polygon points="62,86 62,90 58,88"/></g><circle cx="38" cy="44" r="8" fill="#fff"/><circle cx="62" cy="44" r="8" fill="#fff"/><circle cx="38" cy="44" r="4" fill="#dc2626"/><circle cx="62" cy="44" r="4" fill="#dc2626"/><circle cx="36" cy="42" r="1.5" fill="#fff"/><circle cx="60" cy="42" r="1.5" fill="#fff"/><ellipse cx="50" cy="54" rx="6" ry="4" fill="#78716c"/><path d="M44 58 Q50 64 56 58" fill="none" stroke="#78716c" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="4" fill="#fdba74" opacity="0.6"/><circle cx="68" cy="50" r="4" fill="#fdba74" opacity="0.6"/><path d="M45 15 Q50 5 55 15" fill="none" stroke="#ef4444" stroke-width="2"/><path d="M47 18 Q50 10 53 18" fill="#ef4444" opacity="0.5"/></svg>` },
             { id: 'shadow', name: 'Теневая', desc: 'Тёмная ехидна 🌑', wins: 15, 
-              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-shadow.png' },
+              svg: `<svg viewBox="0 0 100 100"><defs><radialGradient id="bg4"><stop offset="0%" stop-color="#1e1b4b"/><stop offset="100%" stop-color="#312e81"/></radialGradient></defs><circle cx="50" cy="50" r="45" fill="url(#bg4)"/><g fill="#6366f1"><polygon points="50,5 54,15 46,15"/><polygon points="38,8 42,18 34,16"/><polygon points="62,8 66,16 58,18"/><polygon points="28,12 32,22 24,20"/><polygon points="72,12 76,20 68,22"/><polygon points="20,20 26,28 18,28"/><polygon points="80,20 82,28 74,28"/><polygon points="15,32 20,38 14,40"/><polygon points="85,32 86,40 80,38"/><polygon points="12,45 18,50 12,52"/><polygon points="88,45 88,52 82,50"/><polygon points="14,58 20,62 14,64"/><polygon points="86,58 86,64 80,62"/><polygon points="20,70 26,74 20,76"/><polygon points="80,70 80,76 74,74"/><polygon points="28,80 34,82 28,84"/><polygon points="72,80 72,84 66,82"/><polygon points="38,86 42,88 38,90"/><polygon points="62,86 62,90 58,88"/></g><circle cx="38" cy="44" r="8" fill="#1e293b"/><circle cx="62" cy="44" r="8" fill="#1e293b"/><circle cx="38" cy="44" r="4" fill="#a78bfa"/><circle cx="62" cy="44" r="4" fill="#a78bfa"/><circle cx="36" cy="42" r="1.5" fill="#c4b5fd"/><circle cx="60" cy="42" r="1.5" fill="#c4b5fd"/><ellipse cx="50" cy="54" rx="6" ry="4" fill="#475569"/><path d="M44 58 Q50 64 56 58" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="4" fill="#6366f1" opacity="0.4"/><circle cx="68" cy="50" r="4" fill="#6366f1" opacity="0.4"/></svg>` },
             { id: 'golden', name: 'Золотая', desc: 'Легендарная ехидна 👑', wins: 30, 
-              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-golden.png' }
+              svg: `<svg viewBox="0 0 100 100"><defs><radialGradient id="bg5"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fbbf24"/></radialGradient><linearGradient id="gold"><stop offset="0%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#d97706"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(#bg5)"/><g fill="url(#gold)"><polygon points="50,2 55,15 45,15"/><polygon points="38,5 43,18 33,16"/><polygon points="62,5 67,18 57,16"/><polygon points="28,10 33,24 23,22"/><polygon points="72,10 77,24 67,22"/><polygon points="18,18 26,28 16,28"/><polygon points="82,18 84,28 74,28"/><polygon points="12,30 20,38 10,40"/><polygon points="88,30 90,40 80,38"/><polygon points="10,44 18,50 10,52"/><polygon points="90,44 90,52 82,50"/><polygon points="12,56 20,62 12,64"/><polygon points="88,56 88,64 80,62"/><polygon points="18,70 26,76 18,78"/><polygon points="82,70 82,78 74,76"/><polygon points="28,80 35,84 28,86"/><polygon points="72,80 72,86 65,84"/><polygon points="38,88 43,92 38,94"/><polygon points="62,88 62,92 57,90"/></g><polygon points="35,12 38,6 42,12" fill="#fbbf24"/><polygon points="58,12 62,6 65,12" fill="#fbbf24"/><circle cx="38" cy="44" r="8" fill="#1e293b"/><circle cx="62" cy="44" r="8" fill="#1e293b"/><circle cx="38" cy="44" r="4" fill="#fbbf24"/><circle cx="62" cy="44" r="4" fill="#fbbf24"/><circle cx="36" cy="42" r="1.5" fill="#fef3c7"/><circle cx="60" cy="42" r="1.5" fill="#fef3c7"/><ellipse cx="50" cy="54" rx="6" ry="4" fill="#92400e"/><path d="M44 58 Q50 64 56 58" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="50" r="4" fill="#fbbf24" opacity="0.5"/><circle cx="68" cy="50" r="4" fill="#fbbf24" opacity="0.5"/><polygon points="42,28 44,24 46,28" fill="#fbbf24"/><polygon points="54,28 56,24 58,28" fill="#fbbf24"/></svg>` }
         ];
 
         async function db(table, method, payload = null, filters = '', returnSingle = false) {
@@ -278,7 +278,7 @@
                 currentSkin = SKINS[skinIdx].id;
                 document.getElementById('statLevel').textContent = skinIdx + 1;
                 document.getElementById('statSkinBadge').textContent = SKINS[skinIdx].name;
-                document.getElementById('mainLogoImg').src = SKINS[skinIdx].img;
+                document.getElementById('mainLogo').innerHTML = SKINS[skinIdx].svg;
             } catch (e) { console.warn('Stats error:', e); }
         }
 
@@ -303,7 +303,7 @@
 
         function renderRoomHTML(room, isMy) {
             const skinIdx = Math.min(SKINS.length - 1, (room.creator_wins || 0) >= 30 ? 4 : (room.creator_wins || 0) >= 15 ? 3 : (room.creator_wins || 0) >= 8 ? 2 : (room.creator_wins || 0) >= 3 ? 1 : 0);
-            return `<div class="room-icon"><img src="${SKINS[skinIdx].img}" alt="skin"></div><div class="room-info"><div class="room-stake">💰 ${room.stake} TON ${isMy ? '<span class="room-badge">ЖДЁТ</span>' : ''}</div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><button class="room-btn ${isMy ? 'cancel' : 'join'}" onclick="${isMy ? `cancelRoom('${room.id}')` : `joinRoom('${room.id}')`}">${isMy ? '✕' : 'Войти'}</button>`;
+            return `<div class="room-icon">${SKINS[skinIdx].svg}</div><div class="room-info"><div class="room-stake">💰 ${room.stake} TON ${isMy ? '<span class="room-badge">ЖДЁТ</span>' : ''}</div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><button class="room-btn ${isMy ? 'cancel' : 'join'}" onclick="${isMy ? `cancelRoom('${room.id}')` : `joinRoom('${room.id}')`}">${isMy ? '✕' : 'Войти'}</button>`;
         }
 
         function renderMyRooms(rooms) { const c = document.getElementById('myRoomsList'); c.innerHTML = ''; if (!rooms.length) { c.innerHTML = '<div class="empty-list">Нет ожидающих комнат</div>'; return; } rooms.forEach(r => { const el = document.createElement('div'); el.className = 'room-card my-room'; el.innerHTML = renderRoomHTML(r, true); c.appendChild(el); }); }
@@ -328,9 +328,9 @@
             document.getElementById('gameStatus').innerHTML = statusText;
             document.getElementById('moveResult').innerHTML = '';
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
-            const skinImg = SKINS.find(s => s.id === currentSkin)?.img || SKINS[0].img;
-            document.getElementById('playerAvatarImg').src = skinImg;
-            document.getElementById('opponentAvatarImg').src = SKINS[0].img;
+            const skinSvg = SKINS.find(s => s.id === currentSkin)?.svg || SKINS[0].svg;
+            document.getElementById('playerAvatar').innerHTML = skinSvg;
+            document.getElementById('opponentAvatar').innerHTML = SKINS[0].svg;
         }
 
         function startPolling() {
@@ -383,7 +383,7 @@
                 const isActive = currentSkin === skin.id;
                 const el = document.createElement('div');
                 el.className = `skin-card ${unlocked ? 'unlocked' : 'locked'} ${isActive ? 'active' : ''}`;
-                el.innerHTML = `<div class="skin-preview"><img src="${skin.img}" alt="${skin.name}"></div><div class="skin-info"><div class="skin-name">${skin.name}</div><div class="skin-desc">${skin.desc}</div>${!unlocked ? `<div class="skin-req">🔒 Нужно ${skin.wins} побед</div>` : `<div class="skin-req" style="color:var(--success)">✅ Разблокировано</div>`}</div><button class="skin-btn ${isActive ? 'equipped' : unlocked ? 'equip' : 'locked'}" ${!unlocked ? 'disabled' : ''} onclick="${unlocked ? `equipSkin('${skin.id}')` : ''}">${isActive ? '✓' : unlocked ? 'Надеть' : '🔒'}</button>`;
+                el.innerHTML = `<div class="skin-preview">${skin.svg}</div><div class="skin-info"><div class="skin-name">${skin.name}</div><div class="skin-desc">${skin.desc}</div>${!unlocked ? `<div class="skin-req">🔒 Нужно ${skin.wins} побед</div>` : `<div class="skin-req" style="color:var(--success)">✅ Разблокировано</div>`}</div><button class="skin-btn ${isActive ? 'equipped' : unlocked ? 'equip' : 'locked'}" ${!unlocked ? 'disabled' : ''} onclick="${unlocked ? `equipSkin('${skin.id}')` : ''}">${isActive ? '✓' : unlocked ? 'Надеть' : '🔒'}</button>`;
                 c.appendChild(el);
             });
         }
@@ -391,7 +391,7 @@
         function equipSkin(skinId) {
             currentSkin = skinId;
             const skin = SKINS.find(s => s.id === skinId);
-            document.getElementById('mainLogoImg').src = skin.img;
+            document.getElementById('mainLogo').innerHTML = skin.svg;
             document.getElementById('statSkinBadge').textContent = skin.name;
             renderSkins();
         }
@@ -411,7 +411,7 @@
                 const skinIdx = wins >= 30 ? 4 : wins >= 15 ? 3 : wins >= 8 ? 2 : wins >= 3 ? 1 : 0;
                 const el = document.createElement('div');
                 el.className = `lb-row top-${rank <= 3 ? rank : ''}`;
-                el.innerHTML = `<div class="lb-rank">${medals[i] || rank}</div><div class="lb-avatar"><img src="${SKINS[skinIdx].img}" alt="skin"></div><div class="lb-info"><div class="lb-name">@${u.username || 'Аноним'}</div><div class="lb-sub">${SKINS[skinIdx].name}</div></div><div class="lb-wins">${wins}</div>`;
+                el.innerHTML = `<div class="lb-rank">${medals[i] || rank}</div><div class="lb-avatar">${SKINS[skinIdx].svg}</div><div class="lb-info"><div class="lb-name">@${u.username || 'Аноним'}</div><div class="lb-sub">${SKINS[skinIdx].name}</div></div><div class="lb-wins">${wins}</div>`;
                 c.appendChild(el);
             });
         }
