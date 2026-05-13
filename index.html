@@ -121,12 +121,17 @@
         
         // GitHub Pages URLs
         const SKINS = [
-            { id: 'default', name: 'Обычная', wins: 0, img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-default.png' },
-            { id: 'ice', name: 'Ледяная', wins: 3, img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-ice.png' },
-            { id: 'fire', name: 'Огненная', wins: 8, img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-fire.png' },
-            { id: 'shadow', name: 'Теневая', wins: 15, img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-shadow.png' },
-            { id: 'golden', name: 'Золотая', wins: 30, img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-golden.png' }
-        ];
+    { id: 'default', name: 'Обычная', wins: 0, 
+      img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-default.png' },
+    { id: 'ice', name: 'Ледяная', wins: 3, 
+      img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-ice.png' },
+    { id: 'fire', name: 'Огненная', wins: 8, 
+      img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-fire.png' },
+    { id: 'shadow', name: 'Теневая', wins: 15, 
+      img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-shadow.png' },
+    { id: 'golden', name: 'Золотая', wins: 30, 
+      img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-golden.png' }
+];
 
         async function db(table, method, payload = null, filters = '', single = false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
