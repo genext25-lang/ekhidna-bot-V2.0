@@ -12,8 +12,8 @@
         @keyframes bgShift { 0% { transform: translate(0, 0); } 100% { transform: translate(5%, 3%); } }
         .container { max-width: 420px; margin: 0 auto; padding: 15px; }
         .header { text-align: center; padding: 10px 0 20px; }
-        .header-logo { width: 120px; height: 120px; margin: 0 auto 12px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 30px rgba(99, 102, 241, 0.5); animation: logoFloat 3s ease-in-out infinite; }
-        .header-logo img { width: 100%; height: 100%; object-fit: cover; }
+        .header-logo { width: 120px; height: 120px; margin: 0 auto 12px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 30px rgba(99, 102, 241, 0.5); animation: logoFloat 3s ease-in-out infinite; display: flex; align-items: center; justify-content: center; background: var(--card); }
+        .header-logo img { width: 100%; height: 100%; object-fit: contain; }
         @keyframes logoFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.05); } }
         .header h1 { font-size: 22px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); margin-top: 4px; }
@@ -33,8 +33,8 @@
         .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); transition: all 0.2s; }
         .room-card:active { transform: scale(0.98); background: var(--card-hover); }
         .room-card.my-room { border-left: 3px solid var(--success); }
-        .room-icon { width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
-        .room-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .room-icon { width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        .room-icon img { width: 100%; height: 100%; object-fit: contain; }
         .room-info { flex: 1; min-width: 0; }
         .room-stake { font-weight: 700; color: var(--gold); font-size: 15px; }
         .room-creator { font-size: 12px; color: var(--sec); }
@@ -45,8 +45,8 @@
         .room-btn.cancel { background: var(--error); color: #fff; }
         .game-header { text-align: center; padding: 10px 0; }
         .game-players { display: flex; justify-content: space-around; align-items: center; margin: 15px 0; }
-        .player-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); box-shadow: 0 0 15px rgba(99,102,241,0.3); }
-        .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .player-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); box-shadow: 0 0 15px rgba(99,102,241,0.3); background: var(--card); display: flex; align-items: center; justify-content: center; }
+        .player-avatar img { width: 90%; height: 90%; object-fit: contain; }
         .vs-badge { font-size: 20px; font-weight: 700; color: var(--error); text-shadow: 0 0 10px rgba(239,68,68,0.5); }
         .choices { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
         .choice-btn { width: 90px; height: 90px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -63,8 +63,8 @@
         .lb-row.top-2 { border-color: #c0c0c044; background: linear-gradient(135deg, #c0c0c011, transparent); }
         .lb-row.top-3 { border-color: #cd7f3244; background: linear-gradient(135deg, #cd7f3211, transparent); }
         .lb-rank { font-size: 16px; font-weight: 700; width: 32px; text-align: center; }
-        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin: 0 10px; border: 2px solid var(--border); }
-        .lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .lb-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin: 0 10px; border: 2px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        .lb-avatar img { width: 90%; height: 90%; object-fit: contain; }
         .lb-info { flex: 1; }
         .lb-name { font-weight: 600; font-size: 14px; }
         .lb-sub { font-size: 10px; color: var(--sec); }
@@ -73,8 +73,8 @@
         .skin-card.unlocked { border-color: var(--success); }
         .skin-card.active { border-color: var(--gold); box-shadow: 0 0 20px rgba(251,191,36,0.2); }
         .skin-card.locked { opacity: 0.6; }
-        .skin-preview { width: 60px; height: 60px; border-radius: 14px; overflow: hidden; flex-shrink: 0; border: 2px solid var(--border); }
-        .skin-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .skin-preview { width: 60px; height: 60px; border-radius: 14px; overflow: hidden; flex-shrink: 0; border: 2px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        .skin-preview img { width: 90%; height: 90%; object-fit: contain; }
         .skin-info { flex: 1; }
         .skin-name { font-weight: 600; font-size: 15px; }
         .skin-desc { font-size: 11px; color: var(--sec); margin-top: 2px; }
@@ -108,7 +108,7 @@
     <div id="lobbyScreen" class="screen">
         <div class="container">
             <div class="header">
-                <div class="header-logo" id="mainLogo"><img src="" alt="logo" id="mainLogoImg"></div>
+                <div class="header-logo"><img src="" alt="logo" id="mainLogoImg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div>
                 <h1>Ехидна Naklz</h1>
                 <div class="header-sub">Кулак • Шип • Кристалл</div>
             </div>
@@ -132,9 +132,9 @@
         <div class="container">
             <div class="game-header"><h2>⚔️ Битва!</h2></div>
             <div class="game-players">
-                <div class="player-avatar" id="playerAvatar"><img src="" alt="player"></div>
+                <div class="player-avatar"><img src="" alt="player" id="playerAvatarImg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div>
                 <div class="vs-badge">VS</div>
-                <div class="player-avatar" id="opponentAvatar"><img src="" alt="opponent"></div>
+                <div class="player-avatar"><img src="" alt="opponent" id="opponentAvatarImg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>?</text></svg>'"></div>
             </div>
             <div class="status-box" id="gameStatus"><div class="spinner"></div></div>
             <div id="moveResult" style="text-align:center; margin: 10px 0;"></div>
@@ -201,18 +201,20 @@
         // ==========================================
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
-        
-        // === URL КАРТИНОК С GITHUB ===
-        const BASE_IMG_URL = 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/';
         // ==========================================
 
-        // === Скины с внешними картинками ===
+        // === Скины с ПРЯМЫМИ ссылками на картинки (raw.githubusercontent.com) ===
         const SKINS = [
-            { id: 'default', name: 'Обычная', desc: 'Стандартная ехидна 🌸', wins: 0, img: BASE_IMG_URL + 'skin-default.png' },
-            { id: 'ice', name: 'Ледяная', desc: 'Морозная ехидна ❄️', wins: 3, img: BASE_IMG_URL + 'skin-ice.png' },
-            { id: 'fire', name: 'Огненная', desc: 'Пламенная ехидна 🔥', wins: 8, img: BASE_IMG_URL + 'skin-fire.png' },
-            { id: 'shadow', name: 'Теневая', desc: 'Тёмная ехидна 🌑', wins: 15, img: BASE_IMG_URL + 'skin-shadow.png' },
-            { id: 'golden', name: 'Золотая', desc: 'Легендарная ехидна 👑', wins: 30, img: BASE_IMG_URL + 'skin-golden.png' }
+            { id: 'default', name: 'Обычная', desc: 'Стандартная ехидна 🌸', wins: 0, 
+              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-default.png' },
+            { id: 'ice', name: 'Ледяная', desc: 'Морозная ехидна ❄️', wins: 3, 
+              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-ice.png' },
+            { id: 'fire', name: 'Огненная', desc: 'Пламенная ехидна 🔥', wins: 8, 
+              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-fire.png' },
+            { id: 'shadow', name: 'Теневая', desc: 'Тёмная ехидна 🌑', wins: 15, 
+              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-shadow.png' },
+            { id: 'golden', name: 'Золотая', desc: 'Легендарная ехидна 👑', wins: 30, 
+              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-golden.png' }
         ];
 
         async function db(table, method, payload = null, filters = '', returnSingle = false) {
@@ -276,7 +278,10 @@
                 currentSkin = SKINS[skinIdx].id;
                 document.getElementById('statLevel').textContent = skinIdx + 1;
                 document.getElementById('statSkinBadge').textContent = SKINS[skinIdx].name;
-                document.getElementById('mainLogoImg').src = SKINS[skinIdx].img;
+                // Обновляем лого с проверкой загрузки
+                const logoImg = document.getElementById('mainLogoImg');
+                logoImg.src = SKINS[skinIdx].img;
+                logoImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'; };
             } catch (e) { console.warn('Stats error:', e); }
         }
 
@@ -301,7 +306,7 @@
 
         function renderRoomHTML(room, isMy) {
             const skinIdx = Math.min(SKINS.length - 1, (room.creator_wins || 0) >= 30 ? 4 : (room.creator_wins || 0) >= 15 ? 3 : (room.creator_wins || 0) >= 8 ? 2 : (room.creator_wins || 0) >= 3 ? 1 : 0);
-            return `<div class="room-icon"><img src="${SKINS[skinIdx].img}" alt="skin"></div><div class="room-info"><div class="room-stake">💰 ${room.stake} TON ${isMy ? '<span class="room-badge">ЖДЁТ</span>' : ''}</div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><button class="room-btn ${isMy ? 'cancel' : 'join'}" onclick="${isMy ? `cancelRoom('${room.id}')` : `joinRoom('${room.id}')`}">${isMy ? '✕' : 'Войти'}</button>`;
+            return `<div class="room-icon"><img src="${SKINS[skinIdx].img}" alt="skin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div><div class="room-info"><div class="room-stake">💰 ${room.stake} TON ${isMy ? '<span class="room-badge">ЖДЁТ</span>' : ''}</div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><button class="room-btn ${isMy ? 'cancel' : 'join'}" onclick="${isMy ? `cancelRoom('${room.id}')` : `joinRoom('${room.id}')`}">${isMy ? '✕' : 'Войти'}</button>`;
         }
 
         function renderMyRooms(rooms) { const c = document.getElementById('myRoomsList'); c.innerHTML = ''; if (!rooms.length) { c.innerHTML = '<div class="empty-list">Нет ожидающих комнат</div>'; return; } rooms.forEach(r => { const el = document.createElement('div'); el.className = 'room-card my-room'; el.innerHTML = renderRoomHTML(r, true); c.appendChild(el); }); }
@@ -327,8 +332,12 @@
             document.getElementById('moveResult').innerHTML = '';
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
             const skinImg = SKINS.find(s => s.id === currentSkin)?.img || SKINS[0].img;
-            document.getElementById('playerAvatar').querySelector('img').src = skinImg;
-            document.getElementById('opponentAvatar').querySelector('img').src = SKINS[0].img;
+            const playerImg = document.getElementById('playerAvatarImg');
+            playerImg.src = skinImg;
+            playerImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'; };
+            const opponentImg = document.getElementById('opponentAvatarImg');
+            opponentImg.src = SKINS[0].img;
+            opponentImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>?</text></svg>'; };
         }
 
         function startPolling() {
@@ -381,7 +390,7 @@
                 const isActive = currentSkin === skin.id;
                 const el = document.createElement('div');
                 el.className = `skin-card ${unlocked ? 'unlocked' : 'locked'} ${isActive ? 'active' : ''}`;
-                el.innerHTML = `<div class="skin-preview"><img src="${skin.img}" alt="${skin.name}"></div><div class="skin-info"><div class="skin-name">${skin.name}</div><div class="skin-desc">${skin.desc}</div>${!unlocked ? `<div class="skin-req">🔒 Нужно ${skin.wins} побед</div>` : `<div class="skin-req" style="color:var(--success)">✅ Разблокировано</div>`}</div><button class="skin-btn ${isActive ? 'equipped' : unlocked ? 'equip' : 'locked'}" ${!unlocked ? 'disabled' : ''} onclick="${unlocked ? `equipSkin('${skin.id}')` : ''}">${isActive ? '✓' : unlocked ? 'Надеть' : '🔒'}</button>`;
+                el.innerHTML = `<div class="skin-preview"><img src="${skin.img}" alt="${skin.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div><div class="skin-info"><div class="skin-name">${skin.name}</div><div class="skin-desc">${skin.desc}</div>${!unlocked ? `<div class="skin-req">🔒 Нужно ${skin.wins} побед</div>` : `<div class="skin-req" style="color:var(--success)">✅ Разблокировано</div>`}</div><button class="skin-btn ${isActive ? 'equipped' : unlocked ? 'equip' : 'locked'}" ${!unlocked ? 'disabled' : ''} onclick="${unlocked ? `equipSkin('${skin.id}')` : ''}">${isActive ? '✓' : unlocked ? 'Надеть' : '🔒'}</button>`;
                 c.appendChild(el);
             });
         }
@@ -389,7 +398,9 @@
         function equipSkin(skinId) {
             currentSkin = skinId;
             const skin = SKINS.find(s => s.id === skinId);
-            document.getElementById('mainLogoImg').src = skin.img;
+            const logoImg = document.getElementById('mainLogoImg');
+            logoImg.src = skin.img;
+            logoImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'; };
             document.getElementById('statSkinBadge').textContent = skin.name;
             renderSkins();
         }
@@ -409,7 +420,7 @@
                 const skinIdx = wins >= 30 ? 4 : wins >= 15 ? 3 : wins >= 8 ? 2 : wins >= 3 ? 1 : 0;
                 const el = document.createElement('div');
                 el.className = `lb-row top-${rank <= 3 ? rank : ''}`;
-                el.innerHTML = `<div class="lb-rank">${medals[i] || rank}</div><div class="lb-avatar"><img src="${SKINS[skinIdx].img}" alt="skin"></div><div class="lb-info"><div class="lb-name">@${u.username || 'Аноним'}</div><div class="lb-sub">${SKINS[skinIdx].name}</div></div><div class="lb-wins">${wins}</div>`;
+                el.innerHTML = `<div class="lb-rank">${medals[i] || rank}</div><div class="lb-avatar"><img src="${SKINS[skinIdx].img}" alt="skin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div><div class="lb-info"><div class="lb-name">@${u.username || 'Аноним'}</div><div class="lb-sub">${SKINS[skinIdx].name}</div></div><div class="lb-wins">${wins}</div>`;
                 c.appendChild(el);
             });
         }
