@@ -108,7 +108,7 @@
     <div id="lobbyScreen" class="screen">
         <div class="container">
             <div class="header">
-                <div class="header-logo"><img src="" alt="logo" id="mainLogoImg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div>
+                <div class="header-logo"><img src="" alt="logo" id="mainLogoImg"></div>
                 <h1>Ехидна Naklz</h1>
                 <div class="header-sub">Кулак • Шип • Кристалл</div>
             </div>
@@ -132,9 +132,9 @@
         <div class="container">
             <div class="game-header"><h2>⚔️ Битва!</h2></div>
             <div class="game-players">
-                <div class="player-avatar"><img src="" alt="player" id="playerAvatarImg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div>
+                <div class="player-avatar"><img src="" alt="player" id="playerAvatarImg"></div>
                 <div class="vs-badge">VS</div>
-                <div class="player-avatar"><img src="" alt="opponent" id="opponentAvatarImg" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>?</text></svg>'"></div>
+                <div class="player-avatar"><img src="" alt="opponent" id="opponentAvatarImg"></div>
             </div>
             <div class="status-box" id="gameStatus"><div class="spinner"></div></div>
             <div id="moveResult" style="text-align:center; margin: 10px 0;"></div>
@@ -203,18 +203,18 @@
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         // ==========================================
 
-        // === Скины с ПРЯМЫМИ ссылками на картинки (raw.githubusercontent.com) ===
+        // === Скины с GitHub Pages URL ===
         const SKINS = [
             { id: 'default', name: 'Обычная', desc: 'Стандартная ехидна 🌸', wins: 0, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-default.png' },
+              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-default.png' },
             { id: 'ice', name: 'Ледяная', desc: 'Морозная ехидна ❄️', wins: 3, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-ice.png' },
+              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-ice.png' },
             { id: 'fire', name: 'Огненная', desc: 'Пламенная ехидна 🔥', wins: 8, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-fire.png' },
+              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-fire.png' },
             { id: 'shadow', name: 'Теневая', desc: 'Тёмная ехидна 🌑', wins: 15, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-shadow.png' },
+              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-shadow.png' },
             { id: 'golden', name: 'Золотая', desc: 'Легендарная ехидна 👑', wins: 30, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhida-bot-V2.0/main/skin-golden.png' }
+              img: 'https://genext25-lang.github.io/ekhida-bot-V2.0/skin-golden.png' }
         ];
 
         async function db(table, method, payload = null, filters = '', returnSingle = false) {
@@ -278,10 +278,7 @@
                 currentSkin = SKINS[skinIdx].id;
                 document.getElementById('statLevel').textContent = skinIdx + 1;
                 document.getElementById('statSkinBadge').textContent = SKINS[skinIdx].name;
-                // Обновляем лого с проверкой загрузки
-                const logoImg = document.getElementById('mainLogoImg');
-                logoImg.src = SKINS[skinIdx].img;
-                logoImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'; };
+                document.getElementById('mainLogoImg').src = SKINS[skinIdx].img;
             } catch (e) { console.warn('Stats error:', e); }
         }
 
@@ -306,7 +303,7 @@
 
         function renderRoomHTML(room, isMy) {
             const skinIdx = Math.min(SKINS.length - 1, (room.creator_wins || 0) >= 30 ? 4 : (room.creator_wins || 0) >= 15 ? 3 : (room.creator_wins || 0) >= 8 ? 2 : (room.creator_wins || 0) >= 3 ? 1 : 0);
-            return `<div class="room-icon"><img src="${SKINS[skinIdx].img}" alt="skin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div><div class="room-info"><div class="room-stake">💰 ${room.stake} TON ${isMy ? '<span class="room-badge">ЖДЁТ</span>' : ''}</div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><button class="room-btn ${isMy ? 'cancel' : 'join'}" onclick="${isMy ? `cancelRoom('${room.id}')` : `joinRoom('${room.id}')`}">${isMy ? '✕' : 'Войти'}</button>`;
+            return `<div class="room-icon"><img src="${SKINS[skinIdx].img}" alt="skin"></div><div class="room-info"><div class="room-stake">💰 ${room.stake} TON ${isMy ? '<span class="room-badge">ЖДЁТ</span>' : ''}</div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><button class="room-btn ${isMy ? 'cancel' : 'join'}" onclick="${isMy ? `cancelRoom('${room.id}')` : `joinRoom('${room.id}')`}">${isMy ? '✕' : 'Войти'}</button>`;
         }
 
         function renderMyRooms(rooms) { const c = document.getElementById('myRoomsList'); c.innerHTML = ''; if (!rooms.length) { c.innerHTML = '<div class="empty-list">Нет ожидающих комнат</div>'; return; } rooms.forEach(r => { const el = document.createElement('div'); el.className = 'room-card my-room'; el.innerHTML = renderRoomHTML(r, true); c.appendChild(el); }); }
@@ -332,12 +329,8 @@
             document.getElementById('moveResult').innerHTML = '';
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
             const skinImg = SKINS.find(s => s.id === currentSkin)?.img || SKINS[0].img;
-            const playerImg = document.getElementById('playerAvatarImg');
-            playerImg.src = skinImg;
-            playerImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'; };
-            const opponentImg = document.getElementById('opponentAvatarImg');
-            opponentImg.src = SKINS[0].img;
-            opponentImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>?</text></svg>'; };
+            document.getElementById('playerAvatarImg').src = skinImg;
+            document.getElementById('opponentAvatarImg').src = SKINS[0].img;
         }
 
         function startPolling() {
@@ -390,7 +383,7 @@
                 const isActive = currentSkin === skin.id;
                 const el = document.createElement('div');
                 el.className = `skin-card ${unlocked ? 'unlocked' : 'locked'} ${isActive ? 'active' : ''}`;
-                el.innerHTML = `<div class="skin-preview"><img src="${skin.img}" alt="${skin.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div><div class="skin-info"><div class="skin-name">${skin.name}</div><div class="skin-desc">${skin.desc}</div>${!unlocked ? `<div class="skin-req">🔒 Нужно ${skin.wins} побед</div>` : `<div class="skin-req" style="color:var(--success)">✅ Разблокировано</div>`}</div><button class="skin-btn ${isActive ? 'equipped' : unlocked ? 'equip' : 'locked'}" ${!unlocked ? 'disabled' : ''} onclick="${unlocked ? `equipSkin('${skin.id}')` : ''}">${isActive ? '✓' : unlocked ? 'Надеть' : '🔒'}</button>`;
+                el.innerHTML = `<div class="skin-preview"><img src="${skin.img}" alt="${skin.name}"></div><div class="skin-info"><div class="skin-name">${skin.name}</div><div class="skin-desc">${skin.desc}</div>${!unlocked ? `<div class="skin-req">🔒 Нужно ${skin.wins} побед</div>` : `<div class="skin-req" style="color:var(--success)">✅ Разблокировано</div>`}</div><button class="skin-btn ${isActive ? 'equipped' : unlocked ? 'equip' : 'locked'}" ${!unlocked ? 'disabled' : ''} onclick="${unlocked ? `equipSkin('${skin.id}')` : ''}">${isActive ? '✓' : unlocked ? 'Надеть' : '🔒'}</button>`;
                 c.appendChild(el);
             });
         }
@@ -398,9 +391,7 @@
         function equipSkin(skinId) {
             currentSkin = skinId;
             const skin = SKINS.find(s => s.id === skinId);
-            const logoImg = document.getElementById('mainLogoImg');
-            logoImg.src = skin.img;
-            logoImg.onerror = function() { this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'; };
+            document.getElementById('mainLogoImg').src = skin.img;
             document.getElementById('statSkinBadge').textContent = skin.name;
             renderSkins();
         }
@@ -420,7 +411,7 @@
                 const skinIdx = wins >= 30 ? 4 : wins >= 15 ? 3 : wins >= 8 ? 2 : wins >= 3 ? 1 : 0;
                 const el = document.createElement('div');
                 el.className = `lb-row top-${rank <= 3 ? rank : ''}`;
-                el.innerHTML = `<div class="lb-rank">${medals[i] || rank}</div><div class="lb-avatar"><img src="${SKINS[skinIdx].img}" alt="skin" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231a1a2e%22/><text x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2240%22>🦔</text></svg>'"></div><div class="lb-info"><div class="lb-name">@${u.username || 'Аноним'}</div><div class="lb-sub">${SKINS[skinIdx].name}</div></div><div class="lb-wins">${wins}</div>`;
+                el.innerHTML = `<div class="lb-rank">${medals[i] || rank}</div><div class="lb-avatar"><img src="${SKINS[skinIdx].img}" alt="skin"></div><div class="lb-info"><div class="lb-name">@${u.username || 'Аноним'}</div><div class="lb-sub">${SKINS[skinIdx].name}</div></div><div class="lb-wins">${wins}</div>`;
                 c.appendChild(el);
             });
         }
