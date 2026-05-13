@@ -41,9 +41,9 @@
         .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .vs-badge { font-size: 20px; font-weight: 700; color: var(--error); }
         .choices { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
-        .choice-btn { width: 90px; height: 90px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .choice-btn svg { width: 40px; height: 40px; margin-bottom: 4px; }
-        .choice-btn span { font-size: 10px; color: var(--sec); }
+        .choice-btn { width: 100px; height: 100px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; }
+        .choice-btn img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 4px; }
+        .choice-btn span { font-size: 11px; color: var(--sec); font-weight: 600; }
         .choice-btn:disabled { opacity: 0.4; }
         .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; }
         .hidden { display: none !important; }
@@ -86,10 +86,19 @@
                 <div class="player-avatar"><img src="" id="opponentAvatarImg" alt="opponent"></div>
             </div>
             <div class="status-box" id="gameStatus"><div class="spinner"></div></div>
-            <div class="choices">
-                <button class="choice-btn" onclick="makeMove('fist')"><svg viewBox="0 0 64 64" fill="none"><rect x="12" y="8" width="40" height="48" rx="8" fill="#ef4444"/></svg><span>Кулак</span></button>
-                <button class="choice-btn" onclick="makeMove('spike')"><svg viewBox="0 0 64 64" fill="none"><path d="M32 4C20 4 16 20 16 32c0 8 4 16 8 24h16c4-8 8-16 8-24C48 20 44 4 32 4z" fill="#22c55e"/></svg><span>Шип</span></button>
-                <button class="choice-btn" onclick="makeMove('crystal')"><svg viewBox="0 0 64 64" fill="none"><polygon points="32,4 52,20 44,56 20,56 12,20" fill="#60a5fa"/></svg><span>Кристалл</span></button>
+            <div class="choices" id="choicesArea">
+                <button class="choice-btn" onclick="makeMove('fist')">
+                    <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-fist.png" alt="Кулак">
+                    <span>Кулак</span>
+                </button>
+                <button class="choice-btn" onclick="makeMove('spike')">
+                    <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-spike.png" alt="Шип">
+                    <span>Шип</span>
+                </button>
+                <button class="choice-btn" onclick="makeMove('crystal')">
+                    <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-crystal.png" alt="Кристалл">
+                    <span>Кристалл</span>
+                </button>
             </div>
             <button class="btn btn-sec" onclick="showScreen('lobby')">🏠 В лобби</button>
             <div class="nav-spacer"></div>
@@ -119,7 +128,6 @@
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
-        // ✅ ПРАВИЛЬНЫЕ URL с raw.githubusercontent.com
         const SKINS = [
             { id: 'default', name: 'Обычная', wins: 0, 
               img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
