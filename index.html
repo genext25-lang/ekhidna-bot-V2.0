@@ -44,7 +44,7 @@
         .spinner { border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .empty-list { text-align: center; color: var(--sec); padding: 30px 10px; }
-        .error-debug { background: #1a0a0a; border: 1px solid var(--error); color: #ff8888; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 11px; font-family: monospace; display: none; }
+        .error-debug { background: #1a0a0a; border: 1px solid var(--error); color: #ff8888; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 11px; font-family: monospace; display: none; white-space: pre-wrap; }
         .error-debug.show { display: block; }
     </style>
 </head>
@@ -91,7 +91,8 @@
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         // ==========================================
 
-        async function db(table, method, payload = null, filters = '') {
+        // === db() функция: раздельная обработка для списков и одиночных записей ===
+        async function db(table, method, payload = null, filters = '', returnSingle = false) {
             if (!SUPABASE_URL.startsWith('https://') || SUPABASE_KEY.length < 20 || SUPABASE_KEY.includes('ВСТАВЬ')) {
                 throw new Error('❌ SUPABASE_KEY не заполнен!');
             }
@@ -110,15 +111,24 @@
             const text = await response.text();
             
             if (!response.ok) {
-                // Показываем детальную ошибку в интерфейсе
                 const errorBox = document.getElementById('errorDebug');
                 errorBox.textContent = `Supabase Error ${response.status}:\n${text}`;
                 errorBox.classList.add('show');
                 throw new Error(`Supabase ${response.status}: ${text}`);
             }
-            if (!text) return null;
+            if (!text) return returnSingle ? null : [];
+            
             const data = JSON.parse(text);
-            return Array.isArray(data) && data.length === 1 ? data[0] : data;
+            
+            // Если ждём один объект — возвращаем первый элемент
+            if (returnSingle && Array.isArray(data) && data.length > 0) {
+                return data[0];
+            }
+            // Если ждём массив — гарантируем, что вернём массив
+            if (!returnSingle) {
+                return Array.isArray(data) ? data : [data];
+            }
+            return data;
         }
 
         function parseRealUser() {
@@ -149,7 +159,6 @@
 
         function showError(msg) { 
             alert('⚠️ ' + msg);
-            // Также показываем в красном блоке
             const errorBox = document.getElementById('errorDebug');
             errorBox.textContent = msg;
             errorBox.classList.add('show');
@@ -158,6 +167,7 @@
         async function createRoom() {
             try {
                 document.getElementById('errorDebug').classList.remove('show');
+                // POST возвращает один объект → returnSingle: true
                 const room = await db('rooms', 'POST', [{
                     creator_tg_id: user.id,
                     creator_username: user.username,
@@ -165,7 +175,7 @@
                     status: 'waiting',
                     creator_choice: null,
                     opponent_choice: null
-                }]);
+                }], '', true);
                 currentRoom = room;
                 showGame('✅ Комната создана! Ждём соперника...');
                 startPolling();
@@ -184,19 +194,18 @@
         async function loadRooms() {
             document.getElementById('errorDebug').classList.remove('show');
             
-            // Мои комнаты
+            // GET возвращает массив → returnSingle: false (по умолчанию)
             try {
                 const myRooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=eq.${user.id}&order=created_at.desc&limit=10`);
-                renderMyRooms(myRooms);
+                renderMyRooms(Array.isArray(myRooms) ? myRooms : []);
             } catch (e) { 
                 document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`;
                 console.error('My rooms error:', e);
             }
             
-            // Чужие комнаты
             try {
                 const rooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc&limit=20`);
-                renderPublicRooms(rooms);
+                renderPublicRooms(Array.isArray(rooms) ? rooms : []);
             } catch (e) { 
                 document.getElementById('roomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`;
                 console.error('Public rooms error:', e);
@@ -206,7 +215,11 @@
         function renderMyRooms(rooms) {
             const container = document.getElementById('myRoomsList');
             container.innerHTML = '';
-            if (!rooms || rooms.length === 0) { container.innerHTML = '<div class="empty-list">Нет ожидающих комнат</div>'; return; }
+            // Защитная проверка: если не массив — превращаем в пустой
+            if (!Array.isArray(rooms) || rooms.length === 0) { 
+                container.innerHTML = '<div class="empty-list">Нет ожидающих комнат</div>'; 
+                return; 
+            }
             rooms.forEach(room => {
                 const el = document.createElement('div');
                 el.className = 'room-card my-room';
@@ -227,7 +240,10 @@
         function renderPublicRooms(rooms) {
             const container = document.getElementById('roomsList');
             container.innerHTML = '';
-            if (!rooms || rooms.length === 0) { container.innerHTML = '<div class="empty-list">Нет доступных комнат</div>'; return; }
+            if (!Array.isArray(rooms) || rooms.length === 0) { 
+                container.innerHTML = '<div class="empty-list">Нет доступных комнат</div>'; 
+                return; 
+            }
             rooms.forEach(room => {
                 const el = document.createElement('div');
                 el.className = 'room-card';
@@ -247,7 +263,13 @@
 
         async function joinRoom(roomId) {
             try {
-                const room = await db('rooms', 'PATCH', { opponent_tg_id: user.id, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`);
+                // PATCH возвращает один объект → returnSingle: true
+                const room = await db('rooms', 'PATCH', { 
+                    opponent_tg_id: user.id,
+                    opponent_username: user.username,
+                    status: 'playing'
+                }, `?id=eq.${roomId}&status=eq.waiting`, true);
+                
                 if (!room) { showError('Комната уже занята'); loadRooms(); return; }
                 currentRoom = room;
                 showGame('✅ Вы в игре! Сделайте ход 👇');
@@ -273,12 +295,13 @@
                 if (!currentRoom) return;
                 try {
                     const rooms = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`);
-                    const room = rooms?.[0];
+                    const room = Array.isArray(rooms) ? rooms[0] : rooms;
                     if (!room) return;
                     currentRoom = room;
                     if (room.status === 'finished') { clearInterval(pollInterval); showResult(room); return; }
                     if (room.creator_choice && room.opponent_choice && room.status === 'playing') {
-                        clearInterval(pollInterval); await finishGame(room);
+                        clearInterval(pollInterval);
+                        await finishGame(room);
                     } else if (!room.opponent_choice && room.creator_choice) {
                         document.getElementById('gameStatus').innerText = 'Соперник думает...';
                     }
@@ -289,7 +312,7 @@
         async function finishGame(room) {
             const result = calculateWinner(room);
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
-            if (result.winnerId) { try { await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`); } catch(e) {} }
+            if (result.winnerId) { try { await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`, true); } catch(e) {} }
             showResult({ ...room, result: result.msg });
         }
 
