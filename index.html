@@ -46,8 +46,6 @@
         .empty-list { text-align: center; color: var(--sec); padding: 30px 10px; }
         .error-debug { background: #1a0a0a; border: 1px solid var(--error); color: #ff8888; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 11px; font-family: monospace; display: none; white-space: pre-wrap; }
         .error-debug.show { display: block; }
-        
-        /* Стили таблицы лидеров */
         .lb-row { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px; }
         .lb-row.top-1 { background: linear-gradient(135deg, #ffd70033, #ffd70011); border: 1px solid #ffd70055; }
         .lb-row.top-2 { background: linear-gradient(135deg, #c0c0c033, #c0c0c011); border: 1px solid #c0c0c055; }
@@ -63,7 +61,6 @@
     <div class="container">
         <div id="errorDebug" class="error-debug"></div>
         
-        <!-- ЛОББИ -->
         <div id="lobbyScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
@@ -81,18 +78,16 @@
             <div id="roomsList"><div class="loader"><div class="spinner"></div>Загрузка...</div></div>
         </div>
 
-        <!-- ТАБЛИЦА ЛИДЕРОВ -->
         <div id="leaderboardScreen" class="hidden">
             <div class="header">
                 <div class="echidna">🏆</div>
                 <h1>Топ игроков</h1>
-                <div class="subtitle">Рейтинг по победам за всё время</div>
+                <div class="subtitle">Рейтинг по победам</div>
             </div>
             <div id="leaderboardList"><div class="loader"><div class="spinner"></div>Загрузка...</div></div>
             <button class="btn btn-sec" style="margin-top:15px;" onclick="backToLobbyFromLB()">🚪 В лобби</button>
         </div>
 
-        <!-- ИГРА -->
         <div id="gameScreen" class="hidden">
             <div class="header">
                 <div class="echidna">🦔</div>
@@ -112,7 +107,7 @@
         // ==========================================
         // ⚠️ ВСТАВЬ СВОЙ SUPABASE_KEY ⚠️
         // ==========================================
-        const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
+        const SUPABASE_URL = 'https://kzlzbjmajonvdefszmip.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         // ==========================================
 
@@ -137,6 +132,14 @@
             if (returnSingle && Array.isArray(data) && data.length > 0) return data[0];
             if (!returnSingle) return Array.isArray(data) ? data : [data];
             return data;
+        }
+
+        // === Вызов RPC функции в Supabase ===
+        async function callRpc(funcName, params) {
+            const url = `${SUPABASE_URL}/rest/v1/rpc/${funcName}`;
+            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+            const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(params) });
+            if (!response.ok) throw new Error(`RPC Error: ${await response.text()}`);
         }
 
         function parseRealUser() {
@@ -169,10 +172,7 @@
             try {
                 document.getElementById('errorDebug').classList.remove('show');
                 const room = await db('rooms', 'POST', [{ creator_tg_id: user.id, creator_username: user.username, stake: 0.10, status: 'waiting', creator_choice: null, opponent_choice: null }], '', true);
-                currentRoom = room;
-                showGame('✅ Комната создана! Ждём соперника...');
-                startPolling();
-                loadRooms();
+                currentRoom = room; showGame('✅ Комната создана! Ждём соперника...'); startPolling(); loadRooms();
             } catch (e) { showError(e.message); }
         }
 
@@ -247,10 +247,16 @@
             }, 2000);
         }
 
+        // === ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОБЕДЫ ===
         async function finishGame(room) {
             const result = calculateWinner(room);
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
-            if (result.winnerId) { try { await db('users', 'PATCH', { wins: 1 }, `?telegram_id=eq.${result.winnerId}`, true); } catch(e) {} }
+            
+            // ✅ Теперь используем RPC функцию для увеличения побед (+1)
+            if (result.winnerId) {
+                try { await callRpc('increment_wins', { p_tg_id: result.winnerId }); } 
+                catch(e) { console.warn('Win update error:', e); }
+            }
             showResult({ ...room, result: result.msg });
         }
 
@@ -287,17 +293,19 @@
             const list = document.getElementById('leaderboardList');
             list.innerHTML = '<div class="loader"><div class="spinner"></div>Загрузка рейтинга...</div>';
             try {
-                const users = await db('users', 'GET', null, '?select=username,wins,telegram_id&order=wins.desc&limit=10');
+                // ✅ Исправлен запрос: order=wins.desc.nullslast&limit=10
+                const users = await db('users', 'GET', null, '?select=username,wins,telegram_id&order=wins.desc.nullslast&limit=10');
                 renderLeaderboard(Array.isArray(users) ? users : []);
             } catch (e) { list.innerHTML = `<div style="color:var(--error);padding:15px;">Ошибка: ${e.message}</div>`; }
         }
 
         function renderLeaderboard(users) {
             const container = document.getElementById('leaderboardList'); container.innerHTML = '';
-            if (!users.length) { container.innerHTML = '<div class="empty-list">Пока нет игроков. Будь первым! 🦔</div>'; return; }
-            const medals = ['🥇', '🥈', ''];
+            if (!users.length) { container.innerHTML = '<div class="empty-list">Пока нет побед. Сыграй первую игру! 🦔</div>'; return; }
+            const medals = ['🥇', '🥈', '🥉'];
             users.forEach((u, i) => {
                 const rank = i + 1;
+                const wins = u.wins || 0;
                 const el = document.createElement('div');
                 el.className = `lb-row top-${rank <= 3 ? rank : ''}`;
                 el.innerHTML = `
@@ -306,7 +314,7 @@
                         <div class="lb-name">@${u.username || 'Аноним'}</div>
                         <div class="lb-sub">ID: ${String(u.telegram_id).slice(-4)}</div>
                     </div>
-                    <div class="lb-wins">${u.wins || 0} побед</div>
+                    <div class="lb-wins">${wins} ${wins === 1 ? 'победа' : wins < 5 ? 'победы' : 'побед'}</div>
                 `;
                 container.appendChild(el);
             });
