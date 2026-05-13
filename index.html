@@ -46,12 +46,24 @@
         .empty-list { text-align: center; color: var(--sec); padding: 30px 10px; }
         .error-debug { background: #1a0a0a; border: 1px solid var(--error); color: #ff8888; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 11px; font-family: monospace; display: none; white-space: pre-wrap; }
         .error-debug.show { display: block; }
+        
+        /* Стили таблицы лидеров */
+        .lb-row { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px; }
+        .lb-row.top-1 { background: linear-gradient(135deg, #ffd70033, #ffd70011); border: 1px solid #ffd70055; }
+        .lb-row.top-2 { background: linear-gradient(135deg, #c0c0c033, #c0c0c011); border: 1px solid #c0c0c055; }
+        .lb-row.top-3 { background: linear-gradient(135deg, #cd7f3233, #cd7f3211); border: 1px solid #cd7f3255; }
+        .lb-rank { font-size: 18px; font-weight: bold; width: 35px; text-align: center; }
+        .lb-info { flex: 1; margin: 0 10px; }
+        .lb-name { font-weight: 600; }
+        .lb-sub { font-size: 11px; color: var(--sec); }
+        .lb-wins { font-weight: bold; color: #ffd700; font-size: 16px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="errorDebug" class="error-debug"></div>
         
+        <!-- ЛОББИ -->
         <div id="lobbyScreen">
             <div class="header">
                 <div class="echidna">🦔</div>
@@ -59,7 +71,8 @@
                 <div class="subtitle">Кулак ✊ • Шип 🌵 • Кристалл 💎</div>
             </div>
             <button class="btn btn-success" onclick="createRoom()">💎 Создать комнату (0.1 TON)</button>
-            <button class="btn btn-primary" onclick="loadRooms()">🔄 Обновить</button>
+            <button class="btn btn-primary" onclick="loadRooms()">🔄 Обновить комнаты</button>
+            <button class="btn btn-sec" onclick="showLeaderboard()">🏆 Таблица лидеров</button>
             
             <div class="section-title">🕐 Мои ожидающие комнаты</div>
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div>Загрузка...</div></div>
@@ -68,6 +81,18 @@
             <div id="roomsList"><div class="loader"><div class="spinner"></div>Загрузка...</div></div>
         </div>
 
+        <!-- ТАБЛИЦА ЛИДЕРОВ -->
+        <div id="leaderboardScreen" class="hidden">
+            <div class="header">
+                <div class="echidna">🏆</div>
+                <h1>Топ игроков</h1>
+                <div class="subtitle">Рейтинг по победам за всё время</div>
+            </div>
+            <div id="leaderboardList"><div class="loader"><div class="spinner"></div>Загрузка...</div></div>
+            <button class="btn btn-sec" style="margin-top:15px;" onclick="backToLobbyFromLB()">🚪 В лобби</button>
+        </div>
+
+        <!-- ИГРА -->
         <div id="gameScreen" class="hidden">
             <div class="header">
                 <div class="echidna">🦔</div>
@@ -91,25 +116,16 @@
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         // ==========================================
 
-        // === db() функция: раздельная обработка для списков и одиночных записей ===
         async function db(table, method, payload = null, filters = '', returnSingle = false) {
             if (!SUPABASE_URL.startsWith('https://') || SUPABASE_KEY.length < 20 || SUPABASE_KEY.includes('ВСТАВЬ')) {
                 throw new Error('❌ SUPABASE_KEY не заполнен!');
             }
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
-            const headers = {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation',
-                'Accept': 'application/json'
-            };
+            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', 'Accept': 'application/json' };
             const options = { method, headers };
             if (payload) options.body = JSON.stringify(payload);
-            
             const response = await fetch(url, options);
             const text = await response.text();
-            
             if (!response.ok) {
                 const errorBox = document.getElementById('errorDebug');
                 errorBox.textContent = `Supabase Error ${response.status}:\n${text}`;
@@ -117,24 +133,14 @@
                 throw new Error(`Supabase ${response.status}: ${text}`);
             }
             if (!text) return returnSingle ? null : [];
-            
             const data = JSON.parse(text);
-            
-            // Если ждём один объект — возвращаем первый элемент
-            if (returnSingle && Array.isArray(data) && data.length > 0) {
-                return data[0];
-            }
-            // Если ждём массив — гарантируем, что вернём массив
-            if (!returnSingle) {
-                return Array.isArray(data) ? data : [data];
-            }
+            if (returnSingle && Array.isArray(data) && data.length > 0) return data[0];
+            if (!returnSingle) return Array.isArray(data) ? data : [data];
             return data;
         }
 
         function parseRealUser() {
-            if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-                return window.Telegram.WebApp.initDataUnsafe.user;
-            }
+            if (window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user;
             try {
                 const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
                 const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search;
@@ -157,25 +163,12 @@
         let currentRoom = null;
         let pollInterval = null;
 
-        function showError(msg) { 
-            alert('⚠️ ' + msg);
-            const errorBox = document.getElementById('errorDebug');
-            errorBox.textContent = msg;
-            errorBox.classList.add('show');
-        }
+        function showError(msg) { alert('⚠️ ' + msg); document.getElementById('errorDebug').textContent = msg; document.getElementById('errorDebug').classList.add('show'); }
 
         async function createRoom() {
             try {
                 document.getElementById('errorDebug').classList.remove('show');
-                // POST возвращает один объект → returnSingle: true
-                const room = await db('rooms', 'POST', [{
-                    creator_tg_id: user.id,
-                    creator_username: user.username,
-                    stake: 0.10,
-                    status: 'waiting',
-                    creator_choice: null,
-                    opponent_choice: null
-                }], '', true);
+                const room = await db('rooms', 'POST', [{ creator_tg_id: user.id, creator_username: user.username, stake: 0.10, status: 'waiting', creator_choice: null, opponent_choice: null }], '', true);
                 currentRoom = room;
                 showGame('✅ Комната создана! Ждём соперника...');
                 startPolling();
@@ -185,95 +178,47 @@
 
         async function cancelRoom(roomId) {
             if (!confirm('Отменить эту комнату?')) return;
-            try {
-                await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${user.id}`);
-                loadRooms();
-            } catch (e) { showError('Не удалось отменить: ' + e.message); }
+            try { await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${user.id}`); loadRooms(); } 
+            catch (e) { showError('Не удалось отменить: ' + e.message); }
         }
 
         async function loadRooms() {
             document.getElementById('errorDebug').classList.remove('show');
-            
-            // GET возвращает массив → returnSingle: false (по умолчанию)
             try {
                 const myRooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=eq.${user.id}&order=created_at.desc&limit=10`);
                 renderMyRooms(Array.isArray(myRooms) ? myRooms : []);
-            } catch (e) { 
-                document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`;
-                console.error('My rooms error:', e);
-            }
-            
+            } catch (e) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`; }
             try {
                 const rooms = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc&limit=20`);
                 renderPublicRooms(Array.isArray(rooms) ? rooms : []);
-            } catch (e) { 
-                document.getElementById('roomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`;
-                console.error('Public rooms error:', e);
-            }
+            } catch (e) { document.getElementById('roomsList').innerHTML = `<div style="color:var(--error);padding:10px;">Ошибка: ${e.message}</div>`; }
         }
 
         function renderMyRooms(rooms) {
-            const container = document.getElementById('myRoomsList');
-            container.innerHTML = '';
-            // Защитная проверка: если не массив — превращаем в пустой
-            if (!Array.isArray(rooms) || rooms.length === 0) { 
-                container.innerHTML = '<div class="empty-list">Нет ожидающих комнат</div>'; 
-                return; 
-            }
+            const container = document.getElementById('myRoomsList'); container.innerHTML = '';
+            if (!Array.isArray(rooms) || rooms.length === 0) { container.innerHTML = '<div class="empty-list">Нет ожидающих комнат</div>'; return; }
             rooms.forEach(room => {
-                const el = document.createElement('div');
-                el.className = 'room-card my-room';
-                el.innerHTML = `
-                    <div class="room-info">
-                        <div class="room-stake">💰 ${room.stake} TON <span class="room-badge">ЖДЁТ</span></div>
-                        <div class="room-creator">@${room.creator_username || 'Аноним'}</div>
-                        <div class="room-time">🕐 ${formatTime(room.created_at)}</div>
-                    </div>
-                    <div class="room-actions">
-                        <button class="room-btn cancel" onclick="cancelRoom('${room.id}')">✕</button>
-                    </div>
-                `;
+                const el = document.createElement('div'); el.className = 'room-card my-room';
+                el.innerHTML = `<div class="room-info"><div class="room-stake">💰 ${room.stake} TON <span class="room-badge">ЖДЁТ</span></div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><div class="room-actions"><button class="room-btn cancel" onclick="cancelRoom('${room.id}')">✕</button></div>`;
                 container.appendChild(el);
             });
         }
 
         function renderPublicRooms(rooms) {
-            const container = document.getElementById('roomsList');
-            container.innerHTML = '';
-            if (!Array.isArray(rooms) || rooms.length === 0) { 
-                container.innerHTML = '<div class="empty-list">Нет доступных комнат</div>'; 
-                return; 
-            }
+            const container = document.getElementById('roomsList'); container.innerHTML = '';
+            if (!Array.isArray(rooms) || rooms.length === 0) { container.innerHTML = '<div class="empty-list">Нет доступных комнат</div>'; return; }
             rooms.forEach(room => {
-                const el = document.createElement('div');
-                el.className = 'room-card';
-                el.innerHTML = `
-                    <div class="room-info">
-                        <div class="room-stake">💰 ${room.stake} TON</div>
-                        <div class="room-creator">@${room.creator_username || 'Аноним'}</div>
-                        <div class="room-time">🕐 ${formatTime(room.created_at)}</div>
-                    </div>
-                    <div class="room-actions">
-                        <button class="room-btn join" onclick="joinRoom('${room.id}')">Войти</button>
-                    </div>
-                `;
+                const el = document.createElement('div'); el.className = 'room-card';
+                el.innerHTML = `<div class="room-info"><div class="room-stake">💰 ${room.stake} TON</div><div class="room-creator">@${room.creator_username || 'Аноним'}</div><div class="room-time">🕐 ${formatTime(room.created_at)}</div></div><div class="room-actions"><button class="room-btn join" onclick="joinRoom('${room.id}')">Войти</button></div>`;
                 container.appendChild(el);
             });
         }
 
         async function joinRoom(roomId) {
             try {
-                // PATCH возвращает один объект → returnSingle: true
-                const room = await db('rooms', 'PATCH', { 
-                    opponent_tg_id: user.id,
-                    opponent_username: user.username,
-                    status: 'playing'
-                }, `?id=eq.${roomId}&status=eq.waiting`, true);
-                
+                const room = await db('rooms', 'PATCH', { opponent_tg_id: user.id, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true);
                 if (!room) { showError('Комната уже занята'); loadRooms(); return; }
-                currentRoom = room;
-                showGame('✅ Вы в игре! Сделайте ход 👇');
-                startPolling();
+                currentRoom = room; showGame('✅ Вы в игре! Сделайте ход 👇'); startPolling();
             } catch (e) { showError(e.message); }
         }
 
@@ -283,10 +228,8 @@
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('gameStatus').innerText = 'Ход записан...';
-            try {
-                await db('rooms', 'PATCH', { [col]: choice }, `?id=eq.${currentRoom.id}`);
-                document.getElementById('gameStatus').innerText = 'Ждём соперника...';
-            } catch (e) { showError(e.message); document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); }
+            try { await db('rooms', 'PATCH', { [col]: choice }, `?id=eq.${currentRoom.id}`); document.getElementById('gameStatus').innerText = 'Ждём соперника...'; } 
+            catch (e) { showError(e.message); document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); }
         }
 
         function startPolling() {
@@ -296,15 +239,10 @@
                 try {
                     const rooms = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`);
                     const room = Array.isArray(rooms) ? rooms[0] : rooms;
-                    if (!room) return;
-                    currentRoom = room;
+                    if (!room) return; currentRoom = room;
                     if (room.status === 'finished') { clearInterval(pollInterval); showResult(room); return; }
-                    if (room.creator_choice && room.opponent_choice && room.status === 'playing') {
-                        clearInterval(pollInterval);
-                        await finishGame(room);
-                    } else if (!room.opponent_choice && room.creator_choice) {
-                        document.getElementById('gameStatus').innerText = 'Соперник думает...';
-                    }
+                    if (room.creator_choice && room.opponent_choice && room.status === 'playing') { clearInterval(pollInterval); await finishGame(room); } 
+                    else if (!room.opponent_choice && room.creator_choice) { document.getElementById('gameStatus').innerText = 'Соперник думает...'; }
                 } catch (e) { console.warn('Poll error:', e); }
             }, 2000);
         }
@@ -326,9 +264,7 @@
 
         function showResult(room) {
             const msg = room.result || calculateWinner(room).msg;
-            document.getElementById('gameStatus').innerText = msg;
-            alert(msg);
-            setTimeout(backToLobby, 3000);
+            document.getElementById('gameStatus').innerText = msg; alert(msg); setTimeout(backToLobby, 3000);
         }
 
         function showGame(statusText) {
@@ -339,10 +275,46 @@
         }
 
         function backToLobby() {
-            if (pollInterval) clearInterval(pollInterval);
-            currentRoom = null;
+            if (pollInterval) clearInterval(pollInterval); currentRoom = null;
             document.getElementById('lobbyScreen').classList.remove('hidden');
-            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('hidden'); loadRooms();
+        }
+
+        // === ТАБЛИЦА ЛИДЕРОВ ===
+        async function showLeaderboard() {
+            document.getElementById('lobbyScreen').classList.add('hidden');
+            document.getElementById('leaderboardScreen').classList.remove('hidden');
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '<div class="loader"><div class="spinner"></div>Загрузка рейтинга...</div>';
+            try {
+                const users = await db('users', 'GET', null, '?select=username,wins,telegram_id&order=wins.desc&limit=10');
+                renderLeaderboard(Array.isArray(users) ? users : []);
+            } catch (e) { list.innerHTML = `<div style="color:var(--error);padding:15px;">Ошибка: ${e.message}</div>`; }
+        }
+
+        function renderLeaderboard(users) {
+            const container = document.getElementById('leaderboardList'); container.innerHTML = '';
+            if (!users.length) { container.innerHTML = '<div class="empty-list">Пока нет игроков. Будь первым! 🦔</div>'; return; }
+            const medals = ['🥇', '🥈', ''];
+            users.forEach((u, i) => {
+                const rank = i + 1;
+                const el = document.createElement('div');
+                el.className = `lb-row top-${rank <= 3 ? rank : ''}`;
+                el.innerHTML = `
+                    <div class="lb-rank">${medals[i] || rank}</div>
+                    <div class="lb-info">
+                        <div class="lb-name">@${u.username || 'Аноним'}</div>
+                        <div class="lb-sub">ID: ${String(u.telegram_id).slice(-4)}</div>
+                    </div>
+                    <div class="lb-wins">${u.wins || 0} побед</div>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function backToLobbyFromLB() {
+            document.getElementById('leaderboardScreen').classList.add('hidden');
+            document.getElementById('lobbyScreen').classList.remove('hidden');
             loadRooms();
         }
 
