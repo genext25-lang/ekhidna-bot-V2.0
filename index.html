@@ -26,9 +26,10 @@
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
         .btn-sec { background: var(--card); border: 1px solid var(--border); color: var(--sec); }
         .section-title { font-size: 13px; color: var(--sec); margin: 18px 0 8px; text-transform: uppercase; }
-        .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); }
+        .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
+        .room-card:active { transform: scale(0.98); background: var(--card); }
         .room-card.my-room { border-left: 3px solid var(--success); }
-        .room-icon { width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+        .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
         .room-icon img { width: 100%; height: 100%; object-fit: cover; }
         .room-info { flex: 1; }
         .room-stake { font-weight: 700; color: var(--gold); }
@@ -54,6 +55,27 @@
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--sec); font-size: 10px; cursor: pointer; }
         .nav-btn.active { color: var(--primary); }
         .nav-spacer { height: 60px; }
+        
+        /* Модальное окно скина */
+        .skin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
+        .skin-modal.hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .skin-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 360px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .skin-modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: var(--error); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .skin-modal-close:active { transform: scale(0.9); }
+        .skin-modal-img { width: 150px; height: 150px; margin: 0 auto 16px; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .skin-modal-img img { width: 100%; height: 100%; object-fit: cover; }
+        .skin-modal-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+        .skin-modal-level { text-align: center; font-size: 12px; color: var(--gold); margin-bottom: 16px; }
+        .skin-modal-desc { font-size: 14px; line-height: 1.6; color: var(--sec); margin-bottom: 16px; text-align: center; }
+        .skin-modal-features { background: rgba(99,102,241,0.1); border-radius: 12px; padding: 12px; margin-bottom: 16px; }
+        .skin-modal-features-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+        .skin-modal-features ul { list-style: none; padding: 0; }
+        .skin-modal-features li { font-size: 12px; color: var(--sec); padding: 4px 0; padding-left: 20px; position: relative; }
+        .skin-modal-features li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+        .skin-modal-req { text-align: center; font-size: 12px; color: var(--sec); padding: 12px; background: rgba(251,191,36,0.1); border-radius: 12px; }
+        .skin-modal-req.locked { color: var(--error); background: rgba(239,68,68,0.1); }
     </style>
 </head>
 <body>
@@ -105,7 +127,7 @@
         </div>
 
         <div id="skinsScreen" class="hidden">
-            <div class="header"><h2>🎨 Скины</h2></div>
+            <div class="header"><h2>🎨 Скины</h2><div class="header-sub">Нажми на скин для подробной информации</div></div>
             <div id="skinsList"></div>
             <div class="nav-spacer"></div>
         </div>
@@ -114,6 +136,22 @@
             <div class="header"><h2>🏆 Рейтинг</h2></div>
             <div id="leaderboardList"><div class="loader"><div class="spinner"></div></div></div>
             <div class="nav-spacer"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно скина -->
+    <div id="skinModal" class="skin-modal hidden" onclick="closeSkinModal(event)">
+        <div class="skin-modal-content" onclick="event.stopPropagation()">
+            <button class="skin-modal-close" onclick="closeSkinModal()">✕</button>
+            <div class="skin-modal-img"><img src="" id="modalImg" alt=""></div>
+            <div class="skin-modal-title" id="modalTitle"></div>
+            <div class="skin-modal-level" id="modalLevel"></div>
+            <div class="skin-modal-desc" id="modalDesc"></div>
+            <div class="skin-modal-features">
+                <div class="skin-modal-features-title">✨ Особенности:</div>
+                <ul id="modalFeatures"></ul>
+            </div>
+            <div class="skin-modal-req" id="modalReq"></div>
         </div>
     </div>
 
@@ -129,16 +167,46 @@
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
         const SKINS = [
-            { id: 'default', name: 'Обычная', wins: 0, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
-            { id: 'ice', name: 'Ледяная', wins: 3, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png' },
-            { id: 'fire', name: 'Огненная', wins: 8, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png' },
-            { id: 'shadow', name: 'Теневая', wins: 15, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png' },
-            { id: 'golden', name: 'Золотая', wins: 30, 
-              img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png' }
+            { 
+                id: 'default', 
+                name: 'Обычная', 
+                wins: 0,
+                img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png',
+                desc: 'Стартовая ехидна, с которой начинается твоё путешествие. Дружелюбная и весёлая, она всегда готова к новым приключениям!',
+                features: ['Сбалансированные характеристики', 'Идеальна для новичков', 'Классический розовый цвет', 'Дружелюбный характер']
+            },
+            { 
+                id: 'ice', 
+                name: 'Ледяная', 
+                wins: 3,
+                img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png',
+                desc: 'Загадочная ехидна из ледяных кристаллов. Её взгляд способен заморозить любого соперника! Холодный расчёт и стратегическое мышление — её главные козыри.',
+                features: ['Кристальные иглы сверкают на солнце', 'Холодный расчёт в бою', '+10% к стратегическому мышлению', 'Замораживает соперников взглядом']
+            },
+            { 
+                id: 'fire', 
+                name: 'Огненная', 
+                wins: 8,
+                img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png',
+                desc: 'Пламенная натура с огненным темпераментом! Её иглы горят ярким пламенем, а глаза светятся решимостью. Агрессивный стиль игры — её стихия.',
+                features: ['Огненные иглы пугают врагов', 'Быстрая и агрессивная', 'Горит желанием победить', 'Янтарные глаза видят всё']
+            },
+            { 
+                id: 'shadow', 
+                name: 'Теневая', 
+                wins: 15,
+                img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png',
+                desc: 'Таинственная ехидна из глубин тьмы. Её фиолетовые глаза видят то, что скрыто от других. Мистическая сила тени даёт ей преимущество в бою.',
+                features: ['Появляется из тени', 'Фиолетовые глаза видят всё', 'Тайная сила тьмы', 'Загадочная аура']
+            },
+            { 
+                id: 'golden', 
+                name: 'Золотая', 
+                wins: 30,
+                img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png',
+                desc: 'Легендарная ехидна с золотой короной! Только настоящие чемпионы могут обладать этой редчайшей формой. Золотые кристаллы — символ власти и превосходства.',
+                features: ['Корона победителя', 'Золотые кристаллы — символ власти', 'Только для чемпионов (30+ побед)', 'Легендарная редкость']
+            }
         ];
 
         async function db(table, method, payload = null, filters = '', single = false) {
@@ -268,9 +336,39 @@
                 const active = currentSkin === skin.id;
                 const el = document.createElement('div');
                 el.className = 'room-card' + (active?' my-room':'');
-                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${skin.name}</div><div class="room-creator">${skin.wins} побед</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?'✓':unlocked?'Надеть':'🔒'}</button>`;
+                el.onclick = () => openSkinModal(skin, wins);
+                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${skin.name}</div><div class="room-creator">${skin.wins} побед</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="event.stopPropagation(); ${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?'✓':unlocked?'Надеть':'🔒'}</button>`;
                 c.appendChild(el);
             });
+        }
+
+        function openSkinModal(skin, userWins) {
+            const modal = document.getElementById('skinModal');
+            document.getElementById('modalImg').src = skin.img;
+            document.getElementById('modalTitle').textContent = skin.name;
+            document.getElementById('modalLevel').textContent = `Требуется: ${skin.wins} побед`;
+            document.getElementById('modalDesc').textContent = skin.desc;
+            
+            const featuresList = document.getElementById('modalFeatures');
+            featuresList.innerHTML = '';
+            skin.features.forEach(feat => {
+                const li = document.createElement('li');
+                li.textContent = feat;
+                featuresList.appendChild(li);
+            });
+            
+            const reqDiv = document.getElementById('modalReq');
+            const unlocked = userWins >= skin.wins;
+            reqDiv.textContent = unlocked ? '✅ Разблокировано' : `🔒 Нужно ещё ${skin.wins - userWins} побед`;
+            reqDiv.className = 'skin-modal-req' + (unlocked ? '' : ' locked');
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeSkinModal(e) {
+            if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') {
+                document.getElementById('skinModal').classList.add('hidden');
+            }
         }
 
         function equipSkin(id) { currentSkin = id; renderSkins(); updateStats(); }
