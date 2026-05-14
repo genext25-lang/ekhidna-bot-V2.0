@@ -55,7 +55,7 @@
         .choice-btn img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 4px; }
         .choice-btn span { font-size: 11px; color: var(--sec); font-weight: 600; }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
-        .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; }
+        .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; }
         .hidden { display: none !important; }
         .loader { text-align: center; padding: 30px; color: var(--sec); }
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
@@ -254,7 +254,7 @@
 
         const user = getCurrentUser();
         const MY_ID = Number(user.id);
-        console.log('👤 Player ID:', MY_ID, '| User:', user.username);
+        console.log('👤 Player ID:', MY_ID);
 
         const SKINS = [
             { id: 'default', name: 'Обычная', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png', desc: 'Стартовая ехидна.', features: ['Базовый скин', 'Для новичков'] },
@@ -265,6 +265,10 @@
         ];
 
         let selectedStake = 0.1;
+        let currentRoom = null;
+        let pollInterval = null;
+        let currentSkin = 'default';
+        let isGameFinished = false; // 🛡 Флаг защиты от двойного срабатывания
 
         async function db(table, method, payload = null, filters = '', single = false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
@@ -277,14 +281,20 @@
 
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
-        
-        let currentRoom = null, pollInterval = null, currentSkin = 'default';
 
         function showScreen(name) {
             ['lobbyScreen','gameScreen','skinsScreen','leaderboardScreen'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(name + 'Screen').classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', ['lobby','game','skins','leaderboard'].indexOf(name) === i));
-            if (name === 'lobby') { loadRooms(); updateStats(); }
+
+            if (name === 'lobby') {
+                // 🛑 ПОЛНЫЙ СБРОС СОСТОЯНИЯ
+                currentRoom = null;
+                isGameFinished = false;
+                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+                loadRooms();
+                updateStats();
+            }
             if (name === 'skins') renderSkins();
             if (name === 'leaderboard') loadLeaderboard();
         }
@@ -333,8 +343,8 @@
             const val = parseFloat(document.getElementById('stakeInput').value);
             document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected'));
             if (isNaN(val)) { selectedStake = 0.1; document.getElementById('stakeError').textContent = ''; return; }
-            if (val < 0.1) { document.getElementById('stakeError').textContent = 'Минимальная ставка: 0.1 TON'; selectedStake = 0.1; }
-            else if (val > 99) { document.getElementById('stakeError').textContent = 'Максимальная ставка: 99 TON'; selectedStake = 99; }
+            if (val < 0.1) { document.getElementById('stakeError').textContent = 'Мин: 0.1 TON'; selectedStake = 0.1; }
+            else if (val > 99) { document.getElementById('stakeError').textContent = 'Макс: 99 TON'; selectedStake = 99; }
             else { document.getElementById('stakeError').textContent = ''; selectedStake = Math.round(val * 100) / 100; }
         }
 
@@ -343,7 +353,7 @@
             let finalStake = selectedStake;
             if (inputVal) {
                 const parsed = parseFloat(inputVal);
-                if (parsed < 0.1 || parsed > 99 || isNaN(parsed)) { document.getElementById('stakeError').textContent = 'Введи ставку от 0.1 до 99 TON'; return; }
+                if (parsed < 0.1 || parsed > 99 || isNaN(parsed)) { document.getElementById('stakeError').textContent = 'Введи от 0.1 до 99'; return; }
                 finalStake = Math.round(parsed * 100) / 100;
             }
             document.getElementById('stakeModal').classList.add('hidden');
@@ -385,10 +395,7 @@
         async function cancelRoom(roomId) {
             try {
                 const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
-                if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) {
-                    alert('⛔ Только создатель может отменить комнату!');
-                    return;
-                }
+                if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) { alert('⛔ Только создатель может отменить!'); return; }
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
                 loadRooms();
             } catch(e) { alert('Ошибка: ' + e.message); }
@@ -399,10 +406,8 @@
             try {
                 const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
                 if (!check.length) throw new Error('Комната уже занята');
-                
                 const room = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true);
                 if (!room) throw new Error('Не удалось войти');
-                
                 currentRoom = room;
                 showGameScreen();
                 startPolling();
@@ -414,79 +419,90 @@
         function showGameScreen() {
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
             document.getElementById('gameScreen').classList.remove('hidden');
-            
-            // 🔘 Принудительно активируем кнопки
-            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
-            
-            const stake = parseFloat(currentRoom?.stake || 0);
-            const totalPot = stake * 2;
-            const commission = totalPot * 0.05;
-            const netWin = totalPot - commission;
-            
+
+            // 🔘 СБРОС ИНТЕРФЕЙСА
+            document.querySelectorAll('.choice-btn').forEach(b => { b.disabled = false; b.classList.remove('selected'); });
+            document.getElementById('gameStatus').innerHTML = '<div class="spinner"></div>';
+            isGameFinished = false;
+
+            if (!currentRoom) {
+                document.getElementById('gameStatus').textContent = '❌ Ошибка: комната не найдена';
+                return;
+            }
+
+            const stake = parseFloat(currentRoom.stake || 0);
             document.getElementById('stakeAmount').textContent = stake.toFixed(2);
-            document.getElementById('winAmount').textContent = netWin.toFixed(2);
-            
-            updateGameStatus(currentRoom);
-            
+            document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2);
+
             const skin = SKINS.find(s=>s.id===currentSkin)||SKINS[0];
             document.getElementById('playerAvatarImg').src = skin.img;
             document.getElementById('opponentAvatarImg').src = SKINS[0].img;
+
+            updateGameStatus(currentRoom);
         }
 
         function updateGameStatus(room) {
-            if (!room) return;
+            if (!room || isGameFinished) return;
             const statusEl = document.getElementById('gameStatus');
             if (room.status === 'waiting') {
                 statusEl.innerHTML = '⏳ Ждём соперника...';
             } else if (room.status === 'playing') {
-                const myChoice = String(room.creator_tg_id) === String(MY_ID) ? room.creator_choice : room.opponent_choice;
-                statusEl.innerHTML = myChoice ? '⏳ Соперник думает...' : '👉 Ваш ход!';
-            } else {
-                statusEl.innerHTML = '🏁 Игра окончена';
-            }
-        }
-
-        async function makeMove(choice) {
-            if (!currentRoom) return;
-            // Безопасное сравнение ID
-            const col = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
-            
-            document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
-            document.getElementById('gameStatus').textContent = '✅ Ход записан!';
-            
-            try {
-                await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);
-                updateGameStatus(currentRoom); // Обновляем статус сразу
-            } catch(e) { 
-                alert('Ошибка хода: ' + e.message); 
-                document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);
+                const myCol = String(room.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
+                statusEl.innerHTML = room[myCol] ? '⏳ Соперник думает...' : '👉 Ваш ход!';
             }
         }
 
         function startPolling() {
-            if(pollInterval) clearInterval(pollInterval);
+            if (pollInterval) clearInterval(pollInterval);
+            if (!currentRoom) return;
+            isGameFinished = false;
+
             pollInterval = setInterval(async () => {
-                if(!currentRoom) return;
+                if (!currentRoom || isGameFinished) return;
                 try {
-                    const rooms = await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);
-                    const room = rooms[0];
-                    if(!room) return;
+                    const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`);
+                    const room = res[0];
+                    if (!room) return;
                     currentRoom = room;
-                    
                     updateGameStatus(room);
-                    
-                    if(room.status==='finished') { 
-                        clearInterval(pollInterval); 
-                        alert('Игра окончена!'); 
-                        showScreen('lobby'); 
-                        return; 
+
+                    // ✅ Если статус finished -> показываем результат БЕЗ alert
+                    if (room.status === 'finished') {
+                        isGameFinished = true;
+                        clearInterval(pollInterval); pollInterval = null;
+                        showGameResult(room);
+                        return;
                     }
-                    if(room.creator_choice && room.opponent_choice) {
-                        clearInterval(pollInterval);
+
+                    // ✅ Если оба хода сделаны -> завершаем игру
+                    if (room.creator_choice && room.opponent_choice && room.status === 'playing') {
+                        isGameFinished = true;
+                        clearInterval(pollInterval); pollInterval = null;
                         await finishGame(room);
                     }
                 } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
+        }
+
+        async function makeMove(choice) {
+            if (!currentRoom || currentRoom.status !== 'playing') return;
+            
+            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
+            const col = isCreator ? 'creator_choice' : 'opponent_choice';
+
+            if (currentRoom[col]) return;
+
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+            document.getElementById('gameStatus').textContent = '✅ Ход записан...';
+
+            try {
+                await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
+                currentRoom[col] = choice;
+                updateGameStatus(currentRoom);
+            } catch(e) {
+                alert('Ошибка хода: ' + e.message);
+                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+            }
         }
 
         async function finishGame(room) {
@@ -495,18 +511,18 @@
             
             const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
             
+            // Обновление статистики (fire-and-forget)
             if (result.winnerId) {
-                try {
-                    const wData = await db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false);
-                    await db('users', 'PATCH', { wins: (wData[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`);
-                } catch(e) { console.warn('Win update error:', e); }
+                db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false)
+                  .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`))
+                  .catch(console.warn);
             }
             if (loserId) {
-                try {
-                    const lData = await db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false);
-                    await db('users', 'PATCH', { losses: (lData[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`);
-                } catch(e) { console.warn('Loss update error:', e); }
+                db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false)
+                  .then(d => db('users', 'PATCH', { losses: (d[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`))
+                  .catch(console.warn);
             }
+
             showGameResult({ ...room, result: result.msg });
         }
 
@@ -523,10 +539,20 @@
             const msg = room.result || result.msg;
             const isWin = msg.includes('Победа');
             const isDraw = msg.includes('Ничья');
-            document.getElementById('gameStatus').className = `status-box ${isWin ? 'win' : isDraw ? '' : 'lose'}`;
-            document.getElementById('gameStatus').innerHTML = `<div style="animation:celebrate 0.5s ease-in-out">${msg}</div>`;
+            
+            const statusEl = document.getElementById('gameStatus');
+            statusEl.className = `status-box ${isWin ? 'win' : isDraw ? '' : 'lose'}`;
+            statusEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
+            
             updateStats();
-            setTimeout(() => showScreen('lobby'), 3000);
+            
+            // ⏳ Ждём 3 секунды, чтобы игрок увидел результат, потом возвращаем в лобби
+            setTimeout(() => {
+                if (currentRoom) { // Проверка, что мы всё ещё в игре
+                    currentRoom = null;
+                    showScreen('lobby');
+                }
+            }, 3000);
         }
 
         function renderSkins() {
