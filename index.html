@@ -29,6 +29,7 @@
         .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
         .room-card:active { transform: scale(0.98); background: var(--card); }
         .room-card.my-room { border-left: 3px solid var(--success); }
+        .room-card.my-room.playing { border-left-color: var(--primary); }
         .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
         .room-icon img { width: 100%; height: 100%; object-fit: cover; }
         .room-info { flex: 1; }
@@ -372,7 +373,8 @@
                 return;
             }
             try {
-                const my = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=eq.${MY_ID}&order=created_at.desc&limit=10`);
+                // ✅ Теперь показываем и ожидающие, и активные игры
+                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 renderRooms('myRoomsList', my, true);
                 renderRooms('roomsList', pub, false);
@@ -385,11 +387,21 @@
             rooms.forEach(r => {
                 const skin = SKINS[0];
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
+                const isPlaying = r.status === 'playing';
                 const el = document.createElement('div');
-                el.className = 'room-card' + (isMy ? ' my-room' : '');
+                el.className = 'room-card' + (isMy ? ' my-room' : '') + (isPlaying ? ' playing' : '');
                 
+                // Карточка кликабельна для возврата в активную игру
+                if (isMy && isPlaying) {
+                    el.onclick = () => resumeRoom(r.id);
+                    el.style.cursor = 'pointer';
+                }
+
                 if (trulyMine) {
-                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON <span style="background:var(--success);color:#000;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ЖДЁТ</span></div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions"><button class="room-btn join" onclick="resumeRoom('${r.id}')">🔄 Вернуться</button><button class="room-btn cancel" onclick="cancelRoom('${r.id}')">✕</button></div>`;
+                    const btnText = isPlaying ? '🔄 Вернуться' : '👁 Смотреть';
+                    const badgeColor = isPlaying ? 'var(--primary)' : 'var(--success)';
+                    const badgeText = isPlaying ? 'ИГРА' : 'ЖДЁТ';
+                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON <span style="background:${badgeColor};color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${badgeText}</span></div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions"><button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${btnText}</button><button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button></div>`;
                 } else {
                     el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">Войти</button>`;
                 }
@@ -435,8 +447,18 @@
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
             document.getElementById('gameScreen').classList.remove('hidden');
 
-            document.querySelectorAll('.choice-btn').forEach(b => { b.disabled = false; b.classList.remove('selected'); });
-            document.getElementById('gameStatus').innerHTML = '<div class="spinner"></div>';
+            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
+            const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
+
+            // ✅ Если ход уже сделан, блокируем кнопки и показываем статус
+            if (currentRoom[myCol]) {
+                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+                document.getElementById('gameStatus').textContent = '✅ Ваш ход записан. Ждём соперника...';
+            } else {
+                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+                document.getElementById('gameStatus').innerHTML = '<div class="spinner"></div>';
+            }
+            
             isGameFinished = false;
 
             if (!currentRoom) {
