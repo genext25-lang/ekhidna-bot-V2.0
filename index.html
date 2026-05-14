@@ -34,16 +34,16 @@
         .room-info { flex: 1; }
         .room-stake { font-weight: 700; color: var(--gold); }
         .room-creator { font-size: 12px; color: var(--sec); }
-        .room-btn { padding: 8px 14px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .room-btn { padding: 8px 14px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .room-btn.join { background: var(--primary); color: #fff; }
         .room-btn.cancel { background: var(--error); color: #fff; }
+        .room-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .game-players { display: flex; justify-content: space-around; align-items: center; margin: 15px 0; }
         .player-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); }
         .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .vs-badge { font-size: 20px; font-weight: 700; color: var(--error); }
         
-        /* Стили для блока ставки и выигрыша */
         .game-stakes { background: rgba(251,191,36,0.05); border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; border: 1px solid var(--border); }
         .stake-line { font-size: 14px; font-weight: 600; margin: 4px 0; display: flex; justify-content: space-between; padding: 0 10px; }
         .stake-value { color: var(--gold); }
@@ -135,7 +135,6 @@
                 <div class="player-avatar"><img src="" id="opponentAvatarImg" alt="opponent"></div>
             </div>
             
-            <!-- 💰 Блок ставки и выигрыша с учетом 5% комиссии -->
             <div class="game-stakes" id="gameStakes">
                 <div class="stake-line">💰 Ставка: <span id="stakeAmount" class="stake-value">0.1</span> TON</div>
                 <div class="stake-line">🏆 Ты получишь (−5%): <span id="winAmount" class="stake-win">0.19</span> TON</div>
@@ -257,6 +256,9 @@
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
         const user = tg?.initDataUnsafe?.user || { id: 999999, username: 'Test' };
+        // Гарантируем числовой ID для корректных сравнений
+        const MY_ID = Number(user.id);
+        
         let currentRoom = null, pollInterval = null, currentSkin = 'default';
 
         function showScreen(name) {
@@ -270,13 +272,11 @@
 
         async function updateStats() {
             try {
-                const data = await db('users', 'GET', null, `?telegram_id=eq.${user.id}&select=wins,losses`, false);
+                const data = await db('users', 'GET', null, `?telegram_id=eq.${MY_ID}&select=wins,losses`, false);
                 const wins = data[0]?.wins || 0;
                 const losses = data[0]?.losses || 0;
-                
                 document.getElementById('statWins').textContent = wins;
                 document.getElementById('statGames').textContent = wins + losses;
-                
                 const skinIdx = SKINS.slice().reverse().findIndex(s => wins >= s.wins);
                 currentSkin = skinIdx >= 0 ? SKINS[SKINS.length - 1 - skinIdx].id : 'default';
                 const skin = SKINS.find(s => s.id === currentSkin);
@@ -328,18 +328,18 @@
             }
             document.getElementById('stakeModal').classList.add('hidden');
             try {
-                const room = await db('rooms', 'POST', [{ creator_tg_id: user.id, creator_username: user.username, stake: finalStake, status: 'waiting' }], '', true);
+                const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting' }], '', true);
                 currentRoom = room;
                 showGameScreen();
                 startPolling();
                 loadRooms();
-            } catch(e) { alert('Ошибка: ' + e.message); }
+            } catch(e) { alert('Ошибка создания: ' + e.message); }
         }
 
         async function loadRooms() {
             try {
-                const my = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=eq.${user.id}&order=created_at.desc&limit=10`);
-                const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${user.id}&order=created_at.desc&limit=20`);
+                const my = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=eq.${MY_ID}&order=created_at.desc&limit=10`);
+                const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 renderRooms('myRoomsList', my, true);
                 renderRooms('roomsList', pub, false);
             } catch(e) { document.getElementById('myRoomsList').innerHTML = '<div style="color:red;padding:15px;">'+e.message+'</div>'; }
@@ -352,18 +352,52 @@
                 const skin = SKINS[0];
                 const el = document.createElement('div');
                 el.className = 'room-card' + (isMy ? ' my-room' : '');
-                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${isMy?'<span style="background:var(--success);color:#000;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ЖДЁТ</span>':''}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn ${isMy?'cancel':'join'}" onclick="${isMy?`cancelRoom('${r.id}')`: `joinRoom('${r.id}')`}">${isMy?'✕':'Войти'}</button>`;
+                // Передаем creator_tg_id для проверки прав на отмену
+                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${isMy?'<span style="background:var(--success);color:#000;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ЖДЁТ</span>':''}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn ${isMy?'cancel':'join'}" onclick="${isMy?`cancelRoom('${r.id}', ${r.creator_tg_id})`: `joinRoom('${r.id}', this)`}">${isMy?'✕':'Войти'}</button>`;
                 c.appendChild(el);
             });
         }
 
-        async function cancelRoom(id) { if(confirm('Удалить?')) { await db('rooms','DELETE',null,`?id=eq.${id}&status=eq.waiting&creator_tg_id=eq.${user.id}`); loadRooms(); } }
-        async function joinRoom(id) {
+        async function cancelRoom(roomId, creatorId) {
+            if (Number(creatorId) !== MY_ID) {
+                alert('⛔ Только создатель комнаты может её отменить!');
+                return;
+            }
+            if (!confirm('Отменить комнату?')) return;
             try {
-                const room = await db('rooms','PATCH',{opponent_tg_id:user.id,status:'playing'},`?id=eq.${id}&status=eq.waiting`,true);
-                if(!room) { alert('Комната занята'); return; }
-                currentRoom = room; showGameScreen(); startPolling();
-            } catch(e) { alert(e.message); }
+                await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
+                loadRooms();
+            } catch(e) { alert('Ошибка удаления: ' + e.message); }
+        }
+
+        async function joinRoom(roomId, btnElement) {
+            btnElement.disabled = true;
+            btnElement.textContent = '⏳';
+            try {
+                // 1. Проверяем, что комната всё ещё waiting
+                const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
+                if (!check.length) throw new Error('Комната уже занята');
+                
+                // 2. Пытаемся войти
+                const room = await db('rooms', 'PATCH', { 
+                    opponent_tg_id: MY_ID, 
+                    opponent_username: user.username, 
+                    status: 'playing' 
+                }, `?id=eq.${roomId}&status=eq.waiting`, true);
+                
+                if (!room) throw new Error('Не удалось войти в комнату');
+                
+                currentRoom = room;
+                showGameScreen();
+                startPolling();
+                loadRooms();
+            } catch(e) {
+                alert('Ошибка: ' + e.message);
+                loadRooms();
+            } finally {
+                btnElement.disabled = false;
+                btnElement.textContent = 'Войти';
+            }
         }
 
         function showGameScreen() {
@@ -371,14 +405,13 @@
             document.getElementById('gameScreen').classList.remove('hidden');
             document.getElementById('gameStatus').innerHTML = 'Ожидание...';
             
-            // 💰 Расчет ставки и выигрыша (минус 5% комиссии)
             const stake = parseFloat(currentRoom?.stake || 0);
             const totalPot = stake * 2;
             const commission = totalPot * 0.05;
             const netWin = totalPot - commission;
             
             document.getElementById('stakeAmount').textContent = stake.toFixed(2);
-            document.getElementById('winAmount').textContent = netWin.toFixed(2); // 0.19 вместо 0.2
+            document.getElementById('winAmount').textContent = netWin.toFixed(2);
             
             const skin = SKINS.find(s=>s.id===currentSkin)||SKINS[0];
             document.getElementById('playerAvatarImg').src = skin.img;
@@ -386,7 +419,7 @@
         }
 
         async function makeMove(choice) {
-            const col = currentRoom.creator_tg_id === user.id ? 'creator_choice' : 'opponent_choice';
+            const col = currentRoom.creator_tg_id === MY_ID ? 'creator_choice' : 'opponent_choice';
             document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
             document.getElementById('gameStatus').textContent = 'Ход записан...';
             await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);
@@ -415,19 +448,13 @@
             
             const loserId = result.winnerId === room.creator_tg_id ? room.opponent_tg_id : room.creator_tg_id;
             
-            // ✅ Обновляем победы
             if (result.winnerId) {
                 try {
                     const wData = await db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false);
                     const currentWins = wData[0]?.wins || 0;
-                    // Если юзер создал комнату, но его нет в users, создаем запись
-                    const payload = { telegram_id: result.winnerId, wins: currentWins + 1 };
-                    if (result.winnerId === room.creator_tg_id && room.creator_username) payload.username = room.creator_username;
-                    
                     await db('users', 'PATCH', { wins: currentWins + 1 }, `?telegram_id=eq.${result.winnerId}`);
                 } catch(e) { console.warn('Win update error:', e); }
             }
-            // ✅ Обновляем поражения
             if (loserId) {
                 try {
                     const lData = await db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false);
@@ -443,7 +470,7 @@
             if (c1 === c2) return { msg: '🤝 Ничья!', winnerId: null };
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
-            return { msg: (creatorWins ? (user.id === id1) : (user.id === id2)) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
+            return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
         }
 
         function showGameResult(room) {
@@ -502,7 +529,6 @@
                 users.forEach((u,i) => {
                     const wins = u.wins || 0;
                     const skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0];
-                    // Фоллбэк на ID если ник пустой
                     const name = u.username || `Player_${String(u.telegram_id).slice(-4)}`;
                     const el = document.createElement('div');
                     el.className = 'room-card';
