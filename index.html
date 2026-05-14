@@ -158,7 +158,10 @@
                     <span>Кристалл</span>
                 </button>
             </div>
-            <button class="btn btn-sec" onclick="showScreen('lobby')">🏠 В лобби</button>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+                <button class="btn btn-sec" onclick="showScreen('lobby')" style="flex:1;">🏠 В лобби</button>
+                <button class="btn btn-sec" onclick="leaveGame()" style="flex:1;background:var(--card);">🚪 Покинуть</button>
+            </div>
             <div class="nav-spacer"></div>
         </div>
 
@@ -300,6 +303,13 @@
             if (name === 'leaderboard') loadLeaderboard();
         }
 
+        function leaveGame() {
+            currentRoom = null;
+            isGameFinished = false;
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            showScreen('lobby');
+        }
+
         async function updateStats() {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
@@ -373,7 +383,6 @@
                 return;
             }
             try {
-                // ✅ Теперь показываем и ожидающие, и активные игры
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 renderRooms('myRoomsList', my, true);
@@ -391,7 +400,6 @@
                 const el = document.createElement('div');
                 el.className = 'room-card' + (isMy ? ' my-room' : '') + (isPlaying ? ' playing' : '');
                 
-                // Карточка кликабельна для возврата в активную игру
                 if (isMy && isPlaying) {
                     el.onclick = () => resumeRoom(r.id);
                     el.style.cursor = 'pointer';
@@ -449,9 +457,12 @@
 
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
+            const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
 
-            // ✅ Если ход уже сделан, блокируем кнопки и показываем статус
-            if (currentRoom[myCol]) {
+            if (currentRoom[myCol] && currentRoom[oppCol]) {
+                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+                document.getElementById('gameStatus').textContent = '⏳ Подведение итогов...';
+            } else if (currentRoom[myCol]) {
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
                 document.getElementById('gameStatus').textContent = '✅ Ваш ход записан. Ждём соперника...';
             } else {
@@ -484,7 +495,16 @@
                 statusEl.innerHTML = '⏳ Ждём соперника...';
             } else if (room.status === 'playing') {
                 const myCol = String(room.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
-                statusEl.innerHTML = room[myCol] ? '⏳ Соперник думает...' : '👉 Ваш ход!';
+                const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
+                if (room[myCol] && room[oppCol]) {
+                    statusEl.innerHTML = '⏳ Подведение итогов...';
+                } else if (room[myCol]) {
+                    statusEl.innerHTML = '⏳ Соперник думает...';
+                } else {
+                    statusEl.innerHTML = '👉 Ваш ход!';
+                }
+            } else {
+                statusEl.innerHTML = '🏁 Игра окончена';
             }
         }
 
@@ -502,17 +522,19 @@
                     currentRoom = room;
                     updateGameStatus(room);
 
+                    // ✅ Жёсткое завершение, если оба хода сделаны (даже если статус залип)
+                    if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
+                        isGameFinished = true;
+                        clearInterval(pollInterval); pollInterval = null;
+                        await finishGame(room);
+                        return;
+                    }
+
                     if (room.status === 'finished') {
                         isGameFinished = true;
                         clearInterval(pollInterval); pollInterval = null;
                         showGameResult(room);
                         return;
-                    }
-
-                    if (room.creator_choice && room.opponent_choice && room.status === 'playing') {
-                        isGameFinished = true;
-                        clearInterval(pollInterval); pollInterval = null;
-                        await finishGame(room);
                     }
                 } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
