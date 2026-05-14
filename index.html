@@ -30,6 +30,7 @@
         .room-card:active { transform: scale(0.98); background: var(--card); }
         .room-card.my-room { border-left: 3px solid var(--success); }
         .room-card.my-room.playing { border-left-color: var(--primary); }
+        .room-card.my-room.finished { border-left-color: var(--gold); background: rgba(251,191,36,0.05); }
         .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
         .room-icon img { width: 100%; height: 100%; object-fit: cover; }
         .room-info { flex: 1; }
@@ -219,10 +220,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
             <span>Лобби</span>
         </button>
-        <button class="nav-btn" onclick="showScreen('game')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-            <span>Игра</span>
-        </button>
         <button class="nav-btn" onclick="showScreen('skins')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             <span>Скины</span>
@@ -268,6 +265,7 @@
         let selectedStake = 0.1;
         let currentRoom = null;
         let pollInterval = null;
+        let lobbyRefreshInterval = null;
         let currentSkin = 'default';
         let isGameFinished = false;
 
@@ -283,7 +281,6 @@
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
 
-        // ✅ Безопасное переключение экранов с проверками
         function showScreen(name) {
             const screens = ['lobbyScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'];
             screens.forEach(id => {
@@ -294,22 +291,28 @@
             const target = document.getElementById(name + 'Screen');
             if (target) target.classList.remove('hidden');
             
+            // Обновляем активную кнопку навигации (3 кнопки: Лобби, Скины, Рейтинг)
             document.querySelectorAll('.nav-btn').forEach((b, i) => {
-                b.classList.toggle('active', ['lobby', 'game', 'skins', 'leaderboard'].indexOf(name) === i);
+                const map = ['lobby', 'skins', 'leaderboard'];
+                b.classList.toggle('active', map[i] === name);
             });
 
             if (name === 'lobby') {
                 currentRoom = null;
                 isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+                if (lobbyRefreshInterval) clearInterval(lobbyRefreshInterval);
+                lobbyRefreshInterval = setInterval(() => loadRooms(), 3000); // Авто-обновление лобби
                 loadRooms();
                 updateStats();
+            } else {
+                if (lobbyRefreshInterval) clearInterval(lobbyRefreshInterval);
             }
+            
             if (name === 'skins') renderSkins();
             if (name === 'leaderboard') loadLeaderboard();
         }
 
-        // ✅ Мгновенный выход
         function forceExitToLobby() {
             isGameFinished = true;
             currentRoom = null;
@@ -390,7 +393,7 @@
                 return;
             }
             try {
-                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
+                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing,finished)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 renderRooms('myRoomsList', my, true);
                 renderRooms('roomsList', pub, false);
@@ -403,20 +406,37 @@
             rooms.forEach(r => {
                 const skin = SKINS[0];
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
+                const isFinished = r.status === 'finished';
                 const isPlaying = r.status === 'playing';
                 const el = document.createElement('div');
-                el.className = 'room-card' + (isMy ? ' my-room' : '') + (isPlaying ? ' playing' : '');
+                el.className = 'room-card' + (isMy ? ' my-room' : '') + (isFinished ? ' finished' : '') + (isPlaying ? ' playing' : '');
                 
-                if (isMy && isPlaying) {
+                if (isMy && (isPlaying || isFinished)) {
                     el.onclick = () => resumeRoom(r.id);
                     el.style.cursor = 'pointer';
                 }
 
+                let badgeHtml = '';
+                let btnHtml = '';
+                
+                if (isFinished) {
+                    const result = calculateWinner(r);
+                    const isWin = result.msg.includes('Победа');
+                    const isDraw = result.msg.includes('Ничья');
+                    const badgeText = isWin ? '✅ Победа' : isDraw ? '🤝 Ничья' : '❌ Поражение';
+                    const badgeColor = isWin ? 'var(--success)' : isDraw ? 'var(--gold)' : 'var(--error)';
+                    badgeHtml = `<span style="background:${badgeColor};color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${badgeText}</span>`;
+                    btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">👁 Итоги</button>`;
+                } else if (isPlaying) {
+                    badgeHtml = `<span style="background:var(--primary);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ИГРА</span>`;
+                    btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">🔄 Вернуться</button>`;
+                } else {
+                    badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ЖДЁТ</span>`;
+                    btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">👁 Смотреть</button>`;
+                }
+
                 if (trulyMine) {
-                    const btnText = isPlaying ? '🔄 Вернуться' : '👁 Смотреть';
-                    const badgeColor = isPlaying ? 'var(--primary)' : 'var(--success)';
-                    const badgeText = isPlaying ? 'ИГРА' : 'ЖДЁТ';
-                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON <span style="background:${badgeColor};color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${badgeText}</span></div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions"><button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${btnText}</button><button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button></div>`;
+                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions">${btnHtml}<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button></div>`;
                 } else {
                     el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">Войти</button>`;
                 }
@@ -429,6 +449,13 @@
                 const rooms = await db('rooms', 'GET', null, `?id=eq.${roomId}&creator_tg_id=eq.${MY_ID}`);
                 if (!rooms.length) { alert('Комната не найдена'); loadRooms(); return; }
                 currentRoom = rooms[0];
+                
+                if (currentRoom.status === 'finished') {
+                    showGameScreen();
+                    showGameResult(currentRoom); // Сразу показываем результат
+                    return;
+                }
+                
                 showGameScreen();
                 startPolling();
             } catch(e) { alert('Ошибка: ' + e.message); }
@@ -540,9 +567,7 @@
                         showGameResult(room);
                         return;
                     }
-                } catch(e) { 
-                    console.warn('Poll error:', e); 
-                }
+                } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
         }
 
@@ -606,8 +631,6 @@
             statusEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
             
             updateStats();
-            
-            // ✅ Всегда переходим в лобби через 3 секунды
             setTimeout(() => { forceExitToLobby(); }, 3000);
         }
 
