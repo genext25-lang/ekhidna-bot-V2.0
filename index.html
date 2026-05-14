@@ -50,11 +50,12 @@
         .stake-win { color: var(--success); font-size: 16px; }
 
         .choices { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
-        .choice-btn { width: 100px; height: 100px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; }
+        .choice-btn { width: 100px; height: 100px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; transition: all 0.2s; }
+        .choice-btn:active:not(:disabled) { transform: scale(0.95); }
         .choice-btn img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 4px; }
         .choice-btn span { font-size: 11px; color: var(--sec); font-weight: 600; }
-        .choice-btn:disabled { opacity: 0.4; }
-        .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; }
+        .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
+        .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; }
         .hidden { display: none !important; }
         .loader { text-align: center; padding: 30px; color: var(--sec); }
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
@@ -234,11 +235,8 @@
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
-        // 🔐 НАДЕЖНЫЙ ПАРСИНГ ПОЛЬЗОВАТЕЛЯ (из URL параметров Telegram)
         function getCurrentUser() {
-            if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-                return window.Telegram.WebApp.initDataUnsafe.user;
-            }
+            if (window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user;
             try {
                 const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
                 const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search;
@@ -256,14 +254,14 @@
 
         const user = getCurrentUser();
         const MY_ID = Number(user.id);
-        console.log('👤 Current User ID:', MY_ID, '| Username:', user.username);
+        console.log('👤 Player ID:', MY_ID, '| User:', user.username);
 
         const SKINS = [
-            { id: 'default', name: 'Обычная', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png', desc: 'Стартовая ехидна, с которой начинается твоё путешествие. Дружелюбная и весёлая, она всегда готова к новым приключениям!', features: ['Сбалансированные характеристики', 'Идеальна для новичков', 'Классический розовый цвет', 'Дружелюбный характер'] },
-            { id: 'ice', name: 'Ледяная', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png', desc: 'Загадочная ехидна из ледяных кристаллов. Её взгляд способен заморозить любого соперника! Холодный расчёт и стратегическое мышление — её главные козыри.', features: ['Кристальные иглы сверкают на солнце', 'Холодный расчёт в бою', '+10% к стратегическому мышлению', 'Замораживает соперников взглядом'] },
-            { id: 'fire', name: 'Огненная', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png', desc: 'Пламенная натура с огненным темпераментом! Её иглы горят ярким пламенем, а глаза светятся решимостью. Агрессивный стиль игры — её стихия.', features: ['Огненные иглы пугают врагов', 'Быстрая и агрессивная', 'Горит желанием победить', 'Янтарные глаза видят всё'] },
-            { id: 'shadow', name: 'Теневая', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png', desc: 'Таинственная ехидна из глубин тьмы. Её фиолетовые глаза видят то, что скрыто от других. Мистическая сила тени даёт ей преимущество в бою.', features: ['Появляется из тени', 'Фиолетовые глаза видят всё', 'Тайная сила тьмы', 'Загадочная аура'] },
-            { id: 'golden', name: 'Золотая', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png', desc: 'Легендарная ехидна с золотой короной! Только настоящие чемпионы могут обладать этой редчайшей формой. Золотые кристаллы — символ власти и превосходства.', features: ['Корона победителя', 'Золотые кристаллы — символ власти', 'Только для чемпионов (300+ побед)', 'Легендарная редкость'] }
+            { id: 'default', name: 'Обычная', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png', desc: 'Стартовая ехидна.', features: ['Базовый скин', 'Для новичков'] },
+            { id: 'ice', name: 'Ледяная', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png', desc: 'Холодный расчёт.', features: ['Ледяные иглы', 'Стратег'] },
+            { id: 'fire', name: 'Огненная', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png', desc: 'Огненный темперамент.', features: ['Агрессивный стиль', 'Быстрая реакция'] },
+            { id: 'shadow', name: 'Теневая', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png', desc: 'Сила тени.', features: ['Мистика', 'Непредсказуемость'] },
+            { id: 'golden', name: 'Золотая', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png', desc: 'Легенда.', features: ['Корона чемпиона', '300+ побед'] }
         ];
 
         let selectedStake = 0.1;
@@ -360,8 +358,7 @@
 
         async function loadRooms() {
             if (!MY_ID || MY_ID === 999999) {
-                document.getElementById('myRoomsList').innerHTML = '<div style="color:var(--error);padding:15px;">⚠️ Не удалось определить пользователя. Перезапустите игру.</div>';
-                document.getElementById('roomsList').innerHTML = '';
+                document.getElementById('myRoomsList').innerHTML = '<div style="color:var(--error);padding:15px;">⚠️ Не удалось определить пользователя.</div>';
                 return;
             }
             try {
@@ -377,10 +374,7 @@
             if (!rooms.length) { c.innerHTML = '<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>'; return; }
             rooms.forEach(r => {
                 const skin = SKINS[0];
-                const creatorId = Number(r.creator_tg_id);
-                // Клиентская проверка для надежности
-                const trulyMine = creatorId === MY_ID;
-                
+                const trulyMine = Number(r.creator_tg_id) === MY_ID;
                 const el = document.createElement('div');
                 el.className = 'room-card' + (isMy ? ' my-room' : '');
                 el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${trulyMine?'<span style="background:var(--success);color:#000;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ЖДЁТ</span>':''}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn ${trulyMine?'cancel':'join'}" onclick="${trulyMine?`cancelRoom('${r.id}')`: `joinRoom('${r.id}', this)`}">${trulyMine?'✕':'Войти'}</button>`;
@@ -389,7 +383,6 @@
         }
 
         async function cancelRoom(roomId) {
-            // Двойная проверка: ID комнаты и текущий пользователь
             try {
                 const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
                 if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) {
@@ -398,44 +391,32 @@
                 }
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
                 loadRooms();
-            } catch(e) { alert('Ошибка удаления: ' + e.message); }
+            } catch(e) { alert('Ошибка: ' + e.message); }
         }
 
         async function joinRoom(roomId, btnElement) {
-            btnElement.disabled = true;
-            btnElement.textContent = '⏳';
+            btnElement.disabled = true; btnElement.textContent = '⏳';
             try {
-                // 1. Проверка статуса
                 const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
-                if (!check.length) throw new Error('Комната уже занята или не существует');
-                if (Number(check[0].creator_tg_id) === MY_ID) throw new Error('Нельзя войти в свою комнату');
+                if (!check.length) throw new Error('Комната уже занята');
                 
-                // 2. Вход
-                const room = await db('rooms', 'PATCH', { 
-                    opponent_tg_id: MY_ID, 
-                    opponent_username: user.username, 
-                    status: 'playing' 
-                }, `?id=eq.${roomId}&status=eq.waiting`, true);
-                
-                if (!room) throw new Error('Не удалось войти в комнату');
+                const room = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true);
+                if (!room) throw new Error('Не удалось войти');
                 
                 currentRoom = room;
                 showGameScreen();
                 startPolling();
                 loadRooms();
-            } catch(e) {
-                alert('Ошибка: ' + e.message);
-                loadRooms();
-            } finally {
-                btnElement.disabled = false;
-                btnElement.textContent = 'Войти';
-            }
+            } catch(e) { alert('Ошибка: ' + e.message); loadRooms(); }
+            finally { btnElement.disabled = false; btnElement.textContent = 'Войти'; }
         }
 
         function showGameScreen() {
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
             document.getElementById('gameScreen').classList.remove('hidden');
-            document.getElementById('gameStatus').innerHTML = 'Ожидание...';
+            
+            // 🔘 Принудительно активируем кнопки
+            document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
             
             const stake = parseFloat(currentRoom?.stake || 0);
             const totalPot = stake * 2;
@@ -445,32 +426,66 @@
             document.getElementById('stakeAmount').textContent = stake.toFixed(2);
             document.getElementById('winAmount').textContent = netWin.toFixed(2);
             
+            updateGameStatus(currentRoom);
+            
             const skin = SKINS.find(s=>s.id===currentSkin)||SKINS[0];
             document.getElementById('playerAvatarImg').src = skin.img;
             document.getElementById('opponentAvatarImg').src = SKINS[0].img;
         }
 
+        function updateGameStatus(room) {
+            if (!room) return;
+            const statusEl = document.getElementById('gameStatus');
+            if (room.status === 'waiting') {
+                statusEl.innerHTML = '⏳ Ждём соперника...';
+            } else if (room.status === 'playing') {
+                const myChoice = String(room.creator_tg_id) === String(MY_ID) ? room.creator_choice : room.opponent_choice;
+                statusEl.innerHTML = myChoice ? '⏳ Соперник думает...' : '👉 Ваш ход!';
+            } else {
+                statusEl.innerHTML = '🏁 Игра окончена';
+            }
+        }
+
         async function makeMove(choice) {
-            const col = currentRoom.creator_tg_id === MY_ID ? 'creator_choice' : 'opponent_choice';
+            if (!currentRoom) return;
+            // Безопасное сравнение ID
+            const col = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
+            
             document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);
-            document.getElementById('gameStatus').textContent = 'Ход записан...';
-            await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);
-            document.getElementById('gameStatus').textContent = 'Ждём соперника...';
+            document.getElementById('gameStatus').textContent = '✅ Ход записан!';
+            
+            try {
+                await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);
+                updateGameStatus(currentRoom); // Обновляем статус сразу
+            } catch(e) { 
+                alert('Ошибка хода: ' + e.message); 
+                document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);
+            }
         }
 
         function startPolling() {
             if(pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(async () => {
                 if(!currentRoom) return;
-                const rooms = await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);
-                const room = rooms[0];
-                if(!room) return;
-                currentRoom = room;
-                if(room.status==='finished') { clearInterval(pollInterval); alert('Игра окончена!'); showScreen('lobby'); return; }
-                if(room.creator_choice && room.opponent_choice) {
-                    clearInterval(pollInterval);
-                    await finishGame(room);
-                }
+                try {
+                    const rooms = await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);
+                    const room = rooms[0];
+                    if(!room) return;
+                    currentRoom = room;
+                    
+                    updateGameStatus(room);
+                    
+                    if(room.status==='finished') { 
+                        clearInterval(pollInterval); 
+                        alert('Игра окончена!'); 
+                        showScreen('lobby'); 
+                        return; 
+                    }
+                    if(room.creator_choice && room.opponent_choice) {
+                        clearInterval(pollInterval);
+                        await finishGame(room);
+                    }
+                } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
         }
 
@@ -478,20 +493,18 @@
             const result = calculateWinner(room);
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
             
-            const loserId = result.winnerId === room.creator_tg_id ? room.opponent_tg_id : room.creator_tg_id;
+            const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
             
             if (result.winnerId) {
                 try {
                     const wData = await db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false);
-                    const currentWins = wData[0]?.wins || 0;
-                    await db('users', 'PATCH', { wins: currentWins + 1 }, `?telegram_id=eq.${result.winnerId}`);
+                    await db('users', 'PATCH', { wins: (wData[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`);
                 } catch(e) { console.warn('Win update error:', e); }
             }
             if (loserId) {
                 try {
                     const lData = await db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false);
-                    const currentLosses = lData[0]?.losses || 0;
-                    await db('users', 'PATCH', { losses: currentLosses + 1 }, `?telegram_id=eq.${loserId}`);
+                    await db('users', 'PATCH', { losses: (lData[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`);
                 } catch(e) { console.warn('Loss update error:', e); }
             }
             showGameResult({ ...room, result: result.msg });
@@ -502,7 +515,7 @@
             if (c1 === c2) return { msg: '🤝 Ничья!', winnerId: null };
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
-            return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
+            return { msg: (creatorWins ? (String(MY_ID) === String(id1)) : (String(MY_ID) === String(id2))) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
         }
 
         function showGameResult(room) {
@@ -564,17 +577,7 @@
                     const name = u.username || `Player_${String(u.telegram_id).slice(-4)}`;
                     const el = document.createElement('div');
                     el.className = 'room-card';
-                    el.innerHTML = `
-                        <div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
-                        <div class="room-icon"><img src="${skin.img}" alt=""></div>
-                        <div class="room-info">
-                            <div class="room-stake">@${name}</div>
-                            <div class="lb-stats">
-                                <span>✅ ${wins}</span>
-                                <span>❌ ${u.losses || 0}</span>
-                            </div>
-                        </div>
-                    `;
+                    el.innerHTML = `<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${name}</div><div class="lb-stats"><span>✅ ${wins}</span><span>❌ ${u.losses || 0}</span></div></div>`;
                     c.appendChild(el);
                 });
             } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">'+e.message+'</div>'; }
