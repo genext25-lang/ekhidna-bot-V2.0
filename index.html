@@ -230,10 +230,8 @@
     </div>
 
     <script>
-        // === КОНФИГУРАЦИЯ SUPABASE ===
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe'; // <-- ЗАМЕНИТЕ ЭТОТ ТЕКСТ НА ВАШ РЕАЛЬНЫЙ КЛЮЧ ИЗ SUPABASE!
-        // ===========================
+        const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
         function getCurrentUser() {
             if (window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user;
@@ -298,15 +296,22 @@
             });
 
             if (name === 'lobby') {
+                // ✅ Гарантированная очистка и запуск обновления лобби
                 currentRoom = null;
                 isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                if (lobbyRefreshInterval) clearInterval(lobbyRefreshInterval);
-                lobbyRefreshInterval = setInterval(() => loadRooms(), 3000);
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+                
+                // Запускаем обновление лобби
+                lobbyRefreshInterval = setInterval(() => {
+                    console.log('🔄 Auto-refresh lobby...');
+                    loadRooms();
+                }, 3000);
+                
                 loadRooms();
                 updateStats();
             } else {
-                if (lobbyRefreshInterval) clearInterval(lobbyRefreshInterval);
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
             }
             
             if (name === 'skins') renderSkins();
@@ -393,13 +398,15 @@
                 return;
             }
             try {
-                // ✅ Запрашиваем только активные комнаты (waiting, playing)
-                // Завершенные (finished) автоматически исчезнут из списка
+                // ✅ Запрашиваем комнаты со статусами waiting и playing
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 renderRooms('myRoomsList', my, true);
                 renderRooms('roomsList', pub, false);
-            } catch(e) { document.getElementById('myRoomsList').innerHTML = '<div style="color:red;padding:15px;">'+e.message+'</div>'; }
+            } catch(e) { 
+                console.error('Load rooms error:', e);
+                document.getElementById('myRoomsList').innerHTML = '<div style="color:red;padding:15px;">'+e.message+'</div>'; 
+            }
         }
 
         function renderRooms(id, rooms, isMy) {
@@ -438,7 +445,6 @@
                 }
 
                 if (trulyMine) {
-                    // ✅ Кнопка отмены только для ожидающих комнат
                     const cancelBtn = !isPlaying ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
                     el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`;
                 } else {
