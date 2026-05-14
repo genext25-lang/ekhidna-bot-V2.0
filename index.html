@@ -20,7 +20,7 @@
         .stat-val { font-size: 20px; font-weight: 700; color: var(--primary); }
         .stat-lbl { font-size: 10px; color: var(--sec); text-transform: uppercase; }
         .skin-badge { display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 4px; }
-        .btn { width: 100%; padding: 14px; margin: 6px 0; border: none; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; }
+        .btn { width: 100%; padding: 14px; margin: 6px 0; border: none; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; transition: all 0.2s; }
         .btn:active { transform: scale(0.97); }
         .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
@@ -158,8 +158,7 @@
                     <span>Кристалл</span>
                 </button>
             </div>
-            <!-- ✅ Одна умная кнопка вместо двух -->
-            <button class="btn btn-sec" onclick="attemptLeave()">🏠 В лобби</button>
+            <button class="btn btn-sec" onclick="goToLobby()">🏠 В лобби</button>
             <div class="nav-spacer"></div>
         </div>
 
@@ -257,7 +256,6 @@
 
         const user = getCurrentUser();
         const MY_ID = Number(user.id);
-        console.log('👤 Player ID:', MY_ID);
 
         const SKINS = [
             { id: 'default', name: 'Обычная', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png', desc: 'Стартовая ехидна.', features: ['Базовый скин', 'Для новичков'] },
@@ -285,44 +283,42 @@
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
 
-        // ✅ Умная кнопка выхода
-        function attemptLeave() {
-            if (currentRoom && currentRoom.status === 'playing') {
-                if (confirm('Вы покинете активную игру. Это будет засчитано как поражение. Уверены?')) {
-                    forfeitGame();
-                }
+        // ✅ Мгновенный и безопасный выход в лобби
+        function goToLobby() {
+            if (currentRoom && currentRoom.status === 'playing' && !isGameFinished) {
+                if (!confirm('Вы покинете активную игру. Это будет засчитано как поражение. Уверены?')) return;
+                forfeitGame();
             } else {
                 leaveGame();
             }
         }
 
         function leaveGame() {
+            isGameFinished = true;
             currentRoom = null;
-            isGameFinished = false;
             if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
             showScreen('lobby');
         }
 
-        // ✅ Корректное завершение при выходе
         async function forfeitGame() {
             if (!currentRoom) return leaveGame();
             isGameFinished = true;
             if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
 
-            // Мгновенно помечаем комнату как finished, чтобы соперник увидел конец
+            // Помечаем как finished, чтобы соперник увидел результат
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${currentRoom.id}`);
 
-            // Обновляем статистику (fire-and-forget)
+            // Обновляем статистику
             const oppId = MY_ID === currentRoom.creator_tg_id ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
-            db('users', 'PATCH', { losses: (currentSelfLosses || 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn);
-            if (oppId) db('users', 'PATCH', { wins: (currentOppWins || 0) + 1 }, `?telegram_id=eq.${oppId}`).catch(console.warn);
+            db('users', 'PATCH', { losses: (currentRoom.leaver_losses || 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn);
+            if (oppId) db('users', 'PATCH', { wins: (currentRoom.opponent_wins || 0) + 1 }, `?telegram_id=eq.${oppId}`).catch(console.warn);
 
             const statusEl = document.getElementById('gameStatus');
             statusEl.className = 'status-box lose';
             statusEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out;">😢 Вы покинули игру</div>`;
             
             updateStats();
-            setTimeout(() => { currentRoom = null; showScreen('lobby'); }, 2000);
+            setTimeout(() => { leaveGame(); }, 2000);
         }
 
         async function updateStats() {
@@ -535,7 +531,7 @@
                     currentRoom = room;
                     updateGameStatus(room);
 
-                    // ✅ Жёсткое завершение, если оба хода сделаны (даже если статус залип)
+                    // ✅ Жёсткое завершение, если оба хода сделаны
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
                         isGameFinished = true;
                         clearInterval(pollInterval); pollInterval = null;
@@ -613,8 +609,10 @@
             statusEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
             
             updateStats();
+            
+            // Авто-возврат через 3 секунды, но кнопка "В лобби" работает сразу
             setTimeout(() => {
-                if (currentRoom) { currentRoom = null; showScreen('lobby'); }
+                if (currentRoom) { leaveGame(); }
             }, 3000);
         }
 
