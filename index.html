@@ -30,7 +30,6 @@
         .room-card:active { transform: scale(0.98); background: var(--card); }
         .room-card.my-room { border-left: 3px solid var(--success); }
         .room-card.my-room.playing { border-left-color: var(--primary); }
-        .room-card.my-room.finished { border-left-color: var(--gold); background: rgba(251,191,36,0.05); }
         .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
         .room-icon img { width: 100%; height: 100%; object-fit: cover; }
         .room-info { flex: 1; }
@@ -231,7 +230,7 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
+        const SUPABASE_URL = 'https://kzlzbjmajonvdefszmip.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
         function getCurrentUser() {
@@ -291,7 +290,6 @@
             const target = document.getElementById(name + 'Screen');
             if (target) target.classList.remove('hidden');
             
-            // Обновляем активную кнопку навигации (3 кнопки: Лобби, Скины, Рейтинг)
             document.querySelectorAll('.nav-btn').forEach((b, i) => {
                 const map = ['lobby', 'skins', 'leaderboard'];
                 b.classList.toggle('active', map[i] === name);
@@ -302,7 +300,7 @@
                 isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 if (lobbyRefreshInterval) clearInterval(lobbyRefreshInterval);
-                lobbyRefreshInterval = setInterval(() => loadRooms(), 3000); // Авто-обновление лобби
+                lobbyRefreshInterval = setInterval(() => loadRooms(), 3000);
                 loadRooms();
                 updateStats();
             } else {
@@ -393,7 +391,9 @@
                 return;
             }
             try {
-                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing,finished)&order=created_at.desc&limit=10`);
+                // ✅ Запрашиваем только активные комнаты (waiting, playing)
+                // Завершенные (finished) автоматически исчезнут из списка
+                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 renderRooms('myRoomsList', my, true);
                 renderRooms('roomsList', pub, false);
@@ -436,7 +436,9 @@
                 }
 
                 if (trulyMine) {
-                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions">${btnHtml}<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button></div>`;
+                    // ✅ Кнопка отмены только для ожидающих комнат
+                    const cancelBtn = !isPlaying ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
+                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`;
                 } else {
                     el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">Войти</button>`;
                 }
@@ -452,7 +454,7 @@
                 
                 if (currentRoom.status === 'finished') {
                     showGameScreen();
-                    showGameResult(currentRoom); // Сразу показываем результат
+                    showGameResult(currentRoom);
                     return;
                 }
                 
