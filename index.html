@@ -234,6 +234,30 @@
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
+        // 🔐 НАДЕЖНЫЙ ПАРСИНГ ПОЛЬЗОВАТЕЛЯ (из URL параметров Telegram)
+        function getCurrentUser() {
+            if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                return window.Telegram.WebApp.initDataUnsafe.user;
+            }
+            try {
+                const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+                const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search;
+                const full = `${hash}&${search}`;
+                const params = new URLSearchParams(full);
+                const tgData = params.get('tgWebAppData');
+                if (tgData) {
+                    const dataParams = new URLSearchParams(decodeURIComponent(tgData));
+                    const userJSON = dataParams.get('user');
+                    if (userJSON) return JSON.parse(decodeURIComponent(userJSON));
+                }
+            } catch (e) { console.warn('User parse error:', e); }
+            return { id: 999999, username: 'Guest' };
+        }
+
+        const user = getCurrentUser();
+        const MY_ID = Number(user.id);
+        console.log('👤 Current User ID:', MY_ID, '| Username:', user.username);
+
         const SKINS = [
             { id: 'default', name: 'Обычная', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png', desc: 'Стартовая ехидна, с которой начинается твоё путешествие. Дружелюбная и весёлая, она всегда готова к новым приключениям!', features: ['Сбалансированные характеристики', 'Идеальна для новичков', 'Классический розовый цвет', 'Дружелюбный характер'] },
             { id: 'ice', name: 'Ледяная', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png', desc: 'Загадочная ехидна из ледяных кристаллов. Её взгляд способен заморозить любого соперника! Холодный расчёт и стратегическое мышление — её главные козыри.', features: ['Кристальные иглы сверкают на солнце', 'Холодный расчёт в бою', '+10% к стратегическому мышлению', 'Замораживает соперников взглядом'] },
@@ -255,9 +279,6 @@
 
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
-        const user = tg?.initDataUnsafe?.user || { id: 999999, username: 'Test' };
-        // Гарантируем числовой ID для корректных сравнений
-        const MY_ID = Number(user.id);
         
         let currentRoom = null, pollInterval = null, currentSkin = 'default';
 
@@ -272,6 +293,7 @@
 
         async function updateStats() {
             try {
+                if (!MY_ID || MY_ID === 999999) return;
                 const data = await db('users', 'GET', null, `?telegram_id=eq.${MY_ID}&select=wins,losses`, false);
                 const wins = data[0]?.wins || 0;
                 const losses = data[0]?.losses || 0;
@@ -337,6 +359,11 @@
         }
 
         async function loadRooms() {
+            if (!MY_ID || MY_ID === 999999) {
+                document.getElementById('myRoomsList').innerHTML = '<div style="color:var(--error);padding:15px;">⚠️ Не удалось определить пользователя. Перезапустите игру.</div>';
+                document.getElementById('roomsList').innerHTML = '';
+                return;
+            }
             try {
                 const my = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=eq.${MY_ID}&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
@@ -350,21 +377,25 @@
             if (!rooms.length) { c.innerHTML = '<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>'; return; }
             rooms.forEach(r => {
                 const skin = SKINS[0];
+                const creatorId = Number(r.creator_tg_id);
+                // Клиентская проверка для надежности
+                const trulyMine = creatorId === MY_ID;
+                
                 const el = document.createElement('div');
                 el.className = 'room-card' + (isMy ? ' my-room' : '');
-                // Передаем creator_tg_id для проверки прав на отмену
-                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${isMy?'<span style="background:var(--success);color:#000;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ЖДЁТ</span>':''}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn ${isMy?'cancel':'join'}" onclick="${isMy?`cancelRoom('${r.id}', ${r.creator_tg_id})`: `joinRoom('${r.id}', this)`}">${isMy?'✕':'Войти'}</button>`;
+                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${trulyMine?'<span style="background:var(--success);color:#000;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">ЖДЁТ</span>':''}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn ${trulyMine?'cancel':'join'}" onclick="${trulyMine?`cancelRoom('${r.id}')`: `joinRoom('${r.id}', this)`}">${trulyMine?'✕':'Войти'}</button>`;
                 c.appendChild(el);
             });
         }
 
-        async function cancelRoom(roomId, creatorId) {
-            if (Number(creatorId) !== MY_ID) {
-                alert('⛔ Только создатель комнаты может её отменить!');
-                return;
-            }
-            if (!confirm('Отменить комнату?')) return;
+        async function cancelRoom(roomId) {
+            // Двойная проверка: ID комнаты и текущий пользователь
             try {
+                const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
+                if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) {
+                    alert('⛔ Только создатель может отменить комнату!');
+                    return;
+                }
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
                 loadRooms();
             } catch(e) { alert('Ошибка удаления: ' + e.message); }
@@ -374,11 +405,12 @@
             btnElement.disabled = true;
             btnElement.textContent = '⏳';
             try {
-                // 1. Проверяем, что комната всё ещё waiting
+                // 1. Проверка статуса
                 const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
-                if (!check.length) throw new Error('Комната уже занята');
+                if (!check.length) throw new Error('Комната уже занята или не существует');
+                if (Number(check[0].creator_tg_id) === MY_ID) throw new Error('Нельзя войти в свою комнату');
                 
-                // 2. Пытаемся войти
+                // 2. Вход
                 const room = await db('rooms', 'PATCH', { 
                     opponent_tg_id: MY_ID, 
                     opponent_username: user.username, 
