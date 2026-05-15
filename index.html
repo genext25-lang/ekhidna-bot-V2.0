@@ -60,7 +60,6 @@
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
         .status-box { background: var(--card); border-radius: 14px; padding: 16px 16px 24px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
         
-        /* Исправленная структура таймера */
         #statusMessage { min-height: 24px; display: flex; align-items: center; justify-content: center; }
         .timer-text { font-size: 14px; color: var(--error); font-weight: bold; margin-top: 6px; display: none; }
         .timer-text.active { display: block; animation: pulse 1s infinite; }
@@ -637,6 +636,21 @@
             
             if(!msgEl || !timerText || !timerBarContainer || !timerBar) return;
 
+            const isCreator = String(room.creator_tg_id) === String(MY_ID);
+            const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
+            const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
+            
+            // Проверяем, сделали ли оба игрока ход
+            if (room[myCol] && room[oppCol]) {
+                // Оба сделали ход - показываем итоги
+                msgEl.textContent = t('summarizing');
+                timerText.classList.remove('active');
+                timerBarContainer.style.display = 'none';
+                window._timerRunning = false;
+                if (window._timerInterval) clearInterval(window._timerInterval);
+                return;
+            }
+
             // Сброс UI таймера
             timerText.classList.remove('active');
             timerBarContainer.style.display = 'none';
@@ -646,15 +660,12 @@
             if (room.status === 'waiting') {
                 msgEl.textContent = t('waitingForOpponent');
             } else if (room.status === 'playing') {
-                const myCol = String(room.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
-                const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
-                
-                if (room[myCol] && room[oppCol]) {
-                    msgEl.textContent = t('summarizing');
-                } else if (room[myCol]) {
+                if (room[myCol]) {
+                    // Я сделал ход, жду соперника
                     msgEl.textContent = t('yourMoveRecorded');
-                } else {
-                    // Ход соперника сделан, ждём мой ход -> ВКЛЮЧАЕМ ТАЙМЕР
+                    window._timerRunning = false;
+                } else if (room[oppCol]) {
+                    // Соперник сделал ход, теперь моя очередь -> ВКЛЮЧАЕМ ТАЙМЕР
                     msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;
                     timerText.classList.add('active');
                     timerBarContainer.style.display = 'block';
@@ -664,6 +675,10 @@
                         window._timerStart = Date.now();
                         startTimer(window._timerStart);
                     }
+                } else {
+                    // Никто ещё не сделал ход
+                    msgEl.textContent = t('waitingForOpponent');
+                    window._timerRunning = false;
                 }
             } else {
                 msgEl.textContent = t('gameOver');
@@ -759,7 +774,7 @@
             try {
                 await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
                 currentRoom[col] = choice;
-                updateGameStatus(currentRoom);
+                // Не вызываем updateGameStatus сразу, ждём обновления от polling
             } catch(e) {
                 alert(t('moveError') + e.message);
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
