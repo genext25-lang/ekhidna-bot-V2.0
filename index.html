@@ -136,7 +136,6 @@
         .lb-stats { font-size: 11px; color: var(--sec); display: flex; gap: 8px; margin-top: 4px; }
         .lb-stats span { display: flex; align-items: center; gap: 2px; }
 
-        /* ✅ Стили для таймера комнаты (исправленные) */
         .room-timer { 
             font-family: monospace; 
             font-size: 11px; 
@@ -406,8 +405,6 @@
 
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0;
-
-        // ✅ Глобальное хранилище времени истечения комнат
         window.roomExpiry = {};
 
         async function db(table, method, payload = null, filters = '', single = false) {
@@ -421,6 +418,27 @@
 
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
+
+        // ✅ ФУНКЦИЯ: Убедиться, что пользователь есть в базе
+        async function ensureUserExists(userId, username) {
+            try {
+                // 1. Проверяем, есть ли пользователь
+                const existing = await db('users', 'GET', null, `?telegram_id=eq.${userId}&limit=1`);
+                
+                // 2. Если нет - создаем
+                if (!existing || existing.length === 0) {
+                    console.log(`🆕 Creating new user in DB: ${username || userId}`);
+                    await db('users', 'POST', [{ 
+                        telegram_id: userId, 
+                        username: username || `User_${userId}`, 
+                        wins: 0, 
+                        losses: 0 
+                    }]);
+                }
+            } catch (e) {
+                console.error("⚠️ Failed to ensure user exists:", e);
+            }
+        }
 
         function renderAvatar(elementId, photoUrl, username) {
             const el = document.getElementById(elementId);
@@ -511,12 +529,14 @@
             }
             document.getElementById('stakeModal')?.classList.add('hidden');
             try {
+                // ✅ Регистрация создателя комнаты
+                await ensureUserExists(MY_ID, user.username);
+                
                 const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting' }], '', true);
                 currentRoom = room; showGameScreen(); startPolling(); loadRooms();
             } catch(e) { alert(t('createError') + e.message); }
         }
 
-        // ✅ Функция для форматирования времени (05:00 -> 00:00)
         function formatCountdown(ms) {
             if (ms <= 0) return "00:00";
             const totalSeconds = Math.floor(ms / 1000);
@@ -525,23 +545,16 @@
             return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        // ✅ Глобальный тикер таймера (обновляет все таймеры раз в секунду)
         setInterval(() => {
             const now = Date.now();
-            // Ищем все элементы таймеров
             document.querySelectorAll('.room-timer').forEach(el => {
                 const roomId = el.dataset.roomId;
                 if (roomId && window.roomExpiry[roomId]) {
                     const remaining = window.roomExpiry[roomId] - now;
                     el.textContent = formatCountdown(remaining);
-                    
                     if (remaining <= 60000) el.classList.add('urgent');
                     else el.classList.remove('urgent');
-
-                    if (remaining <= 0) {
-                        el.textContent = "00:00";
-                        el.style.color = "var(--error)";
-                    }
+                    if (remaining <= 0) { el.textContent = "00:00"; el.style.color = "var(--error)"; }
                 }
             });
         }, 1000);
@@ -595,12 +608,9 @@
                 } else if (isWaiting) {
                     badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`;
                     
-                    // ✅ Логика таймера без глюков:
-                    // 1. Если таймер для этой комнаты еще не создан, создаем его (текущее время + 5 мин)
                     if (!window.roomExpiry[r.id]) {
                         window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000);
                     }
-                    // 2. Сразу рассчитываем текст, чтобы при рендере не было 00:00
                     const remaining = window.roomExpiry[r.id] - Date.now();
                     timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`;
                     
@@ -633,7 +643,6 @@
                 const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
                 if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) { alert(t('onlyCreator')); return; }
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
-                // ✅ Очищаем память таймера при удалении
                 delete window.roomExpiry[roomId];
                 loadRooms();
             } catch(e) { alert(t('cancelError') + e.message); }
@@ -645,6 +654,10 @@
             try {
                 const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
                 if (!check.length) throw new Error(t('roomLocked'));
+
+                // ✅ РЕГИСТРАЦИЯ НОВОГО ИГРОКА ПЕРЕД ВХОДОМ
+                await ensureUserExists(MY_ID, user.username);
+
                 const room = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true);
                 if (!room) throw new Error(t('joinError'));
                 currentRoom = room; showGameScreen(); startPolling(); loadRooms();
@@ -699,7 +712,6 @@
             const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
             const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
             
-            // Проверяем, сделали ли оба игрока ход
             if (room[myCol] && room[oppCol]) {
                 msgEl.textContent = t('summarizing');
                 timerText.classList.remove('active');
@@ -709,7 +721,6 @@
                 return;
             }
 
-            // Сброс UI таймера
             timerText.classList.remove('active');
             timerBarContainer.style.display = 'none';
             timerBar.style.width = '100%';
@@ -843,7 +854,6 @@
             showGameResult({ ...room, result: result.msg });
         }
 
-        // ✅ ИСПРАВЛЕННАЯ ЛОГИКА ПОБЕДЫ ПРИ ТАЙМАУТЕ
         function calculateWinner(room) {
             const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
             
