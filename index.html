@@ -416,7 +416,6 @@
             showScreen('lobby');
         }
 
-        // ✅ ИСПРАВЛЕНИЕ: updateStats больше не перезаписывает currentSkin
         async function updateStats() {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
@@ -425,11 +424,12 @@
                 document.getElementById('statWins').textContent = wins;
                 document.getElementById('statGames').textContent = wins + losses;
                 
-                // ✅ Используем текущий выбранный скин, не сбрасываем его
+                // ✅ Берем скин из переменной currentSkin, не вычисляем заново
                 const skin = SKINS.find(s => s.id === currentSkin) || SKINS[0];
                 document.getElementById('statLevel').textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
                 document.getElementById('statSkinBadge').textContent = skin.name;
                 document.getElementById('mainLogoImg').src = skin.img;
+                console.log('🎨 Stats updated. Active skin:', skin.name, 'CurrentSkin ID:', currentSkin);
             } catch(e) { console.error(e); }
         }
 
@@ -688,11 +688,13 @@
         }
         function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal').classList.add('hidden'); }
         
-        // ✅ Исправлено: equipSkin теперь корректно применяет выбор без сброса
+        // ✅ Исправлено: equipSkin теперь явно обновляет всё
         function equipSkin(id) { 
+            console.log('🎨 equipSkin called with:', id);
             currentSkin = id; 
+            try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
             renderSkins(); 
-            updateStats(); // Теперь безопасно, т.к. updateStats не перезаписывает currentSkin
+            updateStats(); 
         }
 
         async function loadLeaderboard() {
@@ -711,32 +713,17 @@
             } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; }
         }
 
-        // Инициализация при загрузке
         window.addEventListener('load', () => {
-            // Автовыбор максимального разблокированного скина при первом запуске
-            try {
-                // Если есть сохраненный скин в localStorage, используем его
-                const savedSkin = localStorage.getItem('echidna_selected_skin');
-                if (savedSkin && SKINS.find(s => s.id === savedSkin)) {
-                    currentSkin = savedSkin;
-                }
-            } catch(e) {}
-            
-            // Разворачиваем игру сразу, если открыта в Telegram
+            const savedSkin = localStorage.getItem('echidna_selected_skin');
+            if (savedSkin && SKINS.find(s => s.id === savedSkin)) {
+                currentSkin = savedSkin;
+            }
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.expand();
                 Telegram.WebApp.setHeaderColor('#0a0a1a');
                 Telegram.WebApp.setBackgroundColor('#0a0a1a');
             }
         });
-
-        // Сохраняем выбор скина при смене
-        const originalEquipSkin = equipSkin;
-        equipSkin = function(id) {
-            currentSkin = id;
-            try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
-            originalEquipSkin(id);
-        };
     </script>
 </body>
 </html>
