@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ехидна Naklz</title>
-    <!-- Скрипт Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --bg: #0a0a1a; --card: #1a1a2e; --primary: #6366f1; --success: #10b981; --error: #ef4444; --gold: #fbbf24; --text: #f8fafc; --sec: #94a3b8; --border: #334155; }
@@ -59,15 +58,16 @@
         .choice-btn img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 4px; }
         .choice-btn span { font-size: 11px; color: var(--sec); font-weight: 600; }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
-        .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
+        .status-box { background: var(--card); border-radius: 14px; padding: 16px 16px 24px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
         
-        /* Стили для таймера */
-        .timer-bar-container { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--border); border-radius: 0 0 14px 14px; overflow: hidden; }
+        /* Исправленная структура таймера */
+        #statusMessage { min-height: 24px; display: flex; align-items: center; justify-content: center; }
+        .timer-text { font-size: 14px; color: var(--error); font-weight: bold; margin-top: 6px; display: none; }
+        .timer-text.active { display: block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .timer-bar-container { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--border); border-radius: 0 0 14px 14px; overflow: hidden; display: none; }
         .timer-bar { height: 100%; background: var(--primary); width: 100%; transition: width 1s linear; }
         .timer-bar.urgent { background: var(--error); }
-        .timer-text { font-size: 12px; color: var(--error); margin-top: 4px; display: none; }
-        .timer-text.active { display: block; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         .hidden { display: none !important; }
         .loader { text-align: center; padding: 30px; color: var(--sec); }
@@ -199,9 +199,9 @@
             </div>
             
             <div class="status-box" id="gameStatus">
-                <div class="spinner"></div>
-                <div class="timer-text" id="timerText">00:00</div>
-                <div class="timer-bar-container" id="timerBarContainer" style="display:none;">
+                <div id="statusMessage"><div class="spinner"></div></div>
+                <div class="timer-text" id="timerText">30s</div>
+                <div class="timer-bar-container" id="timerBarContainer">
                     <div class="timer-bar" id="timerBar"></div>
                 </div>
             </div>
@@ -440,6 +440,8 @@
         function forceExitToLobby() {
             isGameFinished = true; currentRoom = null;
             if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            if (window._timerInterval) clearInterval(window._timerInterval);
+            window._timerRunning = false;
             showScreen('lobby');
         }
 
@@ -596,8 +598,8 @@
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
             document.getElementById('gameScreen')?.classList.remove('hidden');
             if (!currentRoom) { 
-                const gs = document.getElementById('gameStatus');
-                if(gs) gs.textContent = t('roomNotFound'); 
+                const sm = document.getElementById('statusMessage');
+                if(sm) sm.textContent = t('roomNotFound'); 
                 return; 
             }
 
@@ -608,15 +610,16 @@
             const choices = document.querySelectorAll('.choice-btn');
             if (currentRoom[myCol] && currentRoom[oppCol]) {
                 choices.forEach(b => b.disabled = true);
-                document.getElementById('gameStatus').textContent = t('summarizing');
+                document.getElementById('statusMessage').textContent = t('summarizing');
             } else if (currentRoom[myCol]) {
                 choices.forEach(b => b.disabled = true);
-                document.getElementById('gameStatus').textContent = t('yourMoveRecorded');
+                document.getElementById('statusMessage').textContent = t('yourMoveRecorded');
             } else {
                 choices.forEach(b => b.disabled = false);
-                document.getElementById('gameStatus').innerHTML = '<div class="spinner"></div>';
+                document.getElementById('statusMessage').innerHTML = '<div class="spinner"></div>';
             }
             isGameFinished = false;
+            window._timerRunning = false;
             const stake = parseFloat(currentRoom.stake || 0);
             document.getElementById('stakeAmount').textContent = stake.toFixed(2);
             document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2);
@@ -627,48 +630,57 @@
 
         function updateGameStatus(room) {
             if (!room || isGameFinished) return;
-            const statusEl = document.getElementById('gameStatus');
+            const msgEl = document.getElementById('statusMessage');
             const timerText = document.getElementById('timerText');
             const timerBarContainer = document.getElementById('timerBarContainer');
             const timerBar = document.getElementById('timerBar');
             
-            if(!timerText || !timerBarContainer || !timerBar) return;
+            if(!msgEl || !timerText || !timerBarContainer || !timerBar) return;
 
+            // Сброс UI таймера
             timerText.classList.remove('active');
             timerBarContainer.style.display = 'none';
             timerBar.style.width = '100%';
             timerBar.classList.remove('urgent');
 
             if (room.status === 'waiting') {
-                statusEl.innerHTML = t('waitingForOpponent');
+                msgEl.textContent = t('waitingForOpponent');
             } else if (room.status === 'playing') {
                 const myCol = String(room.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
                 const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
                 
                 if (room[myCol] && room[oppCol]) {
-                    statusEl.innerHTML = t('summarizing');
+                    msgEl.textContent = t('summarizing');
                 } else if (room[myCol]) {
-                    statusEl.innerHTML = t('yourMoveRecorded');
+                    msgEl.textContent = t('yourMoveRecorded');
                 } else {
-                    statusEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;
+                    // Ход соперника сделан, ждём мой ход -> ВКЛЮЧАЕМ ТАЙМЕР
+                    msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;
                     timerText.classList.add('active');
                     timerBarContainer.style.display = 'block';
-                    startTimer(room.updated_at || room.created_at);
+                    
+                    if (!window._timerRunning) {
+                        window._timerRunning = true;
+                        window._timerStart = Date.now();
+                        startTimer(window._timerStart);
+                    }
                 }
-            } else statusEl.innerHTML = t('gameOver');
+            } else {
+                msgEl.textContent = t('gameOver');
+                window._timerRunning = false;
+            }
         }
 
-        let timerInterval = null;
-        function startTimer(startTimeStr) {
-            if (timerInterval) clearInterval(timerInterval);
-            const startTime = new Date(startTimeStr).getTime();
+        function startTimer(startTime) {
+            if (window._timerInterval) clearInterval(window._timerInterval);
             const timeLimit = 30000;
-            
             const timerBar = document.getElementById('timerBar');
             const timerText = document.getElementById('timerText');
             if(!timerBar || !timerText) return;
 
-            timerInterval = setInterval(() => {
+            window._timerInterval = setInterval(() => {
+                if (!window._timerRunning) return clearInterval(window._timerInterval);
+                
                 const elapsed = Date.now() - startTime;
                 const remaining = Math.max(0, timeLimit - elapsed);
                 const percent = (remaining / timeLimit) * 100;
@@ -678,7 +690,8 @@
 
                 if (remaining < 10000) timerBar.classList.add('urgent');
                 if (remaining <= 0) {
-                    clearInterval(timerInterval);
+                    clearInterval(window._timerInterval);
+                    window._timerRunning = false;
                     handleTimeout();
                 }
             }, 1000);
@@ -689,8 +702,7 @@
             const myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
-                clearInterval(pollInterval); pollInterval = null;
-                clearInterval(timerInterval);
+                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 
                 await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${currentRoom.id}`);
                 
@@ -699,8 +711,8 @@
                   .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${oppId}`)).catch(console.warn);
                 db('users', 'PATCH', { losses: (currentWins ? currentWins : 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn);
 
-                const statusEl = document.getElementById('gameStatus');
-                if(statusEl) statusEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;
+                const msgEl = document.getElementById('statusMessage');
+                if(msgEl) msgEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;
                 updateStats();
                 setTimeout(() => forceExitToLobby(), 3000);
             }
@@ -736,11 +748,13 @@
             if (currentRoom[col]) return;
 
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
-            document.getElementById('gameStatus').textContent = t('yourMoveRecorded');
+            document.getElementById('statusMessage').textContent = t('yourMoveRecorded');
             
+            // Останавливаем таймер
+            window._timerRunning = false;
+            if (window._timerInterval) clearInterval(window._timerInterval);
             document.getElementById('timerText')?.classList.remove('active');
             document.getElementById('timerBarContainer').style.display = 'none';
-            if (timerInterval) clearInterval(timerInterval);
 
             try {
                 await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
@@ -774,10 +788,9 @@
             const msg = room.result || result.msg;
             const isWin = msg.includes('Победа') || msg.includes('Victory');
             const isDraw = msg.includes('Ничья') || msg.includes('Draw');
-            const statusEl = document.getElementById('gameStatus');
-            if(!statusEl) return;
-            statusEl.className = `status-box ${isWin ? 'win' : isDraw ? '' : 'lose'}`;
-            statusEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
+            const msgEl = document.getElementById('statusMessage');
+            if(!msgEl) return;
+            msgEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
             updateStats();
             setTimeout(() => { forceExitToLobby(); }, 3000);
         }
