@@ -135,6 +135,11 @@
         
         .lb-stats { font-size: 11px; color: var(--sec); display: flex; gap: 8px; margin-top: 4px; }
         .lb-stats span { display: flex; align-items: center; gap: 2px; }
+
+        /* ✅ Стили для таймера комнаты */
+        .room-timer { font-size: 10px; color: var(--sec); margin-left: 4px; font-weight: 600; }
+        .room-timer.active { color: var(--gold); animation: timerPulse 1.5s infinite; }
+        @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body>
@@ -393,6 +398,9 @@
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0;
 
+        // ✅ Хранилище для таймеров комнат
+        let roomTimers = {};
+
         async function db(table, method, payload = null, filters = '', single = false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
             const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
@@ -499,6 +507,33 @@
             } catch(e) { alert(t('createError') + e.message); }
         }
 
+        // ✅ Очистка старых таймеров при загрузке комнат
+        function clearAllRoomTimers() {
+            Object.values(roomTimers).forEach(t => clearInterval(t));
+            roomTimers = {};
+        }
+
+        // ✅ Форматирование времени в MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // ✅ Запуск таймера для конкретной комнаты
+        function startRoomTimer(roomId, createdAtStr) {
+            const timerEl = document.getElementById(`room-timer-${roomId}`);
+            if (!timerEl) return;
+
+            const createdAt = new Date(createdAtStr).getTime();
+            
+            roomTimers[roomId] = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - createdAt) / 1000);
+                timerEl.textContent = formatTime(elapsed);
+                timerEl.classList.add('active');
+            }, 1000);
+        }
+
         async function loadRooms() {
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; }
             try {
@@ -510,6 +545,9 @@
 
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
+                
+                // ✅ Очищаем старые таймеры перед перерисовкой
+                clearAllRoomTimers();
                 
                 renderRooms('myRoomsList', my, true); 
                 renderRooms('roomsList', pub, false);
@@ -530,12 +568,12 @@
 
                 if (isOldWaitingRoom && !trulyMine) return;
 
-                const isFinished = r.status === 'finished', isPlaying = r.status === 'playing';
+                const isFinished = r.status === 'finished', isPlaying = r.status === 'playing', isWaiting = r.status === 'waiting';
                 const el = document.createElement('div');
                 el.className = `room-card ${isMy ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`;
                 if (isMy && (isPlaying || isFinished)) { el.onclick = () => resumeRoom(r.id); el.style.cursor = 'pointer'; }
 
-                let badgeHtml = '', btnHtml = '';
+                let badgeHtml = '', btnHtml = '', timerHtml = '';
                 if (isFinished) {
                     const result = calculateWinner(r);
                     const isWin = result.msg.includes('Победа') || result.msg.includes('Victory') || result.msg.includes('timeout');
@@ -545,19 +583,26 @@
                 } else if (isPlaying) {
                     badgeHtml = `<span style="background:var(--primary);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${t('game')}</span>`;
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
-                } else {
-                    badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${t('waiting')}</span>`;
+                } else if (isWaiting) {
+                    badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`;
+                    // ✅ Добавляем таймер рядом с бейджем
+                    timerHtml = `<span class="room-timer" id="room-timer-${r.id}">00:00</span>`;
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('watch')}</button>`;
                 }
 
                 const creatorInitial = r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?';
                 if (trulyMine) {
                     const cancelBtn = !isPlaying ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
-                    el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'"></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`;
+                    el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'"></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`;
                 } else {
-                    el.innerHTML = `<div class="room-icon">${creatorInitial}</div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">${t('join')}</button>`;
+                    el.innerHTML = `<div class="room-icon">${creatorInitial}</div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">${t('join')}</button>`;
                 }
                 c.appendChild(el);
+
+                // ✅ Запускаем таймер для комнат в статусе waiting
+                if (isWaiting) {
+                    startRoomTimer(r.id, r.created_at);
+                }
             });
         }
 
