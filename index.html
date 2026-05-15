@@ -642,7 +642,6 @@
             
             // Проверяем, сделали ли оба игрока ход
             if (room[myCol] && room[oppCol]) {
-                // Оба сделали ход - показываем итоги
                 msgEl.textContent = t('summarizing');
                 timerText.classList.remove('active');
                 timerBarContainer.style.display = 'none';
@@ -661,11 +660,9 @@
                 msgEl.textContent = t('waitingForOpponent');
             } else if (room.status === 'playing') {
                 if (room[myCol]) {
-                    // Я сделал ход, жду соперника
                     msgEl.textContent = t('yourMoveRecorded');
                     window._timerRunning = false;
                 } else if (room[oppCol]) {
-                    // Соперник сделал ход, теперь моя очередь -> ВКЛЮЧАЕМ ТАЙМЕР
                     msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;
                     timerText.classList.add('active');
                     timerBarContainer.style.display = 'block';
@@ -676,7 +673,6 @@
                         startTimer(window._timerStart);
                     }
                 } else {
-                    // Никто ещё не сделал ход
                     msgEl.textContent = t('waitingForOpponent');
                     window._timerRunning = false;
                 }
@@ -715,6 +711,7 @@
         async function handleTimeout() {
             if (!currentRoom || isGameFinished) return;
             const myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
+            // Если я не сделал ход, я проигрываю
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
@@ -765,7 +762,6 @@
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('statusMessage').textContent = t('yourMoveRecorded');
             
-            // Останавливаем таймер
             window._timerRunning = false;
             if (window._timerInterval) clearInterval(window._timerInterval);
             document.getElementById('timerText')?.classList.remove('active');
@@ -774,7 +770,6 @@
             try {
                 await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
                 currentRoom[col] = choice;
-                // Не вызываем updateGameStatus сразу, ждём обновления от polling
             } catch(e) {
                 alert(t('moveError') + e.message);
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
@@ -790,12 +785,29 @@
             showGameResult({ ...room, result: result.msg });
         }
 
+        // ✅ ИСПРАВЛЕННАЯ ЛОГИКА ПОБЕДЫ ПРИ ТАЙМАУТЕ
         function calculateWinner(room) {
             const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
+            
+            // 1. Проверяем, сделал ли кто-то ход. Если нет - ничья (редко)
+            if (!c1 && !c2) return { msg: t('draw'), winnerId: null }; 
+            
+            // 2. Если Создатель не сделал ход -> Создатель проиграл
+            if (!c1) return { msg: (MY_ID === id1) ? t('defeat') : t('victory'), winnerId: id2 }; 
+            
+            // 3. Если Соперник не сделал ход -> Соперник проиграл
+            if (!c2) return { msg: (MY_ID === id2) ? t('defeat') : t('victory'), winnerId: id1 }; 
+
+            // 4. Обычная игра
             if (c1 === c2) return { msg: t('draw'), winnerId: null };
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
-            return { msg: (creatorWins ? (String(MY_ID) === String(id1)) : (String(MY_ID) === String(id2))) ? t('victory') : t('defeat'), winnerId: creatorWins ? id1 : id2 };
+            
+            // Возвращаем "Победа" или "Поражение" относительно ТЕКУЩЕГО игрока
+            return { 
+                msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? t('victory') : t('defeat'), 
+                winnerId: creatorWins ? id1 : id2 
+            };
         }
 
         function showGameResult(room) {
