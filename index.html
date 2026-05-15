@@ -2,25 +2,34 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- ✅ Обновлено название страницы -->
+    <!-- ✅ Добавлен target-densitydpi для лучшей совместимости с Desktop WebView -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
     <title>Echidna Naklz</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --bg: #0a0a1a; --card: #1a1a2e; --primary: #6366f1; --success: #10b981; --error: #ef4444; --gold: #fbbf24; --text: #f8fafc; --sec: #94a3b8; --border: #334155; }
         
-        /* ✅ ИСПРАВЛЕНИЕ ДЛЯ ПК: Стандартная прокрутка */
-        html, body {
-            height: auto;
+        /* ✅ КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ DESKTOP */
+        html { 
+            height: 100%; 
+            width: 100%;
+            overflow-x: hidden;
+        }
+        body { 
             min-height: 100vh;
+            width: 100%;
             background: var(--bg);
             color: var(--text);
             font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0;
-            padding-bottom: 100px;
+            padding-bottom: 120px; /* Увеличенный отступ для десктопа */
             overflow-x: hidden;
+            overflow-y: auto; /* ✅ Разрешаем прокрутку body */
             -webkit-overflow-scrolling: touch;
+            /* ✅ Убираем потенциальные проблемы с позиционированием */
+            position: relative;
+            transform: translateZ(0); /* ✅ Force GPU acceleration для десктопа */
         }
         
         .container {
@@ -28,10 +37,15 @@
             max-width: 480px;
             margin: 0 auto;
             padding: 15px;
-            padding-bottom: 40px;
+            padding-bottom: 60px;
             box-sizing: border-box;
             position: relative;
             z-index: 1;
+            /* ✅ Гарантируем, что контент будет отрисован */
+            min-height: calc(100vh - 120px);
+            display: block;
+            visibility: visible;
+            opacity: 1;
         }
 
         .header { text-align: center; margin-bottom: 20px; }
@@ -54,7 +68,28 @@
         .btn-sec { background: var(--card); border: 1px solid var(--border); color: var(--sec); }
         
         .section-title { font-size: 13px; color: var(--sec); margin: 18px 0 8px; text-transform: uppercase; }
-        .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; opacity: 1; visibility: visible; }
+        
+        /* ✅ КРИТИЧЕСКИЕ СТИЛИ ДЛЯ КАРТОЧЕК КОМНАТ НА ДЕСКТОПЕ */
+        .room-card { 
+            background: var(--card); 
+            border-radius: 14px; 
+            margin-bottom: 8px; 
+            padding: 14px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            border: 1px solid var(--border); 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            /* ✅ Гарантируем видимость */
+            opacity: 1 !important; 
+            visibility: visible !important; 
+            position: relative;
+            z-index: 2;
+            /* ✅ Фикс для Desktop WebView */
+            will-change: transform;
+            transform: translateZ(0);
+        }
         .room-card:active { transform: scale(0.98); background: #1f1f35; }
         .room-card.my-room { border-left: 3px solid var(--success); }
         .room-card.my-room.playing { border-left-color: var(--primary); }
@@ -212,7 +247,6 @@
             <div class="splash-logo">
                 <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png" alt="Echidna">
             </div>
-            <!-- ✅ Обновлено название на стартовом экране -->
             <div class="splash-title" data-i18n="splashTitle">Echidna Naklz</div>
             <div class="splash-rules">
                 <h3 data-i18n="rulesTitle">📜 Правила игры</h3>
@@ -232,7 +266,6 @@
         <div id="lobbyScreen">
             <div class="header">
                 <div class="header-logo"><img src="" id="mainLogoImg" alt="logo"></div>
-                <!-- ✅ Обновлено название в шапке лобби -->
                 <h1 data-i18n="title">Echidna Naklz</h1>
                 <div class="header-sub" data-i18n="subtitle">Кулак • Шип • Кристалл</div>
             </div>
@@ -246,7 +279,8 @@
             <div class="section-title" data-i18n="myRooms">Мои комнаты</div>
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div>
             <div class="section-title" data-i18n="availableRooms">Доступные комнаты</div>
-            <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
+            <!-- ✅ Добавлен data-атрибут для отладки -->
+            <div id="roomsList" data-debug="rooms-container"><div class="loader"><div class="spinner"></div></div></div>
             <div class="nav-spacer"></div>
         </div>
 
@@ -659,7 +693,13 @@
         }, 1000);
 
         async function loadRooms() {
-            if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; }
+            // ✅ ЛОГ ДЛЯ ОТЛАДКИ
+            console.log('[DEBUG] loadRooms() called, MY_ID:', MY_ID);
+            
+            if (!MY_ID || MY_ID === 999999) { 
+                document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; 
+                return; 
+            }
             try {
                 fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abandoned_rooms`, {
                     method: 'POST',
@@ -670,6 +710,9 @@
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 
+                // ✅ ЛОГИ ДЛЯ ОТЛАДКИ
+                console.log('[DEBUG] My rooms:', my.length, 'Public rooms:', pub.length);
+                
                 renderRooms('myRoomsList', my, true); 
                 renderRooms('roomsList', pub, false);
             } catch(e) { 
@@ -679,10 +722,25 @@
         }
 
         function renderRooms(id, rooms, isMy) {
-            const c = document.getElementById(id); if(!c) return; c.innerHTML = '';
-            if (!rooms.length) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; }
+            const c = document.getElementById(id); 
+            if(!c) {
+                console.error('[DEBUG] Container not found:', id);
+                return;
+            }
             
-            rooms.forEach(r => {
+            // ✅ ЛОГ: проверяем, что контейнер виден
+            const style = window.getComputedStyle(c);
+            console.log(`[DEBUG] Container ${id} - display:${style.display}, visibility:${style.visibility}, opacity:${style.opacity}`);
+            
+            c.innerHTML = '';
+            if (!rooms.length) { 
+                c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; 
+                return; 
+            }
+            
+            console.log(`[DEBUG] Rendering ${rooms.length} rooms in ${id}`);
+            
+            rooms.forEach((r, index) => {
                 const roomAge = Date.now() - new Date(r.created_at).getTime();
                 const isOldWaitingRoom = (r.status === 'waiting' && roomAge > 5 * 60 * 1000);
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
@@ -724,6 +782,7 @@
                     el.innerHTML = `<div class="room-icon">${creatorInitial}</div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">${t('join')}</button>`;
                 }
                 c.appendChild(el);
+                console.log(`[DEBUG] Room ${index+1} appended to ${id}`);
             });
         }
 
@@ -1100,6 +1159,8 @@
                 Telegram.WebApp.setHeaderColor('#0a0a1a');
                 Telegram.WebApp.setBackgroundColor('#0a0a1a');
             }
+            // ✅ ЛОГ при загрузке
+            console.log('[DEBUG] App loaded, MY_ID:', MY_ID, 'UserAgent:', navigator.userAgent);
         });
     </script>
 </body>
