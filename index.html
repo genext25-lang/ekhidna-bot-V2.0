@@ -68,104 +68,23 @@
         .nav-btn svg { width: 32px; height: 32px; }
         .nav-spacer { height: 80px; }
         
-        /* 🌐 Переключатель языка */
-        .lang-switcher {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 4px;
-            display: flex;
-            gap: 4px;
-        }
-        .lang-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 16px;
-            background: transparent;
-            color: var(--sec);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .lang-btn.active {
-            background: var(--primary);
-            color: #fff;
-        }
+        .lang-switcher { position: fixed; top: 15px; right: 15px; z-index: 1000; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
+        .lang-btn { padding: 6px 12px; border: none; border-radius: 16px; background: transparent; color: var(--sec); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .lang-btn.active { background: var(--primary); color: #fff; }
         
-        /* 🎬 Экран загрузки */
-        .splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            animation: fadeOut 0.5s ease-out 2.5s forwards;
-        }
-        .splash-screen.hidden {
-            display: none;
-        }
-        @keyframes fadeOut {
-            to { opacity: 0; visibility: hidden; }
-        }
-        .splash-logo {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(99,102,241,0.6);
-            animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite;
-        }
-        @keyframes splashFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-        @keyframes splashPulse {
-            0%, 100% { box-shadow: 0 0 50px rgba(99,102,241,0.6); }
-            50% { box-shadow: 0 0 80px rgba(99,102,241,0.9); }
-        }
-        .splash-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .splash-title {
-            margin-top: 30px;
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: splashText 2s ease-in-out infinite;
-        }
-        @keyframes splashText {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        .splash-subtitle {
-            margin-top: 10px;
-            font-size: 14px;
-            color: var(--sec);
-            animation: fadeIn 1s ease-out 0.5s both;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s, visibility 0.5s; }
+        .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .splash-logo { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 50px rgba(99,102,241,0.6); animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; }
+        @keyframes splashFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes splashPulse { 0%, 100% { box-shadow: 0 0 50px rgba(99,102,241,0.6); } 50% { box-shadow: 0 0 80px rgba(99,102,241,0.9); } }
+        .splash-logo img { width: 100%; height: 100%; object-fit: cover; }
+        .splash-title { margin-top: 30px; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: splashText 2s ease-in-out infinite; }
+        @keyframes splashText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
+        .splash-subtitle { margin-top: 10px; font-size: 14px; color: var(--sec); opacity: 0; animation: fadeIn 1s ease-out 0.5s forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         .skin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
         .skin-modal.hidden { display: none; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .skin-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 360px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .skin-modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: var(--error); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -204,7 +123,6 @@
     </style>
 </head>
 <body>
-    <!-- 🎬 Экран загрузки -->
     <div id="splashScreen" class="splash-screen">
         <div class="splash-logo">
             <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png" alt="Echidna">
@@ -213,7 +131,6 @@
         <div class="splash-subtitle" data-i18n="splashSubtitle">Загрузка...</div>
     </div>
 
-    <!-- 🌐 Переключатель языка -->
     <div class="lang-switcher">
         <button class="lang-btn active" onclick="setLanguage('ru')">RU</button>
         <button class="lang-btn" onclick="setLanguage('en')">EN</button>
@@ -285,7 +202,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно скина -->
     <div id="skinModal" class="skin-modal hidden" onclick="closeSkinModal(event)">
         <div class="skin-modal-content" onclick="event.stopPropagation()">
             <button class="skin-modal-close" onclick="closeSkinModal()">✕</button>
@@ -301,7 +217,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно выбора ставки -->
     <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)">
         <div class="stake-modal-content" onclick="event.stopPropagation()">
             <button class="skin-modal-close" onclick="closeStakeModal()">✕</button>
@@ -340,178 +255,51 @@
     </div>
 
     <script>
-        // 🌐 Система локализации
         const i18n = {
             ru: {
-                splashTitle: 'Ехидна Naklz',
-                splashSubtitle: 'Загрузка...',
-                title: 'Ехидна Naklz',
-                subtitle: 'Кулак • Шип • Кристалл',
-                wins: 'Побед',
-                games: 'Игр',
-                level: 'Уровень',
-                createRoom: '💎 Создать комнату',
-                refresh: '🔄 Обновить',
-                myRooms: 'Мои комнаты',
-                availableRooms: 'Доступные комнаты',
-                battle: '⚔️ Битва!',
-                stake: 'Ставка',
-                winAmount: 'Ты получишь (−5%)',
-                fist: 'Кулак',
-                spike: 'Шип',
-                crystal: 'Кристалл',
-                toLobby: '🏠 В лобби',
-                skins: '🎨 Скины',
-                skinsSubtitle: 'Нажми на скин для подробной информации',
-                leaderboard: '🏆 Рейтинг',
-                features: '✨ Особенности:',
-                selectStake: '💎 Выбери ставку',
-                orEnter: 'Или введи:',
-                createRoomBtn: 'Создать комнату',
-                cancel: 'Отмена',
-                navLobby: 'Лобби',
-                navSkins: 'Скины',
-                navLeaderboard: 'Рейтинг',
-                waitingForOpponent: '⏳ Ждём соперника...',
-                gameNotActive: '⚠️ Игра не активна, второй игрок ещё не присоединился',
-                yourMoveRecorded: '✅ Ваш ход записан. Ждём соперника...',
-                opponentThinking: '⏳ Соперник думает...',
-                yourTurn: '👉 Ваш ход!',
-                summarizing: '⏳ Подведение итогов...',
-                gameOver: '🏁 Игра окончена',
-                victory: '🏆 Победа!',
-                defeat: '😢 Поражение',
-                draw: '🤝 Ничья!',
-                leftGame: '😢 Вы покинули игру',
-                roomNotFound: '❌ Ошибка: комната не найдена',
-                minStake: 'Мин: 0.1 TON',
-                maxStake: 'Макс: 99 TON',
-                enterValid: 'Введи от 0.1 до 99',
-                createError: 'Ошибка создания: ',
-                userNotFound: '⚠️ Не удалось определить пользователя.',
-                noRooms: 'Нет комнат',
-                roomLocked: 'Комната уже занята',
-                joinError: 'Ошибка: ',
-                moveError: 'Ошибка хода: ',
-                cancelError: 'Ошибка: ',
-                onlyCreator: '⛔ Только создатель может отменить!',
-                roomDeleted: 'Комната удалена',
-                requires: 'Требуется: ',
-                wins: ' побед',
-                unlocked: '✅ Разблокировано',
-                needMore: '🔒 Нужно ещё ',
-                wins: ' побед',
-                equip: 'Надеть',
-                locked: '🔒',
-                checkmark: '✓',
-                waiting: 'ЖДЁТ',
-                game: 'ИГРА',
-                victoryBadge: '✅ Победа',
-                defeatBadge: '❌ Поражение',
-                drawBadge: '🤝 Ничья',
-                return: '🔄 Вернуться',
-                viewResults: '👁 Итоги',
-                watch: '👁 Смотреть',
-                join: 'Войти'
+                splashTitle: 'Ехидна Naklz', splashSubtitle: 'Загрузка...', title: 'Ехидна Naklz', subtitle: 'Кулак • Шип • Кристалл',
+                wins: 'Побед', games: 'Игр', level: 'Уровень', createRoom: '💎 Создать комнату', refresh: '🔄 Обновить',
+                myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь (−5%)',
+                fist: 'Кулак', spike: 'Шип', crystal: 'Кристалл', toLobby: '🏠 В лобби', skins: '🎨 Скины', skinsSubtitle: 'Нажми на скин для подробной информации',
+                leaderboard: '🏆 Рейтинг', features: '✨ Особенности:', selectStake: '💎 Выбери ставку', orEnter: 'Или введи:', createRoomBtn: 'Создать комнату', cancel: 'Отмена',
+                navLobby: 'Лобби', navSkins: 'Скины', navLeaderboard: 'Рейтинг',
+                waitingForOpponent: '⏳ Ждём соперника...', gameNotActive: '⚠️ Игра не активна, второй игрок ещё не присоединился',
+                yourMoveRecorded: '✅ Ваш ход записан. Ждём соперника...', opponentThinking: '⏳ Соперник думает...', yourTurn: '👉 Ваш ход!',
+                summarizing: '⏳ Подведение итогов...', gameOver: '🏁 Игра окончена', victory: '🏆 Победа!', defeat: '😢 Поражение', draw: '🤝 Ничья!',
+                leftGame: '😢 Вы покинули игру', roomNotFound: '❌ Ошибка: комната не найдена', minStake: 'Мин: 0.1 TON', maxStake: 'Макс: 99 TON', enterValid: 'Введи от 0.1 до 99',
+                createError: 'Ошибка создания: ', userNotFound: '⚠️ Не удалось определить пользователя.', noRooms: 'Нет комнат', roomLocked: 'Комната уже занята',
+                joinError: 'Ошибка: ', moveError: 'Ошибка хода: ', cancelError: 'Ошибка: ', onlyCreator: '⛔ Только создатель может отменить!',
+                requires: 'Требуется: ', unlocked: '✅ Разблокировано', needMore: '🔒 Нужно ещё ', equip: 'Надеть', locked: '🔒', checkmark: '✓',
+                waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', drawBadge: '🤝 Ничья',
+                return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти'
             },
             en: {
-                splashTitle: 'Echidna Naklz',
-                splashSubtitle: 'Loading...',
-                title: 'Echidna Naklz',
-                subtitle: 'Fist • Spike • Crystal',
-                wins: 'Wins',
-                games: 'Games',
-                level: 'Level',
-                createRoom: '💎 Create Room',
-                refresh: '🔄 Refresh',
-                myRooms: 'My Rooms',
-                availableRooms: 'Available Rooms',
-                battle: '⚔️ Battle!',
-                stake: 'Stake',
-                winAmount: 'You get (−5%)',
-                fist: 'Fist',
-                spike: 'Spike',
-                crystal: 'Crystal',
-                toLobby: '🏠 To Lobby',
-                skins: '🎨 Skins',
-                skinsSubtitle: 'Click on a skin for details',
-                leaderboard: '🏆 Leaderboard',
-                features: '✨ Features:',
-                selectStake: '💎 Select Stake',
-                orEnter: 'Or enter:',
-                createRoomBtn: 'Create Room',
-                cancel: 'Cancel',
-                navLobby: 'Lobby',
-                navSkins: 'Skins',
-                navLeaderboard: 'Leaderboard',
-                waitingForOpponent: '⏳ Waiting for opponent...',
-                gameNotActive: '⚠️ Game not active, second player has not joined yet',
-                yourMoveRecorded: '✅ Your move recorded. Waiting for opponent...',
-                opponentThinking: '⏳ Opponent is thinking...',
-                yourTurn: '👉 Your turn!',
-                summarizing: '⏳ Summarizing...',
-                gameOver: '🏁 Game Over',
-                victory: '🏆 Victory!',
-                defeat: '😢 Defeat',
-                draw: '🤝 Draw!',
-                leftGame: '😢 You left the game',
-                roomNotFound: '❌ Error: room not found',
-                minStake: 'Min: 0.1 TON',
-                maxStake: 'Max: 99 TON',
-                enterValid: 'Enter from 0.1 to 99',
-                createError: 'Create error: ',
-                userNotFound: '⚠️ Could not identify user.',
-                noRooms: 'No rooms',
-                roomLocked: 'Room is already occupied',
-                joinError: 'Error: ',
-                moveError: 'Move error: ',
-                cancelError: 'Error: ',
-                onlyCreator: '⛔ Only creator can cancel!',
-                roomDeleted: 'Room deleted',
-                requires: 'Requires: ',
-                wins: ' wins',
-                unlocked: '✅ Unlocked',
-                needMore: '🔒 Need ',
-                wins: ' more wins',
-                equip: 'Equip',
-                locked: '🔒',
-                checkmark: '✓',
-                waiting: 'WAITING',
-                game: 'GAME',
-                victoryBadge: '✅ Victory',
-                defeatBadge: '❌ Defeat',
-                drawBadge: '🤝 Draw',
-                return: '🔄 Return',
-                viewResults: '👁 Results',
-                watch: '👁 Watch',
-                join: 'Join'
+                splashTitle: 'Echidna Naklz', splashSubtitle: 'Loading...', title: 'Echidna Naklz', subtitle: 'Fist • Spike • Crystal',
+                wins: 'Wins', games: 'Games', level: 'Level', createRoom: '💎 Create Room', refresh: '🔄 Refresh',
+                myRooms: 'My Rooms', availableRooms: 'Available Rooms', battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get (−5%)',
+                fist: 'Fist', spike: 'Spike', crystal: 'Crystal', toLobby: '🏠 To Lobby', skins: '🎨 Skins', skinsSubtitle: 'Click on a skin for details',
+                leaderboard: '🏆 Leaderboard', features: '✨ Features:', selectStake: '💎 Select Stake', orEnter: 'Or enter:', createRoomBtn: 'Create Room', cancel: 'Cancel',
+                navLobby: 'Lobby', navSkins: 'Skins', navLeaderboard: 'Leaderboard',
+                waitingForOpponent: '⏳ Waiting for opponent...', gameNotActive: '⚠️ Game not active, second player has not joined yet',
+                yourMoveRecorded: '✅ Your move recorded. Waiting for opponent...', opponentThinking: '⏳ Opponent is thinking...', yourTurn: '👉 Your turn!',
+                summarizing: '⏳ Summarizing...', gameOver: '🏁 Game Over', victory: '🏆 Victory!', defeat: '😢 Defeat', draw: '🤝 Draw!',
+                leftGame: '😢 You left the game', roomNotFound: '❌ Error: room not found', minStake: 'Min: 0.1 TON', maxStake: 'Max: 99 TON', enterValid: 'Enter from 0.1 to 99',
+                createError: 'Create error: ', userNotFound: '⚠️ Could not identify user.', noRooms: 'No rooms', roomLocked: 'Room is already occupied',
+                joinError: 'Error: ', moveError: 'Move error: ', cancelError: 'Error: ', onlyCreator: '⛔ Only creator can cancel!',
+                requires: 'Requires: ', unlocked: '✅ Unlocked', needMore: '🔒 Need ', equip: 'Equip', locked: '🔒', checkmark: '✓',
+                waiting: 'WAITING', game: 'GAME', victoryBadge: '✅ Victory', defeatBadge: '❌ Defeat', drawBadge: '🤝 Draw',
+                return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join'
             }
         };
 
         let currentLang = 'ru';
-
         function setLanguage(lang) {
             currentLang = lang;
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
-            });
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase() === lang));
             updateTexts();
         }
-
-        function t(key) {
-            return i18n[currentLang][key] || i18n['ru'][key] || key;
-        }
-
-        function updateTexts() {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
-                    // Для input placeholder
-                } else {
-                    el.textContent = t(key);
-                }
-            });
-        }
+        function t(key) { return i18n[currentLang][key] || i18n['ru'][key] || key; }
+        function updateTexts() { document.querySelectorAll('[data-i18n]').forEach(el => { if (el.tagName !== 'INPUT') el.textContent = t(el.getAttribute('data-i18n')); }); }
 
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
@@ -546,24 +334,9 @@
             { id: 'golden', name: 'Золотая', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png', desc: 'Легенда.', features: ['Корона чемпиона', '300+ побед'] }
         ];
 
-        let selectedStake = 0.1;
-        let currentRoom = null;
-        let pollInterval = null;
-        let lobbyRefreshInterval = null;
-        let currentSkin = 'default';
-        let isGameFinished = false;
+        let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
 
-        // 🎬 Скрываем заставку через 3 секунды
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splashScreen');
-                if (splash) {
-                    splash.classList.add('hidden');
-                }
-                loadRooms();
-                updateStats();
-            }, 3000);
-        });
+        window.addEventListener('load', () => setTimeout(() => document.getElementById('splashScreen').classList.add('hidden'), 3000));
 
         async function db(table, method, payload = null, filters = '', single = false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
@@ -580,54 +353,31 @@
         function renderAvatar(elementId, photoUrl, username) {
             const el = document.getElementById(elementId);
             if (!el) return;
-            
-            if (photoUrl) {
-                el.innerHTML = `<img src="${photoUrl}" alt="${username || 'User'}" onerror="this.parentElement.innerHTML='${username ? username.charAt(0).toUpperCase() : '?'}'">`;
-            } else {
-                const initial = username ? username.charAt(0).toUpperCase() : '?';
-                el.innerHTML = initial;
-            }
+            el.innerHTML = photoUrl 
+                ? `<img src="${photoUrl}" alt="${username || 'User'}" onerror="this.parentElement.innerHTML='${username ? username.charAt(0).toUpperCase() : '?'}'">`
+                : (username ? username.charAt(0).toUpperCase() : '?');
         }
 
         function showScreen(name) {
-            const screens = ['lobbyScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'];
-            screens.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
-            
-            const target = document.getElementById(name + 'Screen');
-            if (target) target.classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-btn').forEach((b, i) => {
-                const map = ['lobby', 'skins', 'leaderboard'];
-                b.classList.toggle('active', map[i] === name);
-            });
+            ['lobbyScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+            const target = document.getElementById(name + 'Screen'); if(target) target.classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', ['lobby', 'skins', 'leaderboard'][i] === name));
 
             if (name === 'lobby') {
-                currentRoom = null;
-                isGameFinished = false;
+                currentRoom = null; isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                
-                lobbyRefreshInterval = setInterval(() => {
-                    console.log('🔄 Auto-refresh lobby...');
-                    loadRooms();
-                }, 3000);
-                
-                loadRooms();
-                updateStats();
+                lobbyRefreshInterval = setInterval(loadRooms, 3000);
+                loadRooms(); updateStats();
             } else {
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
             }
-            
             if (name === 'skins') renderSkins();
             if (name === 'leaderboard') loadLeaderboard();
         }
 
         function forceExitToLobby() {
-            isGameFinished = true;
-            currentRoom = null;
+            isGameFinished = true; currentRoom = null;
             if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
             showScreen('lobby');
         }
@@ -636,8 +386,7 @@
             try {
                 if (!MY_ID || MY_ID === 999999) return;
                 const data = await db('users', 'GET', null, `?telegram_id=eq.${MY_ID}&select=wins,losses`, false);
-                const wins = data[0]?.wins || 0;
-                const losses = data[0]?.losses || 0;
+                const wins = data[0]?.wins || 0, losses = data[0]?.losses || 0;
                 document.getElementById('statWins').textContent = wins;
                 document.getElementById('statGames').textContent = wins + losses;
                 const skinIdx = SKINS.slice().reverse().findIndex(s => wins >= s.wins);
@@ -650,28 +399,16 @@
         }
 
         function openStakeModal() {
-            selectedStake = 0.1;
-            document.getElementById('stakeInput').value = '';
-            document.getElementById('stakeError').textContent = '';
+            selectedStake = 0.1; document.getElementById('stakeInput').value = ''; document.getElementById('stakeError').textContent = '';
             document.querySelectorAll('.stake-preset-btn').forEach(btn => btn.classList.remove('selected'));
             document.querySelector('.stake-preset-btn[data-stake="0.1"]').classList.add('selected');
             document.getElementById('stakeModal').classList.remove('hidden');
         }
-
-        function closeStakeModal(e) {
-            if (!e || e.target.id === 'stakeModal' || e.target.className === 'skin-modal-close') {
-                document.getElementById('stakeModal').classList.add('hidden');
-            }
-        }
-
+        function closeStakeModal(e) { if (!e || e.target.id === 'stakeModal' || e.target.className === 'skin-modal-close') document.getElementById('stakeModal').classList.add('hidden'); }
         function selectStake(value, btn) {
-            selectedStake = value;
-            document.getElementById('stakeInput').value = '';
-            document.getElementById('stakeError').textContent = '';
-            document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
+            selectedStake = value; document.getElementById('stakeInput').value = ''; document.getElementById('stakeError').textContent = '';
+            document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected');
         }
-
         function onStakeInput() {
             const val = parseFloat(document.getElementById('stakeInput').value);
             document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected'));
@@ -692,54 +429,35 @@
             document.getElementById('stakeModal').classList.add('hidden');
             try {
                 const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting' }], '', true);
-                currentRoom = room;
-                showGameScreen();
-                startPolling();
-                loadRooms();
+                currentRoom = room; showGameScreen(); startPolling(); loadRooms();
             } catch(e) { alert(t('createError') + e.message); }
         }
 
         async function loadRooms() {
-            if (!MY_ID || MY_ID === 999999) {
-                document.getElementById('myRoomsList').innerHTML = '<div style="color:var(--error);padding:15px;">⚠️ ' + t('userNotFound') + '</div>';
-                return;
-            }
+            if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; }
             try {
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
-                renderRooms('myRoomsList', my, true);
-                renderRooms('roomsList', pub, false);
-            } catch(e) { 
-                console.error('Load rooms error:', e);
-                document.getElementById('myRoomsList').innerHTML = '<div style="color:red;padding:15px;">'+e.message+'</div>'; 
-            }
+                renderRooms('myRoomsList', my, true); renderRooms('roomsList', pub, false);
+            } catch(e) { document.getElementById('myRoomsList').innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; }
         }
 
         function renderRooms(id, rooms, isMy) {
             const c = document.getElementById(id); c.innerHTML = '';
-            if (!rooms.length) { c.innerHTML = '<div style="text-align:center;color:var(--sec);padding:20px;">' + t('noRooms') + '</div>'; return; }
+            if (!rooms.length) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; }
             rooms.forEach(r => {
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
-                const isFinished = r.status === 'finished';
-                const isPlaying = r.status === 'playing';
+                const isFinished = r.status === 'finished', isPlaying = r.status === 'playing';
                 const el = document.createElement('div');
-                el.className = 'room-card' + (isMy ? ' my-room' : '') + (isFinished ? ' finished' : '') + (isPlaying ? ' playing' : '');
-                
-                if (isMy && (isPlaying || isFinished)) {
-                    el.onclick = () => resumeRoom(r.id);
-                    el.style.cursor = 'pointer';
-                }
+                el.className = `room-card ${isMy ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`;
+                if (isMy && (isPlaying || isFinished)) { el.onclick = () => resumeRoom(r.id); el.style.cursor = 'pointer'; }
 
-                let badgeHtml = '';
-                let btnHtml = '';
-                
+                let badgeHtml = '', btnHtml = '';
                 if (isFinished) {
                     const result = calculateWinner(r);
                     const isWin = result.msg.includes('Победа') || result.msg.includes('Victory');
                     const isDraw = result.msg.includes('Ничья') || result.msg.includes('Draw');
-                    const badgeText = isWin ? t('victoryBadge') : isDraw ? t('drawBadge') : t('defeatBadge');
-                    const badgeColor = isWin ? 'var(--success)' : isDraw ? 'var(--gold)' : 'var(--error)';
-                    badgeHtml = `<span style="background:${badgeColor};color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${badgeText}</span>`;
+                    badgeHtml = `<span style="background:${isWin ? 'var(--success)' : isDraw ? 'var(--gold)' : 'var(--error)'};color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${isWin ? t('victoryBadge') : isDraw ? t('drawBadge') : t('defeatBadge')}</span>`;
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('viewResults')}</button>`;
                 } else if (isPlaying) {
                     badgeHtml = `<span style="background:var(--primary);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${t('game')}</span>`;
@@ -750,7 +468,6 @@
                 }
 
                 const creatorInitial = r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?';
-                
                 if (trulyMine) {
                     const cancelBtn = !isPlaying ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
                     el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'"></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`;
@@ -766,29 +483,15 @@
                 const rooms = await db('rooms', 'GET', null, `?id=eq.${roomId}&creator_tg_id=eq.${MY_ID}`);
                 if (!rooms.length) { alert('Room not found'); loadRooms(); return; }
                 currentRoom = rooms[0];
-                
-                if (currentRoom.status === 'finished') {
-                    showGameScreen();
-                    showGameResult(currentRoom);
-                    return;
-                }
-                
-                showGameScreen();
-                startPolling();
+                if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; }
+                showGameScreen(); startPolling();
             } catch(e) { alert(t('cancelError') + e.message); }
         }
 
         async function cancelRoom(roomId) {
             try {
                 const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
-                if (!roomCheck.length) {
-                    alert(t('onlyCreator'));
-                    return;
-                }
-                if (Number(roomCheck[0].creator_tg_id) !== MY_ID) {
-                    alert(t('onlyCreator'));
-                    return;
-                }
+                if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) { alert(t('onlyCreator')); return; }
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
                 loadRooms();
             } catch(e) { alert(t('cancelError') + e.message); }
@@ -801,10 +504,7 @@
                 if (!check.length) throw new Error(t('roomLocked'));
                 const room = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true);
                 if (!room) throw new Error(t('joinError'));
-                currentRoom = room;
-                showGameScreen();
-                startPolling();
-                loadRooms();
+                currentRoom = room; showGameScreen(); startPolling(); loadRooms();
             } catch(e) { alert(t('joinError') + e.message); loadRooms(); }
             finally { btnElement.disabled = false; btnElement.textContent = t('join'); }
         }
@@ -812,12 +512,7 @@
         function showGameScreen() {
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
             document.getElementById('gameScreen').classList.remove('hidden');
-
-            if (!currentRoom) {
-                console.error('❌ currentRoom is null in showGameScreen');
-                document.getElementById('gameStatus').textContent = t('roomNotFound');
-                return;
-            }
+            if (!currentRoom) { document.getElementById('gameStatus').textContent = t('roomNotFound'); return; }
 
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
@@ -833,105 +528,69 @@
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
                 document.getElementById('gameStatus').innerHTML = '<div class="spinner"></div>';
             }
-            
             isGameFinished = false;
-
             const stake = parseFloat(currentRoom.stake || 0);
             document.getElementById('stakeAmount').textContent = stake.toFixed(2);
             document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2);
-
             renderAvatar('playerAvatar', MY_PHOTO_URL, user.username);
-            
-            const oppUsername = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
-            renderAvatar('opponentAvatar', null, oppUsername);
-
+            renderAvatar('opponentAvatar', null, isCreator ? currentRoom.opponent_username : currentRoom.creator_username);
             updateGameStatus(currentRoom);
         }
 
         function updateGameStatus(room) {
             if (!room || isGameFinished) return;
             const statusEl = document.getElementById('gameStatus');
-            if (room.status === 'waiting') {
-                statusEl.innerHTML = t('waitingForOpponent');
-            } else if (room.status === 'playing') {
+            if (room.status === 'waiting') statusEl.innerHTML = t('waitingForOpponent');
+            else if (room.status === 'playing') {
                 const myCol = String(room.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
-                const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
-                if (room[myCol] && room[oppCol]) {
-                    statusEl.innerHTML = t('summarizing');
-                } else if (room[myCol]) {
-                    statusEl.innerHTML = t('opponentThinking');
-                } else {
-                    statusEl.innerHTML = t('yourTurn');
-                }
-            } else {
-                statusEl.innerHTML = t('gameOver');
-            }
+                if (room[myCol] && (myCol === 'creator_choice' ? room.opponent_choice : room.creator_choice)) statusEl.innerHTML = t('summarizing');
+                else if (room[myCol]) statusEl.innerHTML = t('opponentThinking');
+                else statusEl.innerHTML = t('yourTurn');
+            } else statusEl.innerHTML = t('gameOver');
         }
 
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
             if (!currentRoom) return;
             isGameFinished = false;
-
             pollInterval = setInterval(async () => {
                 if (!currentRoom || isGameFinished) return;
                 try {
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`);
-                    const room = res[0];
-                    if (!room) return;
-                    currentRoom = room;
-                    updateGameStatus(room);
-
+                    const room = res[0]; if (!room) return;
+                    currentRoom = room; updateGameStatus(room);
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
-                        isGameFinished = true;
-                        clearInterval(pollInterval); pollInterval = null;
-                        await finishGame(room);
-                        return;
+                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await finishGame(room); return;
                     }
-
                     if (room.status === 'finished') {
-                        isGameFinished = true;
-                        clearInterval(pollInterval); pollInterval = null;
-                        showGameResult(room);
-                        return;
+                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null; showGameResult(room); return;
                     }
                 } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
         }
 
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем наличие соперника вместо устаревшего status
         async function makeMove(choice) {
             console.log('👊 makeMove called with:', choice);
+            if (!currentRoom) { alert(t('roomNotFound')); return; }
             
-            if (!currentRoom) {
-                console.error('❌ currentRoom is null');
-                alert(t('roomNotFound'));
-                return;
-            }
-            
-            if (currentRoom.status !== 'playing') {
-                console.error('❌ Room status is not playing:', currentRoom.status);
+            // ✅ Надёжная проверка: если opponent_tg_id есть, значит соперник присоединился
+            if (!currentRoom.opponent_tg_id) {
+                console.error('❌ Opponent has not joined yet');
                 alert(t('gameNotActive'));
                 return;
             }
             
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
-
-            console.log('🎯 Player:', MY_ID, 'isCreator:', isCreator, 'column:', col, 'alreadyHasChoice:', currentRoom[col]);
-
-            if (currentRoom[col]) {
-                console.warn('⚠️ Player already made a move');
-                return;
-            }
+            if (currentRoom[col]) return;
 
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('gameStatus').textContent = t('yourMoveRecorded');
 
             try {
-                console.log('📤 Sending move to DB:', {[col]: choice});
                 await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
                 currentRoom[col] = choice;
-                console.log('✅ Move saved successfully');
                 updateGameStatus(currentRoom);
             } catch(e) {
                 console.error('❌ Error saving move:', e);
@@ -943,20 +602,9 @@
         async function finishGame(room) {
             const result = calculateWinner(room);
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
-            
             const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
-            
-            if (result.winnerId) {
-                db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false)
-                  .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`))
-                  .catch(console.warn);
-            }
-            if (loserId) {
-                db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false)
-                  .then(d => db('users', 'PATCH', { losses: (d[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`))
-                  .catch(console.warn);
-            }
-
+            if (result.winnerId) db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false).then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`)).catch(console.warn);
+            if (loserId) db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false).then(d => db('users', 'PATCH', { losses: (d[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`)).catch(console.warn);
             showGameResult({ ...room, result: result.msg });
         }
 
@@ -973,11 +621,9 @@
             const msg = room.result || result.msg;
             const isWin = msg.includes('Победа') || msg.includes('Victory');
             const isDraw = msg.includes('Ничья') || msg.includes('Draw');
-            
             const statusEl = document.getElementById('gameStatus');
             statusEl.className = `status-box ${isWin ? 'win' : isDraw ? '' : 'lose'}`;
             statusEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
-            
             updateStats();
             setTimeout(() => { forceExitToLobby(); }, 3000);
         }
@@ -986,10 +632,9 @@
             const c = document.getElementById('skinsList'); c.innerHTML = '';
             const wins = parseInt(document.getElementById('statWins').textContent)||0;
             SKINS.forEach(skin => {
-                const unlocked = wins >= skin.wins;
-                const active = currentSkin === skin.id;
+                const unlocked = wins >= skin.wins, active = currentSkin === skin.id;
                 const el = document.createElement('div');
-                el.className = 'room-card' + (active?' my-room':'');
+                el.className = `room-card ${active?'my-room':''}`;
                 el.onclick = () => openSkinModal(skin, wins);
                 el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${skin.name}</div><div class="room-creator">${skin.wins} ${t('wins')}</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="event.stopPropagation(); ${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?t('checkmark'):unlocked?t('equip'):t('locked')}</button>`;
                 c.appendChild(el);
@@ -1010,13 +655,7 @@
             reqDiv.className = 'skin-modal-req' + (unlocked ? '' : ' locked');
             modal.classList.remove('hidden');
         }
-
-        function closeSkinModal(e) {
-            if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') {
-                document.getElementById('skinModal').classList.add('hidden');
-            }
-        }
-
+        function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal').classList.add('hidden'); }
         function equipSkin(id) { currentSkin = id; renderSkins(); updateStats(); }
 
         async function loadLeaderboard() {
@@ -1028,12 +667,11 @@
                     const wins = u.wins || 0;
                     const skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0];
                     const name = u.username || `Player_${String(u.telegram_id).slice(-4)}`;
-                    const el = document.createElement('div');
-                    el.className = 'room-card';
+                    const el = document.createElement('div'); el.className = 'room-card';
                     el.innerHTML = `<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${name}</div><div class="lb-stats"><span>✅ ${wins}</span><span>❌ ${u.losses || 0}</span></div></div>`;
                     c.appendChild(el);
                 });
-            } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">'+e.message+'</div>'; }
+            } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; }
         }
     </script>
 </body>
