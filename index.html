@@ -34,7 +34,7 @@
         .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--sec); }
         .room-icon img { width: 100%; height: 100%; object-fit: cover; }
         .room-info { flex: 1; }
-        .room-stake { font-weight: 700; color: var(--gold); }
+        .room-stake { font-weight: 700; color: var(--gold); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
         .room-creator { font-size: 12px; color: var(--sec); }
         .room-actions { display: flex; gap: 6px; flex-shrink: 0; }
         .room-btn { padding: 8px 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 12px; }
@@ -136,10 +136,19 @@
         .lb-stats { font-size: 11px; color: var(--sec); display: flex; gap: 8px; margin-top: 4px; }
         .lb-stats span { display: flex; align-items: center; gap: 2px; }
 
-        /* ✅ Стили для таймера комнаты */
-        .room-timer { font-size: 10px; color: var(--sec); margin-left: 4px; font-weight: 600; }
-        .room-timer.active { color: var(--gold); animation: timerPulse 1.5s infinite; }
-        @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        /* ✅ Стили для таймера комнаты (исправленные) */
+        .room-timer { 
+            font-family: monospace; 
+            font-size: 11px; 
+            color: var(--gold); 
+            font-weight: bold; 
+            margin-left: 4px; 
+            background: rgba(251, 191, 36, 0.1);
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
+        .room-timer.urgent { color: var(--error); animation: timerPulse 1s infinite; }
+        @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -398,8 +407,8 @@
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0;
 
-        // ✅ Хранилище для таймеров комнат
-        let roomTimers = {};
+        // ✅ Глобальное хранилище времени истечения комнат
+        window.roomExpiry = {};
 
         async function db(table, method, payload = null, filters = '', single = false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
@@ -507,32 +516,35 @@
             } catch(e) { alert(t('createError') + e.message); }
         }
 
-        // ✅ Очистка старых таймеров при загрузке комнат
-        function clearAllRoomTimers() {
-            Object.values(roomTimers).forEach(t => clearInterval(t));
-            roomTimers = {};
+        // ✅ Функция для форматирования времени (05:00 -> 00:00)
+        function formatCountdown(ms) {
+            if (ms <= 0) return "00:00";
+            const totalSeconds = Math.floor(ms / 1000);
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        // ✅ Форматирование времени в MM:SS
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
+        // ✅ Глобальный тикер таймера (обновляет все таймеры раз в секунду)
+        setInterval(() => {
+            const now = Date.now();
+            // Ищем все элементы таймеров
+            document.querySelectorAll('.room-timer').forEach(el => {
+                const roomId = el.dataset.roomId;
+                if (roomId && window.roomExpiry[roomId]) {
+                    const remaining = window.roomExpiry[roomId] - now;
+                    el.textContent = formatCountdown(remaining);
+                    
+                    if (remaining <= 60000) el.classList.add('urgent');
+                    else el.classList.remove('urgent');
 
-        // ✅ Запуск таймера для конкретной комнаты
-        function startRoomTimer(roomId, createdAtStr) {
-            const timerEl = document.getElementById(`room-timer-${roomId}`);
-            if (!timerEl) return;
-
-            const createdAt = new Date(createdAtStr).getTime();
-            
-            roomTimers[roomId] = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - createdAt) / 1000);
-                timerEl.textContent = formatTime(elapsed);
-                timerEl.classList.add('active');
-            }, 1000);
-        }
+                    if (remaining <= 0) {
+                        el.textContent = "00:00";
+                        el.style.color = "var(--error)";
+                    }
+                }
+            });
+        }, 1000);
 
         async function loadRooms() {
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; }
@@ -545,9 +557,6 @@
 
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
-                
-                // ✅ Очищаем старые таймеры перед перерисовкой
-                clearAllRoomTimers();
                 
                 renderRooms('myRoomsList', my, true); 
                 renderRooms('roomsList', pub, false);
@@ -585,8 +594,16 @@
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
                 } else if (isWaiting) {
                     badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`;
-                    // ✅ Добавляем таймер рядом с бейджем
-                    timerHtml = `<span class="room-timer" id="room-timer-${r.id}">00:00</span>`;
+                    
+                    // ✅ Логика таймера без глюков:
+                    // 1. Если таймер для этой комнаты еще не создан, создаем его (текущее время + 5 мин)
+                    if (!window.roomExpiry[r.id]) {
+                        window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000);
+                    }
+                    // 2. Сразу рассчитываем текст, чтобы при рендере не было 00:00
+                    const remaining = window.roomExpiry[r.id] - Date.now();
+                    timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`;
+                    
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('watch')}</button>`;
                 }
 
@@ -598,11 +615,6 @@
                     el.innerHTML = `<div class="room-icon">${creatorInitial}</div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">${t('join')}</button>`;
                 }
                 c.appendChild(el);
-
-                // ✅ Запускаем таймер для комнат в статусе waiting
-                if (isWaiting) {
-                    startRoomTimer(r.id, r.created_at);
-                }
             });
         }
 
@@ -621,6 +633,8 @@
                 const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
                 if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) { alert(t('onlyCreator')); return; }
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
+                // ✅ Очищаем память таймера при удалении
+                delete window.roomExpiry[roomId];
                 loadRooms();
             } catch(e) { alert(t('cancelError') + e.message); }
         }
@@ -756,7 +770,6 @@
         async function handleTimeout() {
             if (!currentRoom || isGameFinished) return;
             const myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
-            // Если я не сделал ход, я проигрываю
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
@@ -834,21 +847,14 @@
         function calculateWinner(room) {
             const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
             
-            // 1. Проверяем, сделал ли кто-то ход. Если нет - ничья (редко)
             if (!c1 && !c2) return { msg: t('draw'), winnerId: null }; 
-            
-            // 2. Если Создатель не сделал ход -> Создатель проиграл
             if (!c1) return { msg: (MY_ID === id1) ? t('defeat') : t('victory'), winnerId: id2 }; 
-            
-            // 3. Если Соперник не сделал ход -> Соперник проиграл
             if (!c2) return { msg: (MY_ID === id2) ? t('defeat') : t('victory'), winnerId: id1 }; 
 
-            // 4. Обычная игра
             if (c1 === c2) return { msg: t('draw'), winnerId: null };
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
             
-            // Возвращаем "Победа" или "Поражение" относительно ТЕКУЩЕГО игрока
             return { 
                 msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? t('victory') : t('defeat'), 
                 winnerId: creatorWins ? id1 : id2 
