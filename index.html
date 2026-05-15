@@ -69,23 +69,52 @@
         .nav-btn svg { width: 32px; height: 32px; }
         .nav-spacer { height: 80px; }
         
-        .lang-switcher { position: fixed; top: 15px; right: 15px; z-index: 1000; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
+        /* ✅ Переключатель языка всегда поверх всех экранов */
+        .lang-switcher { position: fixed; top: 15px; right: 15px; z-index: 10000; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
         .lang-btn { padding: 6px 12px; border: none; border-radius: 16px; background: transparent; color: var(--sec); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .lang-btn.active { background: var(--primary); color: #fff; }
         
-        .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.5s, visibility 0.5s; }
+        /* ✅ Исправленная вёрстка стартового экрана */
+        .splash-screen { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: var(--bg); z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 20px; overflow-y: auto; box-sizing: border-box;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
         .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .splash-logo { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 50px rgba(99,102,241,0.6); animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; }
+        .splash-content {
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%; max-width: 400px; flex-shrink: 0;
+        }
+        .splash-logo { 
+            flex-shrink: 0; width: 150px; height: 150px; 
+            border-radius: 50%; overflow: hidden; 
+            box-shadow: 0 0 50px rgba(99,102,241,0.6); 
+            animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; 
+        }
         @keyframes splashFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         @keyframes splashPulse { 0%, 100% { box-shadow: 0 0 50px rgba(99,102,241,0.6); } 50% { box-shadow: 0 0 80px rgba(99,102,241,0.9); } }
         .splash-logo img { width: 100%; height: 100%; object-fit: cover; }
-        .splash-title { margin-top: 30px; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: splashText 2s ease-in-out infinite; }
+        .splash-title { 
+            flex-shrink: 0; margin-top: 20px; font-size: 28px; font-weight: 700; 
+            background: linear-gradient(135deg, #818cf8, #c084fc); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            animation: splashText 2s ease-in-out infinite; 
+        }
         @keyframes splashText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
-        .splash-rules { margin-top: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; max-width: 360px; width: 100%; }
+        .splash-rules { 
+            flex-shrink: 0; margin-top: 20px; background: var(--card); 
+            border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; 
+        }
         .splash-rules h3 { color: var(--gold); margin-bottom: 12px; font-size: 16px; text-align: center; }
         .splash-rules ol { color: var(--sec); font-size: 14px; line-height: 1.6; padding-left: 20px; margin-bottom: 20px; }
         .splash-rules li { margin-bottom: 8px; }
-        .splash-btn { width: 100%; max-width: 360px; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+        .splash-btn { 
+            width: 100%; padding: 16px; font-size: 18px; font-weight: 700; 
+            background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; 
+            color: #fff; cursor: pointer; transition: all 0.2s; 
+        }
         .splash-btn:active { transform: scale(0.97); }
         
         .skin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
@@ -128,27 +157,29 @@
     </style>
 </head>
 <body>
-    <div id="splashScreen" class="splash-screen">
-        <div class="splash-logo">
-            <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png" alt="Echidna">
-        </div>
-        <div class="splash-title" data-i18n="splashTitle">Ехидна Naklz</div>
-        <div class="splash-rules">
-            <h3 data-i18n="rulesTitle">📜 Правила игры</h3>
-            <ol data-i18n="rulesList">
-                <li>Создай комнату или присоединись к существующей</li>
-                <li>Выбери ставку от 0.1 до 99 TON</li>
-                <li>Выбери один из трёх ходов: Кулак, Шип или Кристалл</li>
-                <li>Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак</li>
-                <li>Победитель забирает банк (минус 5% комиссия)</li>
-            </ol>
-            <button class="splash-btn" onclick="startGame()" data-i18n="playBtn">🎮 Играть</button>
-        </div>
-    </div>
-
     <div class="lang-switcher">
         <button class="lang-btn active" onclick="setLanguage('ru')">RU</button>
         <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+    </div>
+
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png" alt="Echidna">
+            </div>
+            <div class="splash-title" data-i18n="splashTitle">Ехидна Naklz</div>
+            <div class="splash-rules">
+                <h3 data-i18n="rulesTitle">📜 Правила игры</h3>
+                <ol data-i18n="rulesList">
+                    <li>Создай комнату или присоединись к существующей</li>
+                    <li>Выбери ставку от 0.1 до 99 TON</li>
+                    <li>Выбери один из трёх ходов: Кулак, Шип или Кристалл</li>
+                    <li>Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак</li>
+                    <li>Победитель забирает банк (минус 5% комиссия)</li>
+                </ol>
+                <button class="splash-btn" onclick="startGame()" data-i18n="playBtn">🎮 Играть</button>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -200,7 +231,6 @@
                     <span data-i18n="crystal">Кристалл</span>
                 </button>
             </div>
-            <!-- ✅ Кнопка "В лобби" удалена отсюда, используется нижнее меню -->
             <div class="nav-spacer"></div>
         </div>
 
@@ -716,7 +746,6 @@
                 users.forEach((u,i) => {
                     const wins = u.wins || 0;
                     const skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0];
-                    // ✅ Показываем никнейм, если он есть в базе
                     const name = u.username || `User_${String(u.telegram_id).slice(-4)}`;
                     const el = document.createElement('div'); el.className = 'room-card';
                     el.innerHTML = `<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${name}</div><div class="lb-stats"><span>✅ ${wins}</span><span>❌ ${u.losses || 0}</span></div></div>`;
