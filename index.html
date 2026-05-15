@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ехидна Naklz</title>
+    <!-- Скрипт Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --bg: #0a0a1a; --card: #1a1a2e; --primary: #6366f1; --success: #10b981; --error: #ef4444; --gold: #fbbf24; --text: #f8fafc; --sec: #94a3b8; --border: #334155; }
@@ -69,12 +70,12 @@
         .nav-btn svg { width: 32px; height: 32px; }
         .nav-spacer { height: 80px; }
         
-        /* ✅ Переключатель языка всегда поверх всех экранов */
+        /* Переключатель языка поверх всего */
         .lang-switcher { position: fixed; top: 15px; right: 15px; z-index: 10000; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
         .lang-btn { padding: 6px 12px; border: none; border-radius: 16px; background: transparent; color: var(--sec); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .lang-btn.active { background: var(--primary); color: #fff; }
         
-        /* ✅ Исправленная вёрстка стартового экрана */
+        /* Исправленная вёрстка стартового экрана */
         .splash-screen { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             background: var(--bg); z-index: 9999; 
@@ -500,20 +501,45 @@
             } catch(e) { alert(t('createError') + e.message); }
         }
 
+        // ✅ Улучшенная загрузка комнат с очисткой старых
         async function loadRooms() {
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; }
             try {
+                // 🧹 Запуск очистки старых комнат (тихо, не блокирует интерфейс)
+                // Требует наличия SQL функции cleanup_abandoned_rooms в Supabase
+                fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abandoned_rooms`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({}) 
+                }).catch(e => console.log('Cleanup skipped'));
+
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
-                renderRooms('myRoomsList', my, true); renderRooms('roomsList', pub, false);
-            } catch(e) { document.getElementById('myRoomsList').innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; }
+                
+                renderRooms('myRoomsList', my, true); 
+                renderRooms('roomsList', pub, false);
+            } catch(e) { 
+                console.error('Load rooms error:', e);
+                document.getElementById('myRoomsList').innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; 
+            }
         }
 
         function renderRooms(id, rooms, isMy) {
             const c = document.getElementById(id); c.innerHTML = '';
             if (!rooms.length) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; }
+            
             rooms.forEach(r => {
+                // ✅ Скрываем чужие комнаты, которые висят в ожидании дольше 5 минут
+                const roomAge = Date.now() - new Date(r.created_at).getTime();
+                const isOldWaitingRoom = (r.status === 'waiting' && roomAge > 5 * 60 * 1000);
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
+
+                if (isOldWaitingRoom && !trulyMine) return;
+
                 const isFinished = r.status === 'finished', isPlaying = r.status === 'playing';
                 const el = document.createElement('div');
                 el.className = `room-card ${isMy ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`;
@@ -637,13 +663,9 @@
         }
 
         async function makeMove(choice) {
-            console.log('👊 makeMove called with:', choice);
             if (!currentRoom) { alert(t('roomNotFound')); return; }
-            if (!currentRoom.opponent_tg_id) {
-                console.error('❌ Opponent has not joined yet');
-                alert(t('gameNotActive'));
-                return;
-            }
+            if (!currentRoom.opponent_tg_id) { alert(t('gameNotActive')); return; }
+            
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
             if (currentRoom[col]) return;
@@ -656,7 +678,6 @@
                 currentRoom[col] = choice;
                 updateGameStatus(currentRoom);
             } catch(e) {
-                console.error('❌ Error saving move:', e);
                 alert(t('moveError') + e.message);
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
             }
@@ -720,7 +741,6 @@
         function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal').classList.add('hidden'); }
         
         function equipSkin(id) { 
-            console.log('🎨 equipSkin called with:', id);
             currentSkin = id; 
             try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
             
@@ -733,7 +753,6 @@
                 if (badge) badge.textContent = skin.name;
                 if (level) level.textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
             }
-            
             renderSkins(); 
             updateStats(); 
         }
