@@ -148,6 +148,108 @@
         }
         .room-timer.urgent { color: var(--error); animation: timerPulse 1s infinite; }
         @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* ✅ Стили для анимации раскрытия ходов */
+        .reveal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 10, 26, 0.95);
+            z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        .reveal-overlay.hidden { display: none; }
+        
+        .reveal-title {
+            font-size: 18px; color: var(--sec); margin-bottom: 30px;
+            animation: slideDown 0.5s ease-out;
+        }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .reveal-players {
+            display: flex; align-items: center; gap: 20px; margin-bottom: 30px;
+        }
+        
+        .reveal-player {
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .reveal-player-label {
+            font-size: 14px; color: var(--sec); font-weight: 600;
+        }
+        .reveal-card {
+            width: 100px; height: 120px;
+            perspective: 1000px;
+        }
+        .reveal-card-inner {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            transform: rotateY(0deg);
+        }
+        .reveal-card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .reveal-card-front, .reveal-card-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            border: 2px solid var(--border);
+        }
+        .reveal-card-front {
+            background: var(--card);
+        }
+        .reveal-card-front .card-icon {
+            font-size: 40px;
+        }
+        .reveal-card-back {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            transform: rotateY(180deg);
+            border-color: var(--primary);
+        }
+        .reveal-card-back img {
+            width: 60px; height: 60px; object-fit: contain;
+        }
+        .reveal-card-back .move-name {
+            font-size: 12px; color: #fff; margin-top: 8px; font-weight: 600;
+        }
+        
+        .reveal-vs {
+            font-size: 24px; font-weight: 700; color: var(--error);
+            animation: pulse 1s infinite;
+        }
+        
+        .reveal-result {
+            font-size: 28px; font-weight: 700;
+            opacity: 0; transform: scale(0.8);
+            transition: all 0.5s ease-out;
+        }
+        .reveal-result.show {
+            opacity: 1; transform: scale(1);
+        }
+        .reveal-result.victory { color: var(--success); }
+        .reveal-result.defeat { color: var(--error); }
+        .reveal-result.draw { color: var(--gold); }
+        
+        .reveal-countdown {
+            font-size: 14px; color: var(--sec); margin-top: 20px;
+        }
+        
+        /* Конфетти */
+        .confetti-container {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none; z-index: 2001; overflow: hidden;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px; height: 10px;
+            animation: confettiFall 3s ease-out forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -285,6 +387,46 @@
         </div>
     </div>
 
+    <!-- ✅ Анимация раскрытия ходов -->
+    <div id="revealOverlay" class="reveal-overlay hidden">
+        <div class="reveal-title" data-i18n="revealTitle">Раскрытие ходов</div>
+        <div class="reveal-players">
+            <div class="reveal-player">
+                <div class="reveal-player-label" id="revealPlayer1Label">Вы</div>
+                <div class="reveal-card">
+                    <div class="reveal-card-inner" id="card1">
+                        <div class="reveal-card-front">
+                            <div class="card-icon">❓</div>
+                        </div>
+                        <div class="reveal-card-back">
+                            <img id="card1Img" src="" alt="">
+                            <div class="move-name" id="card1Name"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal-vs">VS</div>
+            <div class="reveal-player">
+                <div class="reveal-player-label" id="revealPlayer2Label">Соперник</div>
+                <div class="reveal-card">
+                    <div class="reveal-card-inner" id="card2">
+                        <div class="reveal-card-front">
+                            <div class="card-icon">❓</div>
+                        </div>
+                        <div class="reveal-card-back">
+                            <img id="card2Img" src="" alt="">
+                            <div class="move-name" id="card2Name"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="reveal-result" id="revealResult"></div>
+        <div class="reveal-countdown" id="revealCountdown"></div>
+    </div>
+
+    <div id="confettiContainer" class="confetti-container hidden"></div>
+
     <div class="bottom-nav">
         <button class="nav-btn active" onclick="showScreen('lobby')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -321,7 +463,7 @@
                 requires: 'Требуется: ', unlocked: '✅ Разблокировано', needMore: '🔒 Нужно ещё ', equip: 'Надеть', locked: '🔒', checkmark: '✓',
                 waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', drawBadge: '🤝 Ничья',
                 return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти',
-                // Переводы скинов
+                revealTitle: 'Раскрытие ходов',
                 skinDefaultName: 'Обычная', skinDefaultDesc: 'Стартовая ехидна.', skinDefaultFeatures: ['Базовый скин', 'Для новичков'],
                 skinIceName: 'Ледяная', skinIceDesc: 'Холодный расчёт.', skinIceFeatures: ['Ледяные иглы', 'Стратег'],
                 skinFireName: 'Огненная', skinFireDesc: 'Огненный темперамент.', skinFireFeatures: ['Агрессивный стиль', 'Быстрая реакция'],
@@ -347,13 +489,23 @@
                 requires: 'Requires: ', unlocked: '✅ Unlocked', needMore: '🔒 Need ', equip: 'Equip', locked: '🔒', checkmark: '✓',
                 waiting: 'WAITING', game: 'GAME', victoryBadge: '✅ Victory', defeatBadge: '❌ Defeat', drawBadge: '🤝 Draw',
                 return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join',
-                // Skin translations
+                revealTitle: 'Move Reveal',
                 skinDefaultName: 'Default', skinDefaultDesc: 'Starting echidna.', skinDefaultFeatures: ['Basic skin', 'For beginners'],
                 skinIceName: 'Ice', skinIceDesc: 'Cold calculation.', skinIceFeatures: ['Ice spikes', 'Strategist'],
                 skinFireName: 'Fire', skinFireDesc: 'Fiery temperament.', skinFireFeatures: ['Aggressive style', 'Quick reaction'],
                 skinShadowName: 'Shadow', skinShadowDesc: 'Power of shadow.', skinShadowFeatures: ['Mysticism', 'Unpredictability'],
                 skinGoldenName: 'Golden', skinGoldenDesc: 'Legend.', skinGoldenFeatures: ['Champion crown', '300+ wins']
             }
+        };
+
+        // Иконки для ходов
+        const moveIcons = {
+            fist: '✊', spike: '👆', crystal: '💎'
+        };
+        const moveImages = {
+            fist: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-fist.png',
+            spike: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-spike.png',
+            crystal: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-crystal.png'
         };
 
         let currentLang = 'ru';
@@ -415,7 +567,6 @@
             { id: 'golden', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png' }
         ];
 
-        // ✅ Функции перевода скинов
         function getSkinName(skin) { return t(`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Name`); }
         function getSkinDesc(skin) { return t(`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Desc`); }
         function getSkinFeatures(skin) { return i18n[currentLang][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || i18n['ru'][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || []; }
@@ -481,6 +632,8 @@
             if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
             if (window._timerInterval) clearInterval(window._timerInterval);
             window._timerRunning = false;
+            document.getElementById('revealOverlay')?.classList.add('hidden');
+            document.getElementById('confettiContainer')?.classList.add('hidden');
             showScreen('lobby');
         }
 
@@ -813,7 +966,7 @@
                     currentRoom = room; updateGameStatus(room);
 
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
-                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await finishGame(room); return;
+                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return;
                     }
                     if (room.status === 'finished') {
                         isGameFinished = true; clearInterval(pollInterval); pollInterval = null; showGameResult(room); return;
@@ -847,13 +1000,135 @@
             }
         }
 
-        async function finishGame(room) {
+        // ✅ Анимация раскрытия ходов
+        async function showRevealAnimation(room) {
+            const overlay = document.getElementById('revealOverlay');
+            const confetti = document.getElementById('confettiContainer');
+            
+            // Определяем, кто есть кто
+            const isCreator = String(room.creator_tg_id) === String(MY_ID);
+            const myMove = isCreator ? room.creator_choice : room.opponent_choice;
+            const oppMove = isCreator ? room.opponent_choice : room.creator_choice;
+            
+            // Устанавливаем данные для карточек
+            document.getElementById('revealPlayer1Label').textContent = currentLang === 'ru' ? 'Вы' : 'You';
+            document.getElementById('revealPlayer2Label').textContent = currentLang === 'ru' ? 'Соперник' : 'Opponent';
+            
+            document.getElementById('card1Img').src = moveImages[myMove];
+            document.getElementById('card1Name').textContent = t(myMove);
+            document.getElementById('card2Img').src = moveImages[oppMove];
+            document.getElementById('card2Name').textContent = t(oppMove);
+            
+            // Показываем оверлей
+            overlay.classList.remove('hidden');
+            confetti.classList.add('hidden');
+            confetti.innerHTML = '';
+            
+            // Сброс карт
+            document.getElementById('card1').classList.remove('flipped');
+            document.getElementById('card2').classList.remove('flipped');
+            const resultEl = document.getElementById('revealResult');
+            resultEl.className = 'reveal-result';
+            resultEl.textContent = '';
+            document.getElementById('revealCountdown').textContent = '';
+            
+            // Анимация по шагам
+            await sleep(500);
+            
+            // Переворот первой карты
+            document.getElementById('card1').classList.add('flipped');
+            await sleep(1000);
+            
+            // Переворот второй карты
+            document.getElementById('card2').classList.add('flipped');
+            await sleep(800);
+            
+            // Показываем результат
             const result = calculateWinner(room);
+            const msg = result.msg;
+            const isWin = msg.includes('Победа') || msg.includes('Victory');
+            const isDraw = msg.includes('Ничья') || msg.includes('Draw');
+            
+            resultEl.textContent = msg;
+            resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`;
+            
+            // Конфетти при победе
+            if (isWin) {
+                createConfetti();
+            }
+            
+            // Обратный отсчет перед возвратом в лобби
+            let countdown = 3;
+            const countdownEl = document.getElementById('revealCountdown');
+            countdownEl.textContent = countdown;
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    countdownEl.textContent = countdown;
+                } else {
+                    clearInterval(countdownInterval);
+                    overlay.classList.add('hidden');
+                    confetti.classList.add('hidden');
+                    updateStats();
+                    forceExitToLobby();
+                }
+            }, 1000);
+            
+            // Обновляем статус в БД
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
+            
+            // Обновляем статистику игроков
             const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
-            if (result.winnerId) db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false).then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`)).catch(console.warn);
-            if (loserId) db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false).then(d => db('users', 'PATCH', { losses: (d[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`)).catch(console.warn);
-            showGameResult({ ...room, result: result.msg });
+            if (result.winnerId) {
+                db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false)
+                  .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`)).catch(console.warn);
+            }
+            if (loserId) {
+                db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false)
+                  .then(d => db('users', 'PATCH', { losses: (d[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`)).catch(console.warn);
+            }
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            container.classList.remove('hidden');
+            container.innerHTML = '';
+            
+            const colors = ['#6366f1', '#10b981', '#fbbf24', '#ef4444', '#8b5cf6', '#f59e0b'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                confetti.style.width = (5 + Math.random() * 10) + 'px';
+                confetti.style.height = (5 + Math.random() * 10) + 'px';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                container.appendChild(confetti);
+            }
+        }
+
+        function showGameResult(room) {
+            const result = calculateWinner(room);
+            const msg = room.result || result.msg;
+            const isWin = msg.includes('Победа') || msg.includes('Victory');
+            const isDraw = msg.includes('Ничья') || msg.includes('Draw');
+            const msgEl = document.getElementById('statusMessage');
+            if(!msgEl) return;
+            msgEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
+            updateStats();
+            setTimeout(() => { forceExitToLobby(); }, 3000);
+        }
+
+        async function finishGame(room) {
+            showRevealAnimation(room);
         }
 
         function calculateWinner(room) {
@@ -871,18 +1146,6 @@
                 msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? t('victory') : t('defeat'), 
                 winnerId: creatorWins ? id1 : id2 
             };
-        }
-
-        function showGameResult(room) {
-            const result = calculateWinner(room);
-            const msg = room.result || result.msg;
-            const isWin = msg.includes('Победа') || msg.includes('Victory');
-            const isDraw = msg.includes('Ничья') || msg.includes('Draw');
-            const msgEl = document.getElementById('statusMessage');
-            if(!msgEl) return;
-            msgEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
-            updateStats();
-            setTimeout(() => { forceExitToLobby(); }, 3000);
         }
 
         function renderSkins() {
