@@ -320,7 +320,13 @@
                 joinError: 'Ошибка: ', moveError: 'Ошибка хода: ', cancelError: 'Ошибка: ', onlyCreator: '⛔ Только создатель может отменить!',
                 requires: 'Требуется: ', unlocked: '✅ Разблокировано', needMore: '🔒 Нужно ещё ', equip: 'Надеть', locked: '🔒', checkmark: '✓',
                 waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', drawBadge: '🤝 Ничья',
-                return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти'
+                return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти',
+                // Переводы скинов
+                skinDefaultName: 'Обычная', skinDefaultDesc: 'Стартовая ехидна.', skinDefaultFeatures: ['Базовый скин', 'Для новичков'],
+                skinIceName: 'Ледяная', skinIceDesc: 'Холодный расчёт.', skinIceFeatures: ['Ледяные иглы', 'Стратег'],
+                skinFireName: 'Огненная', skinFireDesc: 'Огненный темперамент.', skinFireFeatures: ['Агрессивный стиль', 'Быстрая реакция'],
+                skinShadowName: 'Теневая', skinShadowDesc: 'Сила тени.', skinShadowFeatures: ['Мистика', 'Непредсказуемость'],
+                skinGoldenName: 'Золотая', skinGoldenDesc: 'Легенда.', skinGoldenFeatures: ['Корона чемпиона', '300+ побед']
             },
             en: {
                 splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules',
@@ -340,7 +346,13 @@
                 joinError: 'Error: ', moveError: 'Move error: ', cancelError: 'Error: ', onlyCreator: '⛔ Only creator can cancel!',
                 requires: 'Requires: ', unlocked: '✅ Unlocked', needMore: '🔒 Need ', equip: 'Equip', locked: '🔒', checkmark: '✓',
                 waiting: 'WAITING', game: 'GAME', victoryBadge: '✅ Victory', defeatBadge: '❌ Defeat', drawBadge: '🤝 Draw',
-                return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join'
+                return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join',
+                // Skin translations
+                skinDefaultName: 'Default', skinDefaultDesc: 'Starting echidna.', skinDefaultFeatures: ['Basic skin', 'For beginners'],
+                skinIceName: 'Ice', skinIceDesc: 'Cold calculation.', skinIceFeatures: ['Ice spikes', 'Strategist'],
+                skinFireName: 'Fire', skinFireDesc: 'Fiery temperament.', skinFireFeatures: ['Aggressive style', 'Quick reaction'],
+                skinShadowName: 'Shadow', skinShadowDesc: 'Power of shadow.', skinShadowFeatures: ['Mysticism', 'Unpredictability'],
+                skinGoldenName: 'Golden', skinGoldenDesc: 'Legend.', skinGoldenFeatures: ['Champion crown', '300+ wins']
             }
         };
 
@@ -396,12 +408,17 @@
         const MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
 
         const SKINS = [
-            { id: 'default', name: 'Обычная', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png', desc: 'Стартовая ехидна.', features: ['Базовый скин', 'Для новичков'] },
-            { id: 'ice', name: 'Ледяная', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png', desc: 'Холодный расчёт.', features: ['Ледяные иглы', 'Стратег'] },
-            { id: 'fire', name: 'Огненная', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png', desc: 'Огненный темперамент.', features: ['Агрессивный стиль', 'Быстрая реакция'] },
-            { id: 'shadow', name: 'Теневая', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png', desc: 'Сила тени.', features: ['Мистика', 'Непредсказуемость'] },
-            { id: 'golden', name: 'Золотая', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png', desc: 'Легенда.', features: ['Корона чемпиона', '300+ побед'] }
+            { id: 'default', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
+            { id: 'ice', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png' },
+            { id: 'fire', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png' },
+            { id: 'shadow', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png' },
+            { id: 'golden', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png' }
         ];
+
+        // ✅ Функции перевода скинов
+        function getSkinName(skin) { return t(`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Name`); }
+        function getSkinDesc(skin) { return t(`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Desc`); }
+        function getSkinFeatures(skin) { return i18n[currentLang][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || i18n['ru'][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || []; }
 
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0;
@@ -423,17 +440,9 @@
             try {
                 const existing = await db('users', 'GET', null, `?telegram_id=eq.${userId}&limit=1`);
                 if (!existing || existing.length === 0) {
-                    console.log(`🆕 Creating new user in DB: ${username || userId}`);
-                    await db('users', 'POST', [{ 
-                        telegram_id: userId, 
-                        username: username || `User_${userId}`, 
-                        wins: 0, 
-                        losses: 0 
-                    }]);
+                    await db('users', 'POST', [{ telegram_id: userId, username: username || `User_${userId}`, wins: 0, losses: 0 }]);
                 }
-            } catch (e) {
-                console.error("⚠️ Failed to ensure user exists:", e);
-            }
+            } catch (e) { console.error("⚠️ Failed to ensure user exists:", e); }
         }
 
         function renderAvatar(elementId, photoUrl, username) {
@@ -488,7 +497,7 @@
                 
                 const skin = SKINS.find(s => s.id === currentSkin) || SKINS[0];
                 document.getElementById('statLevel').textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
-                document.getElementById('statSkinBadge').textContent = skin.name;
+                document.getElementById('statSkinBadge').textContent = getSkinName(skin);
                 document.getElementById('mainLogoImg').src = skin.img;
             } catch(e) { console.error(e); }
         }
@@ -883,7 +892,7 @@
                 const el = document.createElement('div');
                 el.className = `room-card ${active?'my-room':''}`;
                 el.onclick = () => openSkinModal(skin, currentWins);
-                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${skin.name}</div><div class="room-creator">${skin.wins} ${t('wins')}</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="event.stopPropagation(); ${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?t('checkmark'):unlocked?t('equip'):t('locked')}</button>`;
+                el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinName(skin)}</div><div class="room-creator">${skin.wins} ${t('wins')}</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="event.stopPropagation(); ${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?t('checkmark'):unlocked?t('equip'):t('locked')}</button>`;
                 c.appendChild(el);
             });
         }
@@ -891,11 +900,11 @@
         function openSkinModal(skin, userWins) {
             const modal = document.getElementById('skinModal'); if(!modal) return;
             document.getElementById('modalImg').src = skin.img;
-            document.getElementById('modalTitle').textContent = skin.name;
+            document.getElementById('modalTitle').textContent = getSkinName(skin);
             document.getElementById('modalLevel').textContent = t('requires') + skin.wins + ' ' + t('wins');
-            document.getElementById('modalDesc').textContent = skin.desc;
+            document.getElementById('modalDesc').textContent = getSkinDesc(skin);
             const featuresList = document.getElementById('modalFeatures'); featuresList.innerHTML = '';
-            skin.features.forEach(feat => { const li = document.createElement('li'); li.textContent = feat; featuresList.appendChild(li); });
+            getSkinFeatures(skin).forEach(feat => { const li = document.createElement('li'); li.textContent = feat; featuresList.appendChild(li); });
             const reqDiv = document.getElementById('modalReq');
             const unlocked = userWins >= skin.wins;
             reqDiv.textContent = unlocked ? t('unlocked') : t('needMore') + (skin.wins - userWins) + ' ' + t('wins');
@@ -914,7 +923,7 @@
                 const badge = document.getElementById('statSkinBadge');
                 const level = document.getElementById('statLevel');
                 if (logo) logo.src = skin.img;
-                if (badge) badge.textContent = skin.name;
+                if (badge) badge.textContent = getSkinName(skin);
                 if (level) level.textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
             }
             renderSkins(); 
