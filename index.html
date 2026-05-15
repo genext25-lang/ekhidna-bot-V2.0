@@ -8,21 +8,8 @@
     <style>
         :root { --bg: #0a0a1a; --card: #1a1a2e; --primary: #6366f1; --success: #10b981; --error: #ef4444; --gold: #fbbf24; --text: #f8fafc; --sec: #94a3b8; --border: #334155; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { 
-            width: 100%; 
-            height: 100%; 
-            overflow: hidden; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            background: var(--bg); 
-            color: var(--text);
-        }
-        .container { 
-            width: 100%; 
-            height: 100%; 
-            max-width: 100%;
-            padding: 15px; 
-            overflow-y: auto;
-        }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+        .container { width: 100%; height: 100%; max-width: 100%; padding: 15px; overflow-y: auto; }
         .header { text-align: center; margin-bottom: 20px; }
         .header-logo { width: 120px; height: 120px; margin: 0 auto 12px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 30px rgba(99,102,241,0.5); animation: float 3s ease-in-out infinite; }
         .header-logo img { width: 100%; height: 100%; object-fit: cover; }
@@ -86,83 +73,19 @@
         .lang-btn { padding: 6px 12px; border: none; border-radius: 16px; background: transparent; color: var(--sec); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .lang-btn.active { background: var(--primary); color: #fff; }
         
-        /* 🎬 Улучшенный splash screen */
-        .splash-screen { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0; 
-            background: var(--bg); 
-            z-index: 9999; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 20px;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
+        .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; transition: opacity 0.5s, visibility 0.5s; }
         .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .splash-logo { 
-            width: 150px; 
-            height: 150px; 
-            border-radius: 50%; 
-            overflow: hidden; 
-            box-shadow: 0 0 50px rgba(99,102,241,0.6); 
-            animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; 
-        }
+        .splash-logo { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 50px rgba(99,102,241,0.6); animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; }
         @keyframes splashFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         @keyframes splashPulse { 0%, 100% { box-shadow: 0 0 50px rgba(99,102,241,0.6); } 50% { box-shadow: 0 0 80px rgba(99,102,241,0.9); } }
         .splash-logo img { width: 100%; height: 100%; object-fit: cover; }
-        .splash-title { 
-            margin-top: 30px; 
-            font-size: 28px; 
-            font-weight: 700; 
-            background: linear-gradient(135deg, #818cf8, #c084fc); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            animation: splashText 2s ease-in-out infinite; 
-        }
+        .splash-title { margin-top: 30px; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: splashText 2s ease-in-out infinite; }
         @keyframes splashText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
-        .splash-rules {
-            margin-top: 20px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            max-width: 360px;
-            width: 100%;
-        }
-        .splash-rules h3 {
-            color: var(--gold);
-            margin-bottom: 12px;
-            font-size: 16px;
-            text-align: center;
-        }
-        .splash-rules ol {
-            color: var(--sec);
-            font-size: 14px;
-            line-height: 1.6;
-            padding-left: 20px;
-            margin-bottom: 20px;
-        }
-        .splash-rules li {
-            margin-bottom: 8px;
-        }
-        .splash-btn {
-            width: 100%;
-            max-width: 360px;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-            border-radius: 16px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
-        }
+        .splash-rules { margin-top: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; max-width: 360px; width: 100%; }
+        .splash-rules h3 { color: var(--gold); margin-bottom: 12px; font-size: 16px; text-align: center; }
+        .splash-rules ol { color: var(--sec); font-size: 14px; line-height: 1.6; padding-left: 20px; margin-bottom: 20px; }
+        .splash-rules li { margin-bottom: 8px; }
+        .splash-btn { width: 100%; max-width: 360px; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
         .splash-btn:active { transform: scale(0.97); }
         
         .skin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
@@ -205,15 +128,11 @@
     </style>
 </head>
 <body>
-    <!-- 🎬 Стартовый экран с правилами -->
     <div id="splashScreen" class="splash-screen">
         <div class="splash-logo">
-            <!-- ✅ Обычная ехидна вместо золотой -->
             <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png" alt="Echidna">
         </div>
         <div class="splash-title" data-i18n="splashTitle">Ехидна Naklz</div>
-        
-        <!-- ✅ Правила игры -->
         <div class="splash-rules">
             <h3 data-i18n="rulesTitle">📜 Правила игры</h3>
             <ol data-i18n="rulesList">
@@ -353,11 +272,9 @@
     <script>
         const i18n = {
             ru: {
-                splashTitle: 'Ехидна Naklz', 
-                rulesTitle: '📜 Правила игры',
+                splashTitle: 'Ехидна Naklz', rulesTitle: '📜 Правила игры',
                 rulesList: '1. Создай комнату или присоединись к существующей<br>2. Выбери ставку от 0.1 до 99 TON<br>3. Выбери один из трёх ходов: Кулак, Шип или Кристалл<br>4. Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак<br>5. Победитель забирает банк (минус 5% комиссия)',
-                playBtn: '🎮 Играть',
-                title: 'Ехидна Naklz', subtitle: 'Кулак • Шип • Кристалл',
+                playBtn: '🎮 Играть', title: 'Ехидна Naklz', subtitle: 'Кулак • Шип • Кристалл',
                 wins: 'Побед', games: 'Игр', level: 'Уровень', createRoom: '💎 Создать комнату', refresh: '🔄 Обновить',
                 myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь (−5%)',
                 fist: 'Кулак', spike: 'Шип', crystal: 'Кристалл', toLobby: '🏠 В лобби', skins: '🎨 Скины', skinsSubtitle: 'Нажми на скин для подробной информации',
@@ -374,11 +291,9 @@
                 return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти'
             },
             en: {
-                splashTitle: 'Echidna Naklz',
-                rulesTitle: '📜 Game Rules',
+                splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules',
                 rulesList: '1. Create a room or join an existing one<br>2. Choose a stake from 0.1 to 99 TON<br>3. Choose one of three moves: Fist, Spike or Crystal<br>4. Fist beats Spike, Spike cuts Crystal, Crystal breaks Fist<br>5. Winner takes the pot (minus 5% commission)',
-                playBtn: '🎮 Play',
-                title: 'Echidna Naklz', subtitle: 'Fist • Spike • Crystal',
+                playBtn: '🎮 Play', title: 'Echidna Naklz', subtitle: 'Fist • Spike • Crystal',
                 wins: 'Wins', games: 'Games', level: 'Level', createRoom: '💎 Create Room', refresh: '🔄 Refresh',
                 myRooms: 'My Rooms', availableRooms: 'Available Rooms', battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get (−5%)',
                 fist: 'Fist', spike: 'Spike', crystal: 'Crystal', toLobby: '🏠 To Lobby', skins: '🎨 Skins', skinsSubtitle: 'Click on a skin for details',
@@ -406,19 +321,14 @@
         function updateTexts() { 
             document.querySelectorAll('[data-i18n]').forEach(el => { 
                 if (el.tagName !== 'INPUT') {
-                    if (el.getAttribute('data-i18n') === 'rulesList') {
-                        el.innerHTML = t('rulesList');
-                    } else {
-                        el.textContent = t(el.getAttribute('data-i18n'));
-                    }
+                    if (el.getAttribute('data-i18n') === 'rulesList') el.innerHTML = t('rulesList');
+                    else el.textContent = t(el.getAttribute('data-i18n'));
                 }
             }); 
         }
 
-        // ✅ Функция запуска игры (кнопка "Играть")
         function startGame() {
             document.getElementById('splashScreen').classList.add('hidden');
-            // Разворачиваем на весь экран в Telegram
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.expand();
                 Telegram.WebApp.setHeaderColor('#0a0a1a');
@@ -506,6 +416,7 @@
             showScreen('lobby');
         }
 
+        // ✅ ИСПРАВЛЕНИЕ: updateStats больше не перезаписывает currentSkin
         async function updateStats() {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
@@ -513,10 +424,10 @@
                 const wins = data[0]?.wins || 0, losses = data[0]?.losses || 0;
                 document.getElementById('statWins').textContent = wins;
                 document.getElementById('statGames').textContent = wins + losses;
-                const skinIdx = SKINS.slice().reverse().findIndex(s => wins >= s.wins);
-                currentSkin = skinIdx >= 0 ? SKINS[SKINS.length - 1 - skinIdx].id : 'default';
-                const skin = SKINS.find(s => s.id === currentSkin);
-                document.getElementById('statLevel').textContent = SKINS.findIndex(s => s.id === currentSkin) + 1;
+                
+                // ✅ Используем текущий выбранный скин, не сбрасываем его
+                const skin = SKINS.find(s => s.id === currentSkin) || SKINS[0];
+                document.getElementById('statLevel').textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
                 document.getElementById('statSkinBadge').textContent = skin.name;
                 document.getElementById('mainLogoImg').src = skin.img;
             } catch(e) { console.error(e); }
@@ -776,7 +687,13 @@
             modal.classList.remove('hidden');
         }
         function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal').classList.add('hidden'); }
-        function equipSkin(id) { currentSkin = id; renderSkins(); updateStats(); }
+        
+        // ✅ Исправлено: equipSkin теперь корректно применяет выбор без сброса
+        function equipSkin(id) { 
+            currentSkin = id; 
+            renderSkins(); 
+            updateStats(); // Теперь безопасно, т.к. updateStats не перезаписывает currentSkin
+        }
 
         async function loadLeaderboard() {
             const c = document.getElementById('leaderboardList');
@@ -793,6 +710,33 @@
                 });
             } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; }
         }
+
+        // Инициализация при загрузке
+        window.addEventListener('load', () => {
+            // Автовыбор максимального разблокированного скина при первом запуске
+            try {
+                // Если есть сохраненный скин в localStorage, используем его
+                const savedSkin = localStorage.getItem('echidna_selected_skin');
+                if (savedSkin && SKINS.find(s => s.id === savedSkin)) {
+                    currentSkin = savedSkin;
+                }
+            } catch(e) {}
+            
+            // Разворачиваем игру сразу, если открыта в Telegram
+            if (window.Telegram?.WebApp) {
+                Telegram.WebApp.expand();
+                Telegram.WebApp.setHeaderColor('#0a0a1a');
+                Telegram.WebApp.setBackgroundColor('#0a0a1a');
+            }
+        });
+
+        // Сохраняем выбор скина при смене
+        const originalEquipSkin = equipSkin;
+        equipSkin = function(id) {
+            currentSkin = id;
+            try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
+            originalEquipSkin(id);
+        };
     </script>
 </body>
 </html>
