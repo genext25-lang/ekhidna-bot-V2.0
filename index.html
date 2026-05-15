@@ -371,6 +371,7 @@
         ];
 
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
+        let currentWins = 0; // Глобальная переменная для побед
 
         async function db(table, method, payload = null, filters = '', single = false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
@@ -421,6 +422,9 @@
                 if (!MY_ID || MY_ID === 999999) return;
                 const data = await db('users', 'GET', null, `?telegram_id=eq.${MY_ID}&select=wins,losses`, false);
                 const wins = data[0]?.wins || 0, losses = data[0]?.losses || 0;
+                
+                currentWins = wins; // Обновляем глобальную переменную
+                
                 document.getElementById('statWins').textContent = wins;
                 document.getElementById('statGames').textContent = wins + losses;
                 
@@ -429,7 +433,6 @@
                 document.getElementById('statLevel').textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
                 document.getElementById('statSkinBadge').textContent = skin.name;
                 document.getElementById('mainLogoImg').src = skin.img;
-                console.log('🎨 Stats updated. Active skin:', skin.name, 'CurrentSkin ID:', currentSkin);
             } catch(e) { console.error(e); }
         }
 
@@ -661,12 +664,12 @@
 
         function renderSkins() {
             const c = document.getElementById('skinsList'); c.innerHTML = '';
-            const wins = parseInt(document.getElementById('statWins').textContent)||0;
+            // ✅ Используем глобальную переменную currentWins
             SKINS.forEach(skin => {
-                const unlocked = wins >= skin.wins, active = currentSkin === skin.id;
+                const unlocked = currentWins >= skin.wins, active = currentSkin === skin.id;
                 const el = document.createElement('div');
                 el.className = `room-card ${active?'my-room':''}`;
-                el.onclick = () => openSkinModal(skin, wins);
+                el.onclick = () => openSkinModal(skin, currentWins);
                 el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${skin.name}</div><div class="room-creator">${skin.wins} ${t('wins')}</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="event.stopPropagation(); ${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?t('checkmark'):unlocked?t('equip'):t('locked')}</button>`;
                 c.appendChild(el);
             });
@@ -688,12 +691,28 @@
         }
         function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal').classList.add('hidden'); }
         
-        // ✅ Исправлено: equipSkin теперь явно обновляет всё
+        // ✅ Исправлено: equipSkin теперь обновляет интерфейс НЕМЕДЛЕННО
         function equipSkin(id) { 
             console.log('🎨 equipSkin called with:', id);
+            // 1. Обновляем переменную
             currentSkin = id; 
             try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
+            
+            // 2. Мгновенно обновляем DOM (не ждем сервера)
+            const skin = SKINS.find(s => s.id === id);
+            if (skin) {
+                const logo = document.getElementById('mainLogoImg');
+                const badge = document.getElementById('statSkinBadge');
+                const level = document.getElementById('statLevel');
+                if (logo) logo.src = skin.img;
+                if (badge) badge.textContent = skin.name;
+                if (level) level.textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
+            }
+            
+            // 3. Обновляем список скинов (чтобы поставить галочку на выбранном)
             renderSkins(); 
+            
+            // 4. Синхронизируем статистику в фоне
             updateStats(); 
         }
 
