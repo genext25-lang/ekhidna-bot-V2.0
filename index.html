@@ -30,7 +30,7 @@
         .room-card:active { transform: scale(0.98); background: var(--card); }
         .room-card.my-room { border-left: 3px solid var(--success); }
         .room-card.my-room.playing { border-left-color: var(--primary); }
-        .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+        .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--sec); }
         .room-icon img { width: 100%; height: 100%; object-fit: cover; }
         .room-info { flex: 1; }
         .room-stake { font-weight: 700; color: var(--gold); }
@@ -42,7 +42,7 @@
         .room-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .game-players { display: flex; justify-content: space-around; align-items: center; margin: 15px 0; }
-        .player-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); }
+        .player-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: var(--sec); }
         .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .vs-badge { font-size: 20px; font-weight: 700; color: var(--error); }
         
@@ -133,9 +133,9 @@
         <div id="gameScreen" class="hidden">
             <div class="header"><h2>⚔️ Битва!</h2></div>
             <div class="game-players">
-                <div class="player-avatar"><img src="" id="playerAvatarImg" alt="player"></div>
+                <div class="player-avatar" id="playerAvatar"></div>
                 <div class="vs-badge">VS</div>
-                <div class="player-avatar"><img src="" id="opponentAvatarImg" alt="opponent"></div>
+                <div class="player-avatar" id="opponentAvatar"></div>
             </div>
             
             <div class="game-stakes" id="gameStakes">
@@ -252,6 +252,9 @@
 
         const user = getCurrentUser();
         const MY_ID = Number(user.id);
+        // ✅ Получаем аватарку пользователя из Telegram
+        const MY_PHOTO_URL = user.photo_url || null;
+        const MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
 
         const SKINS = [
             { id: 'default', name: 'Обычная', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png', desc: 'Стартовая ехидна.', features: ['Базовый скин', 'Для новичков'] },
@@ -280,6 +283,19 @@
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
 
+        // ✅ Функция для отображения аватарки (фото или инициалы)
+        function renderAvatar(elementId, photoUrl, username) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            if (photoUrl) {
+                el.innerHTML = `<img src="${photoUrl}" alt="${username || 'User'}" onerror="this.parentElement.innerHTML='${username ? username.charAt(0).toUpperCase() : '?'}'">`;
+            } else {
+                const initial = username ? username.charAt(0).toUpperCase() : '?';
+                el.innerHTML = initial;
+            }
+        }
+
         function showScreen(name) {
             const screens = ['lobbyScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'];
             screens.forEach(id => {
@@ -296,13 +312,11 @@
             });
 
             if (name === 'lobby') {
-                // ✅ Гарантированная очистка и запуск обновления лобби
                 currentRoom = null;
                 isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 
-                // Запускаем обновление лобби
                 lobbyRefreshInterval = setInterval(() => {
                     console.log('🔄 Auto-refresh lobby...');
                     loadRooms();
@@ -398,7 +412,6 @@
                 return;
             }
             try {
-                // ✅ Запрашиваем комнаты со статусами waiting и playing
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 renderRooms('myRoomsList', my, true);
@@ -413,7 +426,6 @@
             const c = document.getElementById(id); c.innerHTML = '';
             if (!rooms.length) { c.innerHTML = '<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>'; return; }
             rooms.forEach(r => {
-                const skin = SKINS[0];
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
                 const isFinished = r.status === 'finished';
                 const isPlaying = r.status === 'playing';
@@ -444,11 +456,14 @@
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">👁 Смотреть</button>`;
                 }
 
+                // ✅ Отображаем аватарку создателя
+                const creatorInitial = r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?';
+                
                 if (trulyMine) {
                     const cancelBtn = !isPlaying ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
-                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`;
+                    el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'"></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON ${badgeHtml}</div><div class="room-creator">Твоя комната</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`;
                 } else {
-                    el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">Войти</button>`;
+                    el.innerHTML = `<div class="room-icon">${creatorInitial}</div><div class="room-info"><div class="room-stake">💰 ${r.stake} TON</div><div class="room-creator">@${r.creator_username||'Аноним'}</div></div><button class="room-btn join" onclick="joinRoom('${r.id}', this)">Войти</button>`;
                 }
                 c.appendChild(el);
             });
@@ -474,7 +489,14 @@
         async function cancelRoom(roomId) {
             try {
                 const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
-                if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) { alert('⛔ Только создатель может отменить!'); return; }
+                if (!roomCheck.length) {
+                    alert('⛔ Комната не найдена!');
+                    return;
+                }
+                if (Number(roomCheck[0].creator_tg_id) !== MY_ID) {
+                    alert('⛔ Только создатель может отменить!');
+                    return;
+                }
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
                 loadRooms();
             } catch(e) { alert('Ошибка: ' + e.message); }
@@ -499,9 +521,17 @@
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
             document.getElementById('gameScreen').classList.remove('hidden');
 
+            if (!currentRoom) {
+                console.error('❌ currentRoom is null in showGameScreen');
+                document.getElementById('gameStatus').textContent = '❌ Ошибка: комната не найдена';
+                return;
+            }
+
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
             const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
+
+            console.log('🎮 Game Screen - Room:', currentRoom.id, 'Status:', currentRoom.status, 'MyChoice:', currentRoom[myCol], 'OppChoice:', currentRoom[oppCol]);
 
             if (currentRoom[myCol] && currentRoom[oppCol]) {
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
@@ -515,18 +545,18 @@
             }
             
             isGameFinished = false;
-            if (!currentRoom) {
-                document.getElementById('gameStatus').textContent = '❌ Ошибка: комната не найдена';
-                return;
-            }
 
             const stake = parseFloat(currentRoom.stake || 0);
             document.getElementById('stakeAmount').textContent = stake.toFixed(2);
             document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2);
 
-            const skin = SKINS.find(s=>s.id===currentSkin)||SKINS[0];
-            document.getElementById('playerAvatarImg').src = skin.img;
-            document.getElementById('opponentAvatarImg').src = SKINS[0].img;
+            // ✅ Отображаем аватарки игроков
+            renderAvatar('playerAvatar', MY_PHOTO_URL, user.username);
+            
+            // Для соперника пока используем его инициал (т.к. у нас нет доступа к его фото)
+            const oppUsername = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
+            renderAvatar('opponentAvatar', null, oppUsername);
+
             updateGameStatus(currentRoom);
         }
 
@@ -582,21 +612,41 @@
         }
 
         async function makeMove(choice) {
-            if (!currentRoom || currentRoom.status !== 'playing') return;
+            console.log('👊 makeMove called with:', choice);
+            
+            if (!currentRoom) {
+                console.error('❌ currentRoom is null');
+                alert('Ошибка: комната не найдена');
+                return;
+            }
+            
+            if (currentRoom.status !== 'playing') {
+                console.error('❌ Room status is not playing:', currentRoom.status);
+                alert('Ошибка: игра не активна (статус: ' + currentRoom.status + ')');
+                return;
+            }
             
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
 
-            if (currentRoom[col]) return;
+            console.log('🎯 Player:', MY_ID, 'isCreator:', isCreator, 'column:', col, 'alreadyHasChoice:', currentRoom[col]);
+
+            if (currentRoom[col]) {
+                console.warn('⚠️ Player already made a move');
+                return;
+            }
 
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('gameStatus').textContent = '✅ Ход записан...';
 
             try {
+                console.log('📤 Sending move to DB:', {[col]: choice});
                 await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
                 currentRoom[col] = choice;
+                console.log('✅ Move saved successfully');
                 updateGameStatus(currentRoom);
             } catch(e) {
+                console.error('❌ Error saving move:', e);
                 alert('Ошибка хода: ' + e.message);
                 document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
             }
@@ -692,6 +742,7 @@
                     const name = u.username || `Player_${String(u.telegram_id).slice(-4)}`;
                     const el = document.createElement('div');
                     el.className = 'room-card';
+                    // ✅ В рейтинге используем скин ехидны (т.к. нет доступа к фото всех игроков)
                     el.innerHTML = `<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${name}</div><div class="lb-stats"><span>✅ ${wins}</span><span>❌ ${u.losses || 0}</span></div></div>`;
                     c.appendChild(el);
                 });
