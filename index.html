@@ -2,50 +2,24 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- ✅ Добавлен target-densitydpi для лучшей совместимости с Desktop WebView -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
     <title>Echidna Naklz</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --bg: #0a0a1a; --card: #1a1a2e; --primary: #6366f1; --success: #10b981; --error: #ef4444; --gold: #fbbf24; --text: #f8fafc; --sec: #94a3b8; --border: #334155; }
         
-        /* ✅ КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ DESKTOP */
-        html { 
-            height: 100%; 
-            width: 100%;
-            overflow-x: hidden;
-        }
+        html { height: 100%; width: 100%; overflow-x: hidden; }
         body { 
-            min-height: 100vh;
-            width: 100%;
-            background: var(--bg);
-            color: var(--text);
-            font-family: system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            padding-bottom: 120px; /* Увеличенный отступ для десктопа */
-            overflow-x: hidden;
-            overflow-y: auto; /* ✅ Разрешаем прокрутку body */
-            -webkit-overflow-scrolling: touch;
-            /* ✅ Убираем потенциальные проблемы с позиционированием */
-            position: relative;
-            transform: translateZ(0); /* ✅ Force GPU acceleration для десктопа */
+            min-height: 100vh; width: 100%; background: var(--bg); color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; padding-bottom: 120px;
+            overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative;
+            transform: translateZ(0);
         }
         
         .container {
-            width: 100%;
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 15px;
-            padding-bottom: 60px;
-            box-sizing: border-box;
-            position: relative;
-            z-index: 1;
-            /* ✅ Гарантируем, что контент будет отрисован */
-            min-height: calc(100vh - 120px);
-            display: block;
-            visibility: visible;
-            opacity: 1;
+            width: 100%; max-width: 480px; margin: 0 auto; padding: 15px; padding-bottom: 60px;
+            box-sizing: border-box; position: relative; z-index: 1; min-height: calc(100vh - 120px);
+            display: block; visibility: visible; opacity: 1;
         }
 
         .header { text-align: center; margin-bottom: 20px; }
@@ -69,26 +43,10 @@
         
         .section-title { font-size: 13px; color: var(--sec); margin: 18px 0 8px; text-transform: uppercase; }
         
-        /* ✅ КРИТИЧЕСКИЕ СТИЛИ ДЛЯ КАРТОЧЕК КОМНАТ НА ДЕСКТОПЕ */
         .room-card { 
-            background: var(--card); 
-            border-radius: 14px; 
-            margin-bottom: 8px; 
-            padding: 14px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            border: 1px solid var(--border); 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            /* ✅ Гарантируем видимость */
-            opacity: 1 !important; 
-            visibility: visible !important; 
-            position: relative;
-            z-index: 2;
-            /* ✅ Фикс для Desktop WebView */
-            will-change: transform;
-            transform: translateZ(0);
+            background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; 
+            border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; opacity: 1 !important; visibility: visible !important; 
+            position: relative; z-index: 2; will-change: transform; transform: translateZ(0);
         }
         .room-card:active { transform: scale(0.98); background: #1f1f35; }
         .room-card.my-room { border-left: 3px solid var(--success); }
@@ -234,6 +192,16 @@
         .confetti-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 2001; overflow: hidden; }
         .confetti { position: absolute; width: 10px; height: 10px; animation: confettiFall 3s ease-out forwards; }
         @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+        /* ✅ ЭКСТРЕННЫЙ ФИКС ДЛЯ TELEGRAM DESKTOP WEBVIEW */
+        @media (min-width: 768px) {
+            .room-card {
+                contain: layout style paint;
+                backface-visibility: visible !important;
+                transform: none !important;
+            }
+            .room-card * { transform: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -279,8 +247,7 @@
             <div class="section-title" data-i18n="myRooms">Мои комнаты</div>
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div>
             <div class="section-title" data-i18n="availableRooms">Доступные комнаты</div>
-            <!-- ✅ Добавлен data-атрибут для отладки -->
-            <div id="roomsList" data-debug="rooms-container"><div class="loader"><div class="spinner"></div></div></div>
+            <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
             <div class="nav-spacer"></div>
         </div>
 
@@ -693,24 +660,16 @@
         }, 1000);
 
         async function loadRooms() {
-            // ✅ ЛОГ ДЛЯ ОТЛАДКИ
             console.log('[DEBUG] loadRooms() called, MY_ID:', MY_ID);
-            
-            if (!MY_ID || MY_ID === 999999) { 
-                document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; 
-                return; 
-            }
+            if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; }
             try {
                 fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abandoned_rooms`, {
-                    method: 'POST',
-                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({}) 
+                    method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({}) 
                 }).catch(e => console.log('Cleanup skipped'));
 
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`);
                 const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`);
                 
-                // ✅ ЛОГИ ДЛЯ ОТЛАДКИ
                 console.log('[DEBUG] My rooms:', my.length, 'Public rooms:', pub.length);
                 
                 renderRooms('myRoomsList', my, true); 
@@ -723,21 +682,13 @@
 
         function renderRooms(id, rooms, isMy) {
             const c = document.getElementById(id); 
-            if(!c) {
-                console.error('[DEBUG] Container not found:', id);
-                return;
-            }
+            if(!c) { console.error('[DEBUG] Container not found:', id); return; }
             
-            // ✅ ЛОГ: проверяем, что контейнер виден
             const style = window.getComputedStyle(c);
             console.log(`[DEBUG] Container ${id} - display:${style.display}, visibility:${style.visibility}, opacity:${style.opacity}`);
             
             c.innerHTML = '';
-            if (!rooms.length) { 
-                c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; 
-                return; 
-            }
-            
+            if (!rooms.length) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; }
             console.log(`[DEBUG] Rendering ${rooms.length} rooms in ${id}`);
             
             rooms.forEach((r, index) => {
@@ -745,7 +696,9 @@
                 const isOldWaitingRoom = (r.status === 'waiting' && roomAge > 5 * 60 * 1000);
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
 
-                if (isOldWaitingRoom && !trulyMine) return;
+                console.log(`[DEBUG] Room ${index+1}: status=${r.status}, age=${Math.floor(roomAge/1000)}s, isOld=${isOldWaitingRoom}, trulyMine=${trulyMine}`);
+                
+                // ✅ УБРАН ЖЁСТКИЙ ФИЛЬТР. Старые комнаты теперь отображаются с предупреждением.
 
                 const isFinished = r.status === 'finished', isPlaying = r.status === 'playing', isWaiting = r.status === 'waiting';
                 const el = document.createElement('div');
@@ -765,12 +718,14 @@
                 } else if (isWaiting) {
                     badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`;
                     
-                    if (!window.roomExpiry[r.id]) {
-                        window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000);
+                    // ✅ ПОМЕЧЕМ СТАРЫЕ КОМНАТЫ
+                    if (isOldWaitingRoom && !trulyMine) {
+                        badgeHtml += `<span style="background:var(--error);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:4px;">⚠️ Старая</span>`;
                     }
+                    
+                    if (!window.roomExpiry[r.id]) { window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000); }
                     const remaining = window.roomExpiry[r.id] - Date.now();
                     timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`;
-                    
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('watch')}</button>`;
                 }
 
@@ -823,29 +778,15 @@
         function showGameScreen() {
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
             document.getElementById('gameScreen')?.classList.remove('hidden');
-            if (!currentRoom) { 
-                const sm = document.getElementById('statusMessage');
-                if(sm) sm.textContent = t('roomNotFound'); 
-                return; 
-            }
-
+            if (!currentRoom) { const sm = document.getElementById('statusMessage'); if(sm) sm.textContent = t('roomNotFound'); return; }
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
             const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
-
             const choices = document.querySelectorAll('.choice-btn');
-            if (currentRoom[myCol] && currentRoom[oppCol]) {
-                choices.forEach(b => b.disabled = true);
-                document.getElementById('statusMessage').textContent = t('summarizing');
-            } else if (currentRoom[myCol]) {
-                choices.forEach(b => b.disabled = true);
-                document.getElementById('statusMessage').textContent = t('yourMoveRecorded');
-            } else {
-                choices.forEach(b => b.disabled = false);
-                document.getElementById('statusMessage').innerHTML = '<div class="spinner"></div>';
-            }
-            isGameFinished = false;
-            window._timerRunning = false;
+            if (currentRoom[myCol] && currentRoom[oppCol]) { choices.forEach(b => b.disabled = true); document.getElementById('statusMessage').textContent = t('summarizing'); } 
+            else if (currentRoom[myCol]) { choices.forEach(b => b.disabled = true); document.getElementById('statusMessage').textContent = t('yourMoveRecorded'); } 
+            else { choices.forEach(b => b.disabled = false); document.getElementById('statusMessage').innerHTML = '<div class="spinner"></div>'; }
+            isGameFinished = false; window._timerRunning = false;
             const stake = parseFloat(currentRoom.stake || 0);
             document.getElementById('stakeAmount').textContent = stake.toFixed(2);
             document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2);
@@ -856,77 +797,33 @@
 
         function updateGameStatus(room) {
             if (!room || isGameFinished) return;
-            const msgEl = document.getElementById('statusMessage');
-            const timerText = document.getElementById('timerText');
-            const timerBarContainer = document.getElementById('timerBarContainer');
-            const timerBar = document.getElementById('timerBar');
-            
+            const msgEl = document.getElementById('statusMessage'), timerText = document.getElementById('timerText'), timerBarContainer = document.getElementById('timerBarContainer'), timerBar = document.getElementById('timerBar');
             if(!msgEl || !timerText || !timerBarContainer || !timerBar) return;
-
-            const isCreator = String(room.creator_tg_id) === String(MY_ID);
-            const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
-            const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
-            
-            if (room[myCol] && room[oppCol]) {
-                msgEl.textContent = t('summarizing');
-                timerText.classList.remove('active');
-                timerBarContainer.style.display = 'none';
-                window._timerRunning = false;
-                if (window._timerInterval) clearInterval(window._timerInterval);
-                return;
+            const isCreator = String(room.creator_tg_id) === String(MY_ID), myCol = isCreator ? 'creator_choice' : 'opponent_choice';
+            if (room[myCol] && (myCol === 'creator_choice' ? room.opponent_choice : room.creator_choice)) {
+                msgEl.textContent = t('summarizing'); timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; window._timerRunning = false; if (window._timerInterval) clearInterval(window._timerInterval); return;
             }
-
-            timerText.classList.remove('active');
-            timerBarContainer.style.display = 'none';
-            timerBar.style.width = '100%';
-            timerBar.classList.remove('urgent');
-
-            if (room.status === 'waiting') {
-                msgEl.textContent = t('waitingForOpponent');
-            } else if (room.status === 'playing') {
-                if (room[myCol]) {
-                    msgEl.textContent = t('yourMoveRecorded');
-                    window._timerRunning = false;
-                } else if (room[oppCol]) {
-                    msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;
-                    timerText.classList.add('active');
-                    timerBarContainer.style.display = 'block';
-                    
-                    if (!window._timerRunning) {
-                        window._timerRunning = true;
-                        window._timerStart = Date.now();
-                        startTimer(window._timerStart);
-                    }
-                } else {
-                    msgEl.textContent = t('waitingForOpponent');
-                    window._timerRunning = false;
-                }
-            } else {
-                msgEl.textContent = t('gameOver');
-                window._timerRunning = false;
-            }
+            timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; timerBar.style.width = '100%'; timerBar.classList.remove('urgent');
+            if (room.status === 'waiting') msgEl.textContent = t('waitingForOpponent');
+            else if (room.status === 'playing') {
+                if (room[myCol]) { msgEl.textContent = t('yourMoveRecorded'); window._timerRunning = false; }
+                else if (myCol === 'creator_choice' ? room.opponent_choice : room.creator_choice) {
+                    msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`; timerText.classList.add('active'); timerBarContainer.style.display = 'block';
+                    if (!window._timerRunning) { window._timerRunning = true; window._timerStart = Date.now(); startTimer(window._timerStart); }
+                } else { msgEl.textContent = t('waitingForOpponent'); window._timerRunning = false; }
+            } else { msgEl.textContent = t('gameOver'); window._timerRunning = false; }
         }
 
         function startTimer(startTime) {
             if (window._timerInterval) clearInterval(window._timerInterval);
-            const timeLimit = 30000;
-            const timerBar = document.getElementById('timerBar');
-            const timerText = document.getElementById('timerText');
+            const timeLimit = 30000, timerBar = document.getElementById('timerBar'), timerText = document.getElementById('timerText');
             if(!timerBar || !timerText) return;
-
             window._timerInterval = setInterval(() => {
                 if (!window._timerRunning) return clearInterval(window._timerInterval);
-                const elapsed = Date.now() - startTime;
-                const remaining = Math.max(0, timeLimit - elapsed);
-                const percent = (remaining / timeLimit) * 100;
-                timerBar.style.width = percent + '%';
-                timerText.textContent = Math.ceil(remaining / 1000) + 's';
+                const elapsed = Date.now() - startTime, remaining = Math.max(0, timeLimit - elapsed), percent = (remaining / timeLimit) * 100;
+                timerBar.style.width = percent + '%'; timerText.textContent = Math.ceil(remaining / 1000) + 's';
                 if (remaining < 10000) timerBar.classList.add('urgent');
-                if (remaining <= 0) {
-                    clearInterval(window._timerInterval);
-                    window._timerRunning = false;
-                    handleTimeout();
-                }
+                if (remaining <= 0) { clearInterval(window._timerInterval); window._timerRunning = false; handleTimeout(); }
             }, 1000);
         }
 
@@ -934,35 +831,28 @@
             if (!currentRoom || isGameFinished) return;
             const myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
             if (!currentRoom[myCol]) {
-                isGameFinished = true;
-                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+                isGameFinished = true; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${currentRoom.id}`);
                 const oppId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
                 db('users', 'GET', null, `?telegram_id=eq.${oppId}&select=wins`, false).then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${oppId}`)).catch(console.warn);
                 db('users', 'PATCH', { losses: (currentWins ? currentWins : 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn);
                 const msgEl = document.getElementById('statusMessage');
                 if(msgEl) msgEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;
-                updateStats();
-                setTimeout(() => forceExitToLobby(), 3000);
+                updateStats(); setTimeout(() => forceExitToLobby(), 3000);
             }
         }
 
         function startPolling() {
-            if (pollInterval) clearInterval(pollInterval);
-            if (!currentRoom) return;
-            isGameFinished = false;
+            if (pollInterval) clearInterval(pollInterval); if (!currentRoom) return; isGameFinished = false;
             pollInterval = setInterval(async () => {
                 if (!currentRoom || isGameFinished) return;
                 try {
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`);
-                    const room = res[0]; if (!room) return;
-                    currentRoom = room; updateGameStatus(room);
+                    const room = res[0]; if (!room) return; currentRoom = room; updateGameStatus(room);
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
                         isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return;
                     }
-                    if (room.status === 'finished') {
-                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null; showGameResult(room); return;
-                    }
+                    if (room.status === 'finished') { isGameFinished = true; clearInterval(pollInterval); pollInterval = null; showGameResult(room); return; }
                 } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
         }
@@ -970,78 +860,40 @@
         async function makeMove(choice) {
             if (!currentRoom) { alert(t('roomNotFound')); return; }
             if (!currentRoom.opponent_tg_id) { alert(t('gameNotActive')); return; }
-            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
-            const col = isCreator ? 'creator_choice' : 'opponent_choice';
+            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID), col = isCreator ? 'creator_choice' : 'opponent_choice';
             if (currentRoom[col]) return;
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('statusMessage').textContent = t('yourMoveRecorded');
-            window._timerRunning = false;
-            if (window._timerInterval) clearInterval(window._timerInterval);
-            document.getElementById('timerText')?.classList.remove('active');
-            document.getElementById('timerBarContainer').style.display = 'none';
-            try {
-                await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
-                currentRoom[col] = choice;
-            } catch(e) {
-                alert(t('moveError') + e.message);
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
-            }
+            window._timerRunning = false; if (window._timerInterval) clearInterval(window._timerInterval);
+            document.getElementById('timerText')?.classList.remove('active'); document.getElementById('timerBarContainer').style.display = 'none';
+            try { await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`); currentRoom[col] = choice; } 
+            catch(e) { alert(t('moveError') + e.message); document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); }
         }
 
         async function showRevealAnimation(room) {
-            const overlay = document.getElementById('revealOverlay');
-            const confetti = document.getElementById('confettiContainer');
+            const overlay = document.getElementById('revealOverlay'), confetti = document.getElementById('confettiContainer');
             const isCreator = String(room.creator_tg_id) === String(MY_ID);
             const myMove = isCreator ? room.creator_choice : room.opponent_choice;
             const oppMove = isCreator ? room.opponent_choice : room.creator_choice;
-            
             document.getElementById('revealPlayer1Label').textContent = currentLang === 'ru' ? 'Вы' : 'You';
             document.getElementById('revealPlayer2Label').textContent = currentLang === 'ru' ? 'Соперник' : 'Opponent';
-            document.getElementById('card1Img').src = moveImages[myMove];
-            document.getElementById('card1Name').textContent = t(myMove);
-            document.getElementById('card2Img').src = moveImages[oppMove];
-            document.getElementById('card2Name').textContent = t(oppMove);
-            
-            overlay.classList.remove('hidden');
-            confetti.classList.add('hidden');
-            confetti.innerHTML = '';
-            document.getElementById('card1').classList.remove('flipped');
-            document.getElementById('card2').classList.remove('flipped');
-            const resultEl = document.getElementById('revealResult');
-            resultEl.className = 'reveal-result';
-            resultEl.textContent = '';
+            document.getElementById('card1Img').src = moveImages[myMove]; document.getElementById('card1Name').textContent = t(myMove);
+            document.getElementById('card2Img').src = moveImages[oppMove]; document.getElementById('card2Name').textContent = t(oppMove);
+            overlay.classList.remove('hidden'); confetti.classList.add('hidden'); confetti.innerHTML = '';
+            document.getElementById('card1').classList.remove('flipped'); document.getElementById('card2').classList.remove('flipped');
+            const resultEl = document.getElementById('revealResult'); resultEl.className = 'reveal-result'; resultEl.textContent = '';
             document.getElementById('revealCountdown').textContent = '';
-            
-            await sleep(500);
-            document.getElementById('card1').classList.add('flipped');
-            await sleep(1000);
-            document.getElementById('card2').classList.add('flipped');
-            await sleep(800);
-            
-            const result = calculateWinner(room);
-            const msg = result.msg;
-            const isWin = msg.includes('Победа') || msg.includes('Victory');
-            const isDraw = msg.includes('Ничья') || msg.includes('Draw');
-            resultEl.textContent = msg;
-            resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`;
-            
+            await sleep(500); document.getElementById('card1').classList.add('flipped'); await sleep(1000);
+            document.getElementById('card2').classList.add('flipped'); await sleep(800);
+            const result = calculateWinner(room), msg = result.msg;
+            const isWin = msg.includes('Победа') || msg.includes('Victory'), isDraw = msg.includes('Ничья') || msg.includes('Draw');
+            resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`;
             if (isWin) createConfetti();
-            
-            let countdown = 3;
-            const countdownEl = document.getElementById('revealCountdown');
-            countdownEl.textContent = countdown;
+            let countdown = 3; const countdownEl = document.getElementById('revealCountdown'); countdownEl.textContent = countdown;
             const countdownInterval = setInterval(() => {
-                countdown--;
-                if (countdown > 0) countdownEl.textContent = countdown;
-                else {
-                    clearInterval(countdownInterval);
-                    overlay.classList.add('hidden');
-                    confetti.classList.add('hidden');
-                    updateStats();
-                    forceExitToLobby();
-                }
+                countdown--; if (countdown > 0) countdownEl.textContent = countdown;
+                else { clearInterval(countdownInterval); overlay.classList.add('hidden'); confetti.classList.add('hidden'); updateStats(); forceExitToLobby(); }
             }, 1000);
-            
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
             const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
             if (result.winnerId) db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false).then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`)).catch(console.warn);
@@ -1050,33 +902,23 @@
         
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
         function createConfetti() {
-            const container = document.getElementById('confettiContainer');
-            container.classList.remove('hidden'); container.innerHTML = '';
+            const container = document.getElementById('confettiContainer'); container.classList.remove('hidden'); container.innerHTML = '';
             const colors = ['#6366f1', '#10b981', '#fbbf24', '#ef4444', '#8b5cf6', '#f59e0b'];
             for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.animationDelay = Math.random() * 2 + 's';
-                confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
-                confetti.style.width = (5 + Math.random() * 10) + 'px';
-                confetti.style.height = (5 + Math.random() * 10) + 'px';
-                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-                container.appendChild(confetti);
+                const confetti = document.createElement('div'); confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%'; confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's'; confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                confetti.style.width = (5 + Math.random() * 10) + 'px'; confetti.style.height = (5 + Math.random() * 10) + 'px';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0'; container.appendChild(confetti);
             }
         }
 
         function showGameResult(room) {
-            const result = calculateWinner(room);
-            const msg = room.result || result.msg;
-            const isWin = msg.includes('Победа') || msg.includes('Victory');
-            const isDraw = msg.includes('Ничья') || msg.includes('Draw');
-            const msgEl = document.getElementById('statusMessage');
-            if(!msgEl) return;
+            const result = calculateWinner(room), msg = room.result || result.msg;
+            const isWin = msg.includes('Победа') || msg.includes('Victory'), isDraw = msg.includes('Ничья') || msg.includes('Draw');
+            const msgEl = document.getElementById('statusMessage'); if(!msgEl) return;
             msgEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
-            updateStats();
-            setTimeout(() => { forceExitToLobby(); }, 3000);
+            updateStats(); setTimeout(() => { forceExitToLobby(); }, 3000);
         }
 
         async function finishGame(room) { showRevealAnimation(room); }
@@ -1096,8 +938,7 @@
             const c = document.getElementById('skinsList'); if(!c) return; c.innerHTML = '';
             SKINS.forEach(skin => {
                 const unlocked = currentWins >= skin.wins, active = currentSkin === skin.id;
-                const el = document.createElement('div');
-                el.className = `room-card ${active?'my-room':''}`;
+                const el = document.createElement('div'); el.className = `room-card ${active?'my-room':''}`;
                 el.onclick = () => openSkinModal(skin, currentWins);
                 el.innerHTML = `<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinName(skin)}</div><div class="room-creator">${skin.wins} ${t('wins')}</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="event.stopPropagation(); ${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?t('checkmark'):unlocked?t('equip'):t('locked')}</button>`;
                 c.appendChild(el);
@@ -1115,21 +956,16 @@
             const reqDiv = document.getElementById('modalReq');
             const unlocked = userWins >= skin.wins;
             reqDiv.textContent = unlocked ? t('unlocked') : t('needMore') + (skin.wins - userWins) + ' ' + t('wins');
-            reqDiv.className = 'skin-modal-req' + (unlocked ? '' : ' locked');
-            modal.classList.remove('hidden');
+            reqDiv.className = 'skin-modal-req' + (unlocked ? '' : ' locked'); modal.classList.remove('hidden');
         }
         function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal')?.classList.add('hidden'); }
         
         function equipSkin(id) { 
-            currentSkin = id; 
-            try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
+            currentSkin = id; try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
             const skin = SKINS.find(s => s.id === id);
             if (skin) {
-                const logo = document.getElementById('mainLogoImg');
-                const badge = document.getElementById('statSkinBadge');
-                const level = document.getElementById('statLevel');
-                if (logo) logo.src = skin.img;
-                if (badge) badge.textContent = getSkinName(skin);
+                const logo = document.getElementById('mainLogoImg'), badge = document.getElementById('statSkinBadge'), level = document.getElementById('statLevel');
+                if (logo) logo.src = skin.img; if (badge) badge.textContent = getSkinName(skin);
                 if (level) level.textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
             }
             renderSkins(); updateStats(); 
@@ -1141,10 +977,8 @@
                 const users = await db('users','GET',null,'?select=username,wins,losses,telegram_id&order=wins.desc.nullslast&limit=10');
                 c.innerHTML = '';
                 users.forEach((u,i) => {
-                    const wins = u.wins || 0;
-                    const skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0];
-                    const name = u.username || `User_${String(u.telegram_id).slice(-4)}`;
-                    const el = document.createElement('div'); el.className = 'room-card';
+                    const wins = u.wins || 0, skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0];
+                    const name = u.username || `User_${String(u.telegram_id).slice(-4)}`, el = document.createElement('div'); el.className = 'room-card';
                     el.innerHTML = `<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${name}</div><div class="lb-stats"><span>✅ ${wins}</span><span>❌ ${u.losses || 0}</span></div></div>`;
                     c.appendChild(el);
                 });
@@ -1159,7 +993,6 @@
                 Telegram.WebApp.setHeaderColor('#0a0a1a');
                 Telegram.WebApp.setBackgroundColor('#0a0a1a');
             }
-            // ✅ ЛОГ при загрузке
             console.log('[DEBUG] App loaded, MY_ID:', MY_ID, 'UserAgent:', navigator.userAgent);
         });
     </script>
