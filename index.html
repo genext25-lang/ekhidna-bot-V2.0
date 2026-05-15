@@ -59,7 +59,20 @@
         .choice-btn img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 4px; }
         .choice-btn span { font-size: 11px; color: var(--sec); font-weight: 600; }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
-        .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; }
+        .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
+        
+        /* ✅ Стили для таймера */
+        .timer-bar-container {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--border); border-radius: 0 0 14px 14px; overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%; background: var(--primary); width: 100%; transition: width 1s linear;
+        }
+        .timer-bar.urgent { background: var(--error); }
+        .timer-text { font-size: 12px; color: var(--error); margin-top: 4px; display: none; }
+        .timer-text.active { display: block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
         .hidden { display: none !important; }
         .loader { text-align: center; padding: 30px; color: var(--sec); }
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
@@ -70,52 +83,24 @@
         .nav-btn svg { width: 32px; height: 32px; }
         .nav-spacer { height: 80px; }
         
-        /* Переключатель языка поверх всего */
         .lang-switcher { position: fixed; top: 15px; right: 15px; z-index: 10000; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
         .lang-btn { padding: 6px 12px; border: none; border-radius: 16px; background: transparent; color: var(--sec); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .lang-btn.active { background: var(--primary); color: #fff; }
         
-        /* Исправленная вёрстка стартового экрана */
-        .splash-screen { 
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            background: var(--bg); z-index: 9999; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 20px; overflow-y: auto; box-sizing: border-box;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
+        .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; box-sizing: border-box; transition: opacity 0.5s, visibility 0.5s; }
         .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .splash-content {
-            display: flex; flex-direction: column; align-items: center;
-            width: 100%; max-width: 400px; flex-shrink: 0;
-        }
-        .splash-logo { 
-            flex-shrink: 0; width: 150px; height: 150px; 
-            border-radius: 50%; overflow: hidden; 
-            box-shadow: 0 0 50px rgba(99,102,241,0.6); 
-            animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; 
-        }
+        .splash-content { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; flex-shrink: 0; }
+        .splash-logo { flex-shrink: 0; width: 150px; height: 150px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 50px rgba(99,102,241,0.6); animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; }
         @keyframes splashFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         @keyframes splashPulse { 0%, 100% { box-shadow: 0 0 50px rgba(99,102,241,0.6); } 50% { box-shadow: 0 0 80px rgba(99,102,241,0.9); } }
         .splash-logo img { width: 100%; height: 100%; object-fit: cover; }
-        .splash-title { 
-            flex-shrink: 0; margin-top: 20px; font-size: 28px; font-weight: 700; 
-            background: linear-gradient(135deg, #818cf8, #c084fc); 
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-            animation: splashText 2s ease-in-out infinite; 
-        }
+        .splash-title { flex-shrink: 0; margin-top: 20px; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: splashText 2s ease-in-out infinite; }
         @keyframes splashText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
-        .splash-rules { 
-            flex-shrink: 0; margin-top: 20px; background: var(--card); 
-            border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; 
-        }
+        .splash-rules { flex-shrink: 0; margin-top: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; }
         .splash-rules h3 { color: var(--gold); margin-bottom: 12px; font-size: 16px; text-align: center; }
         .splash-rules ol { color: var(--sec); font-size: 14px; line-height: 1.6; padding-left: 20px; margin-bottom: 20px; }
         .splash-rules li { margin-bottom: 8px; }
-        .splash-btn { 
-            width: 100%; padding: 16px; font-size: 18px; font-weight: 700; 
-            background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; 
-            color: #fff; cursor: pointer; transition: all 0.2s; 
-        }
+        .splash-btn { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; transition: all 0.2s; }
         .splash-btn:active { transform: scale(0.97); }
         
         .skin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
@@ -217,7 +202,15 @@
                 <div class="stake-line">🏆 <span data-i18n="winAmount">Ты получишь (−5%)</span>: <span id="winAmount" class="stake-win">0.19</span> TON</div>
             </div>
             
-            <div class="status-box" id="gameStatus"><div class="spinner"></div></div>
+            <div class="status-box" id="gameStatus">
+                <div class="spinner"></div>
+                <!-- ✅ Элементы таймера -->
+                <div class="timer-text" id="timerText">00:00</div>
+                <div class="timer-bar-container" id="timerBarContainer" style="display:none;">
+                    <div class="timer-bar" id="timerBar"></div>
+                </div>
+            </div>
+
             <div class="choices" id="choicesArea">
                 <button class="choice-btn" onclick="makeMove('fist')">
                     <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-fist.png" alt="Кулак">
@@ -314,6 +307,7 @@
                 waitingForOpponent: '⏳ Ждём соперника...', gameNotActive: '⚠️ Игра не активна, второй игрок ещё не присоединился',
                 yourMoveRecorded: '✅ Ваш ход записан. Ждём соперника...', opponentThinking: '⏳ Соперник думает...', yourTurn: '👉 Ваш ход!',
                 summarizing: '⏳ Подведение итогов...', gameOver: '🏁 Игра окончена', victory: '🏆 Победа!', defeat: '😢 Поражение', draw: '🤝 Ничья!',
+                timeoutWin: '🏆 Соперник не успел! Ты победил!', timeoutLose: '😢 Время вышло! Ты проиграл.',
                 leftGame: '😢 Вы покинули игру', roomNotFound: '❌ Ошибка: комната не найдена', minStake: 'Мин: 0.1 TON', maxStake: 'Макс: 99 TON', enterValid: 'Введи от 0.1 до 99',
                 createError: 'Ошибка создания: ', userNotFound: '⚠️ Не удалось определить пользователя.', noRooms: 'Нет комнат', roomLocked: 'Комната уже занята',
                 joinError: 'Ошибка: ', moveError: 'Ошибка хода: ', cancelError: 'Ошибка: ', onlyCreator: '⛔ Только создатель может отменить!',
@@ -333,6 +327,7 @@
                 waitingForOpponent: '⏳ Waiting for opponent...', gameNotActive: '⚠️ Game not active, second player has not joined yet',
                 yourMoveRecorded: '✅ Your move recorded. Waiting for opponent...', opponentThinking: '⏳ Opponent is thinking...', yourTurn: '👉 Your turn!',
                 summarizing: '⏳ Summarizing...', gameOver: '🏁 Game Over', victory: '🏆 Victory!', defeat: '😢 Defeat', draw: '🤝 Draw!',
+                timeoutWin: '🏆 Opponent timed out! You win!', timeoutLose: '😢 Time is up! You lost.',
                 leftGame: '😢 You left the game', roomNotFound: '❌ Error: room not found', minStake: 'Min: 0.1 TON', maxStake: 'Max: 99 TON', enterValid: 'Enter from 0.1 to 99',
                 createError: 'Create error: ', userNotFound: '⚠️ Could not identify user.', noRooms: 'No rooms', roomLocked: 'Room is already occupied',
                 joinError: 'Error: ', moveError: 'Move error: ', cancelError: 'Error: ', onlyCreator: '⛔ Only creator can cancel!',
@@ -501,19 +496,12 @@
             } catch(e) { alert(t('createError') + e.message); }
         }
 
-        // ✅ Улучшенная загрузка комнат с очисткой старых
         async function loadRooms() {
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; }
             try {
-                // 🧹 Запуск очистки старых комнат (тихо, не блокирует интерфейс)
-                // Требует наличия SQL функции cleanup_abandoned_rooms в Supabase
                 fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abandoned_rooms`, {
                     method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({}) 
                 }).catch(e => console.log('Cleanup skipped'));
 
@@ -533,7 +521,6 @@
             if (!rooms.length) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; }
             
             rooms.forEach(r => {
-                // ✅ Скрываем чужие комнаты, которые висят в ожидании дольше 5 минут
                 const roomAge = Date.now() - new Date(r.created_at).getTime();
                 const isOldWaitingRoom = (r.status === 'waiting' && roomAge > 5 * 60 * 1000);
                 const trulyMine = Number(r.creator_tg_id) === MY_ID;
@@ -548,7 +535,7 @@
                 let badgeHtml = '', btnHtml = '';
                 if (isFinished) {
                     const result = calculateWinner(r);
-                    const isWin = result.msg.includes('Победа') || result.msg.includes('Victory');
+                    const isWin = result.msg.includes('Победа') || result.msg.includes('Victory') || result.msg.includes('timeout');
                     const isDraw = result.msg.includes('Ничья') || result.msg.includes('Draw');
                     badgeHtml = `<span style="background:${isWin ? 'var(--success)' : isDraw ? 'var(--gold)' : 'var(--error)'};color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${isWin ? t('victoryBadge') : isDraw ? t('drawBadge') : t('defeatBadge')}</span>`;
                     btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('viewResults')}</button>`;
@@ -633,13 +620,85 @@
         function updateGameStatus(room) {
             if (!room || isGameFinished) return;
             const statusEl = document.getElementById('gameStatus');
-            if (room.status === 'waiting') statusEl.innerHTML = t('waitingForOpponent');
-            else if (room.status === 'playing') {
+            const timerText = document.getElementById('timerText');
+            const timerBarContainer = document.getElementById('timerBarContainer');
+            const timerBar = document.getElementById('timerBar');
+            
+            // Сброс таймера
+            timerText.classList.remove('active');
+            timerBarContainer.style.display = 'none';
+            timerBar.style.width = '100%';
+            timerBar.classList.remove('urgent');
+
+            if (room.status === 'waiting') {
+                statusEl.innerHTML = t('waitingForOpponent');
+            } else if (room.status === 'playing') {
                 const myCol = String(room.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
-                if (room[myCol] && (myCol === 'creator_choice' ? room.opponent_choice : room.creator_choice)) statusEl.innerHTML = t('summarizing');
-                else if (room[myCol]) statusEl.innerHTML = t('opponentThinking');
-                else statusEl.innerHTML = t('yourTurn');
+                const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
+                
+                if (room[myCol] && room[oppCol]) {
+                    statusEl.innerHTML = t('summarizing');
+                } else if (room[myCol]) {
+                    // Я сделал ход, жду соперника
+                    statusEl.innerHTML = t('yourMoveRecorded');
+                } else {
+                    // Соперник сделал ход, теперь моя очередь -> ВКЛЮЧАЕМ ТАЙМЕР
+                    statusEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;
+                    timerText.classList.add('active');
+                    timerBarContainer.style.display = 'block';
+                    startTimer(room.updated_at || room.created_at);
+                }
             } else statusEl.innerHTML = t('gameOver');
+        }
+
+        let timerInterval = null;
+        function startTimer(startTimeStr) {
+            if (timerInterval) clearInterval(timerInterval);
+            const startTime = new Date(startTimeStr).getTime();
+            const timeLimit = 30000; // 30 секунд
+            
+            const timerBar = document.getElementById('timerBar');
+            const timerText = document.getElementById('timerText');
+
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const remaining = Math.max(0, timeLimit - elapsed);
+                const percent = (remaining / timeLimit) * 100;
+                
+                timerBar.style.width = percent + '%';
+                timerText.textContent = Math.ceil(remaining / 1000) + 's';
+
+                if (remaining < 10000) timerBar.classList.add('urgent');
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        async function handleTimeout() {
+            if (!currentRoom || isGameFinished) return;
+            // Если я не сделал ход и время вышло -> Я проигрываю
+            const myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
+            if (!currentRoom[myCol]) {
+                isGameFinished = true;
+                clearInterval(pollInterval); pollInterval = null;
+                clearInterval(timerInterval);
+                
+                // Обновляем статус в БД
+                await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${currentRoom.id}`);
+                
+                // Начисляем победу сопернику
+                const oppId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
+                db('users', 'GET', null, `?telegram_id=eq.${oppId}&select=wins`, false)
+                  .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${oppId}`)).catch(console.warn);
+                db('users', 'PATCH', { losses: (currentWins ? currentWins : 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn);
+
+                const statusEl = document.getElementById('gameStatus');
+                statusEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;
+                updateStats();
+                setTimeout(() => forceExitToLobby(), 3000);
+            }
         }
 
         function startPolling() {
@@ -652,6 +711,7 @@
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`);
                     const room = res[0]; if (!room) return;
                     currentRoom = room; updateGameStatus(room);
+
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
                         isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await finishGame(room); return;
                     }
@@ -672,6 +732,11 @@
 
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('gameStatus').textContent = t('yourMoveRecorded');
+            
+            // Скрываем таймер, так как я сделал ход
+            document.getElementById('timerText').classList.remove('active');
+            document.getElementById('timerBarContainer').style.display = 'none';
+            if (timerInterval) clearInterval(timerInterval);
 
             try {
                 await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
