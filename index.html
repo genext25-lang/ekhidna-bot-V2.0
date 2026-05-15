@@ -9,7 +9,10 @@
         :root { --bg: #0a0a1a; --card: #1a1a2e; --primary: #6366f1; --success: #10b981; --error: #ef4444; --gold: #fbbf24; --text: #f8fafc; --sec: #94a3b8; --border: #334155; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { width: 100%; height: 100%; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
-        .container { width: 100%; height: 100%; max-width: 100%; padding: 15px; overflow-y: auto; }
+        .container { width: 100%; min-height: 100vh; padding: 15px; padding-bottom: 110px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .container::-webkit-scrollbar { width: 6px; }
+        .container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .container::-webkit-scrollbar-track { background: transparent; }
         .header { text-align: center; margin-bottom: 20px; }
         .header-logo { width: 120px; height: 120px; margin: 0 auto 12px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 30px rgba(99,102,241,0.5); animation: float 3s ease-in-out infinite; }
         .header-logo img { width: 100%; height: 100%; object-fit: cover; }
@@ -69,7 +72,7 @@
         .timer-bar.urgent { background: var(--error); }
 
         .hidden { display: none !important; }
-        .loader { text-align: center; padding: 30px; color: var(--sec); }
+        .loader { text-align: center; padding: 30px; color: var(--sec); min-height: 100px; }
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 2px solid var(--border); display: flex; padding: 12px 0; z-index: 100; }
@@ -93,8 +96,9 @@
         @keyframes splashText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
         .splash-rules { flex-shrink: 0; margin-top: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; }
         .splash-rules h3 { color: var(--gold); margin-bottom: 12px; font-size: 16px; text-align: center; }
-        .splash-rules ol { color: var(--sec); font-size: 14px; line-height: 1.6; padding-left: 20px; margin-bottom: 20px; }
-        .splash-rules li { margin-bottom: 8px; }
+        .splash-rules ul { list-style-type: none; padding: 0; margin: 0; }
+        .splash-rules ul li { position: relative; padding-left: 24px; margin-bottom: 8px; color: var(--sec); font-size: 14px; line-height: 1.5; }
+        .splash-rules ul li::before { content: '•'; position: absolute; left: 6px; color: var(--gold); font-size: 20px; line-height: 1.2; }
         .splash-btn { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; transition: all 0.2s; }
         .splash-btn:active { transform: scale(0.97); }
         
@@ -136,120 +140,37 @@
         .lb-stats { font-size: 11px; color: var(--sec); display: flex; gap: 8px; margin-top: 4px; }
         .lb-stats span { display: flex; align-items: center; gap: 2px; }
 
-        .room-timer { 
-            font-family: monospace; 
-            font-size: 11px; 
-            color: var(--gold); 
-            font-weight: bold; 
-            margin-left: 4px; 
-            background: rgba(251, 191, 36, 0.1);
-            padding: 1px 4px;
-            border-radius: 4px;
-        }
+        .room-timer { font-family: monospace; font-size: 11px; color: var(--gold); font-weight: bold; margin-left: 4px; background: rgba(251, 191, 36, 0.1); padding: 1px 4px; border-radius: 4px; }
         .room-timer.urgent { color: var(--error); animation: timerPulse 1s infinite; }
         @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        /* ✅ Стили для анимации раскрытия ходов */
-        .reveal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(10, 10, 26, 0.95);
-            z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            animation: fadeIn 0.3s;
-        }
+        .reveal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 26, 0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
         .reveal-overlay.hidden { display: none; }
-        
-        .reveal-title {
-            font-size: 18px; color: var(--sec); margin-bottom: 30px;
-            animation: slideDown 0.5s ease-out;
-        }
+        .reveal-title { font-size: 18px; color: var(--sec); margin-bottom: 30px; animation: slideDown 0.5s ease-out; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .reveal-players {
-            display: flex; align-items: center; gap: 20px; margin-bottom: 30px;
-        }
-        
-        .reveal-player {
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-        }
-        .reveal-player-label {
-            font-size: 14px; color: var(--sec); font-weight: 600;
-        }
-        .reveal-card {
-            width: 100px; height: 120px;
-            perspective: 1000px;
-        }
-        .reveal-card-inner {
-            width: 100%; height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
-            transform: rotateY(0deg);
-        }
-        .reveal-card-inner.flipped {
-            transform: rotateY(180deg);
-        }
-        .reveal-card-front, .reveal-card-back {
-            position: absolute; width: 100%; height: 100%;
-            backface-visibility: hidden;
-            border-radius: 16px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            border: 2px solid var(--border);
-        }
-        .reveal-card-front {
-            background: var(--card);
-        }
-        .reveal-card-front .card-icon {
-            font-size: 40px;
-        }
-        .reveal-card-back {
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            transform: rotateY(180deg);
-            border-color: var(--primary);
-        }
-        .reveal-card-back img {
-            width: 60px; height: 60px; object-fit: contain;
-        }
-        .reveal-card-back .move-name {
-            font-size: 12px; color: #fff; margin-top: 8px; font-weight: 600;
-        }
-        
-        .reveal-vs {
-            font-size: 24px; font-weight: 700; color: var(--error);
-            animation: pulse 1s infinite;
-        }
-        
-        .reveal-result {
-            font-size: 28px; font-weight: 700;
-            opacity: 0; transform: scale(0.8);
-            transition: all 0.5s ease-out;
-        }
-        .reveal-result.show {
-            opacity: 1; transform: scale(1);
-        }
+        .reveal-players { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
+        .reveal-player { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .reveal-player-label { font-size: 14px; color: var(--sec); font-weight: 600; }
+        .reveal-card { width: 100px; height: 120px; perspective: 1000px; }
+        .reveal-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; transform: rotateY(0deg); }
+        .reveal-card-inner.flipped { transform: rotateY(180deg); }
+        .reveal-card-front, .reveal-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); }
+        .reveal-card-front { background: var(--card); }
+        .reveal-card-front .card-icon { font-size: 40px; }
+        .reveal-card-back { background: linear-gradient(135deg, var(--primary), #8b5cf6); transform: rotateY(180deg); border-color: var(--primary); }
+        .reveal-card-back img { width: 60px; height: 60px; object-fit: contain; }
+        .reveal-card-back .move-name { font-size: 12px; color: #fff; margin-top: 8px; font-weight: 600; }
+        .reveal-vs { font-size: 24px; font-weight: 700; color: var(--error); animation: pulse 1s infinite; }
+        .reveal-result { font-size: 28px; font-weight: 700; opacity: 0; transform: scale(0.8); transition: all 0.5s ease-out; }
+        .reveal-result.show { opacity: 1; transform: scale(1); }
         .reveal-result.victory { color: var(--success); }
         .reveal-result.defeat { color: var(--error); }
         .reveal-result.draw { color: var(--gold); }
+        .reveal-countdown { font-size: 14px; color: var(--sec); margin-top: 20px; }
         
-        .reveal-countdown {
-            font-size: 14px; color: var(--sec); margin-top: 20px;
-        }
-        
-        /* Конфетти */
-        .confetti-container {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            pointer-events: none; z-index: 2001; overflow: hidden;
-        }
-        .confetti {
-            position: absolute;
-            width: 10px; height: 10px;
-            animation: confettiFall 3s ease-out forwards;
-        }
-        @keyframes confettiFall {
-            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
+        .confetti-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 2001; overflow: hidden; }
+        .confetti { position: absolute; width: 10px; height: 10px; animation: confettiFall 3s ease-out forwards; }
+        @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -266,13 +187,14 @@
             <div class="splash-title" data-i18n="splashTitle">Ехидна Naklz</div>
             <div class="splash-rules">
                 <h3 data-i18n="rulesTitle">📜 Правила игры</h3>
-                <ol data-i18n="rulesList">
+                <!-- ✅ Заменено на ul для точек -->
+                <ul data-i18n="rulesList">
                     <li>Создай комнату или присоединись к существующей</li>
                     <li>Выбери ставку от 0.1 до 99 TON</li>
                     <li>Выбери один из трёх ходов: Кулак, Шип или Кристалл</li>
                     <li>Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак</li>
                     <li>Победитель забирает банк (минус 5% комиссия)</li>
-                </ol>
+                </ul>
                 <button class="splash-btn" onclick="startGame()" data-i18n="playBtn">🎮 Играть</button>
             </div>
         </div>
@@ -387,7 +309,6 @@
         </div>
     </div>
 
-    <!-- ✅ Анимация раскрытия ходов -->
     <div id="revealOverlay" class="reveal-overlay hidden">
         <div class="reveal-title" data-i18n="revealTitle">Раскрытие ходов</div>
         <div class="reveal-players">
@@ -395,9 +316,7 @@
                 <div class="reveal-player-label" id="revealPlayer1Label">Вы</div>
                 <div class="reveal-card">
                     <div class="reveal-card-inner" id="card1">
-                        <div class="reveal-card-front">
-                            <div class="card-icon">❓</div>
-                        </div>
+                        <div class="reveal-card-front"><div class="card-icon">❓</div></div>
                         <div class="reveal-card-back">
                             <img id="card1Img" src="" alt="">
                             <div class="move-name" id="card1Name"></div>
@@ -410,9 +329,7 @@
                 <div class="reveal-player-label" id="revealPlayer2Label">Соперник</div>
                 <div class="reveal-card">
                     <div class="reveal-card-inner" id="card2">
-                        <div class="reveal-card-front">
-                            <div class="card-icon">❓</div>
-                        </div>
+                        <div class="reveal-card-front"><div class="card-icon">❓</div></div>
                         <div class="reveal-card-back">
                             <img id="card2Img" src="" alt="">
                             <div class="move-name" id="card2Name"></div>
@@ -446,7 +363,7 @@
         const i18n = {
             ru: {
                 splashTitle: 'Ехидна Naklz', rulesTitle: '📜 Правила игры',
-                rulesList: '1. Создай комнату или присоединись к существующей<br>2. Выбери ставку от 0.1 до 99 TON<br>3. Выбери один из трёх ходов: Кулак, Шип или Кристалл<br>4. Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак<br>5. Победитель забирает банк (минус 5% комиссия)',
+                rulesList: '<li>Создай комнату или присоединись к существующей</li><li>Выбери ставку от 0.1 до 99 TON</li><li>Выбери один из трёх ходов: Кулак, Шип или Кристалл</li><li>Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак</li><li>Победитель забирает банк (минус 5% комиссия)</li>',
                 playBtn: '🎮 Играть', title: 'Ехидна Naklz', subtitle: 'Кулак • Шип • Кристалл',
                 wins: 'Побед', games: 'Игр', level: 'Уровень', createRoom: '💎 Создать комнату', refresh: '🔄 Обновить',
                 myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь (−5%)',
@@ -472,7 +389,7 @@
             },
             en: {
                 splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules',
-                rulesList: '1. Create a room or join an existing one<br>2. Choose a stake from 0.1 to 99 TON<br>3. Choose one of three moves: Fist, Spike or Crystal<br>4. Fist beats Spike, Spike cuts Crystal, Crystal breaks Fist<br>5. Winner takes the pot (minus 5% commission)',
+                rulesList: '<li>Create a room or join an existing one</li><li>Choose a stake from 0.1 to 99 TON</li><li>Choose one of three moves: Fist, Spike or Crystal</li><li>Fist beats Spike, Spike cuts Crystal, Crystal breaks Fist</li><li>Winner takes the pot (minus 5% commission)</li>',
                 playBtn: '🎮 Play', title: 'Echidna Naklz', subtitle: 'Fist • Spike • Crystal',
                 wins: 'Wins', games: 'Games', level: 'Level', createRoom: '💎 Create Room', refresh: '🔄 Refresh',
                 myRooms: 'My Rooms', availableRooms: 'Available Rooms', battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get (−5%)',
@@ -498,10 +415,7 @@
             }
         };
 
-        // Иконки для ходов
-        const moveIcons = {
-            fist: '✊', spike: '👆', crystal: '💎'
-        };
+        const moveIcons = { fist: '✊', spike: '👆', crystal: '💎' };
         const moveImages = {
             fist: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-fist.png',
             spike: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-spike.png',
@@ -810,9 +724,7 @@
             try {
                 const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
                 if (!check.length) throw new Error(t('roomLocked'));
-
                 await ensureUserExists(MY_ID, user.username);
-
                 const room = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true);
                 if (!room) throw new Error(t('joinError'));
                 currentRoom = room; showGameScreen(); startPolling(); loadRooms();
@@ -916,14 +828,11 @@
 
             window._timerInterval = setInterval(() => {
                 if (!window._timerRunning) return clearInterval(window._timerInterval);
-                
                 const elapsed = Date.now() - startTime;
                 const remaining = Math.max(0, timeLimit - elapsed);
                 const percent = (remaining / timeLimit) * 100;
-                
                 timerBar.style.width = percent + '%';
                 timerText.textContent = Math.ceil(remaining / 1000) + 's';
-
                 if (remaining < 10000) timerBar.classList.add('urgent');
                 if (remaining <= 0) {
                     clearInterval(window._timerInterval);
@@ -939,14 +848,10 @@
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                
                 await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${currentRoom.id}`);
-                
                 const oppId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
-                db('users', 'GET', null, `?telegram_id=eq.${oppId}&select=wins`, false)
-                  .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${oppId}`)).catch(console.warn);
+                db('users', 'GET', null, `?telegram_id=eq.${oppId}&select=wins`, false).then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${oppId}`)).catch(console.warn);
                 db('users', 'PATCH', { losses: (currentWins ? currentWins : 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn);
-
                 const msgEl = document.getElementById('statusMessage');
                 if(msgEl) msgEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;
                 updateStats();
@@ -964,7 +869,6 @@
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`);
                     const room = res[0]; if (!room) return;
                     currentRoom = room; updateGameStatus(room);
-
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
                         isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return;
                     }
@@ -978,19 +882,15 @@
         async function makeMove(choice) {
             if (!currentRoom) { alert(t('roomNotFound')); return; }
             if (!currentRoom.opponent_tg_id) { alert(t('gameNotActive')); return; }
-            
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const col = isCreator ? 'creator_choice' : 'opponent_choice';
             if (currentRoom[col]) return;
-
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('statusMessage').textContent = t('yourMoveRecorded');
-            
             window._timerRunning = false;
             if (window._timerInterval) clearInterval(window._timerInterval);
             document.getElementById('timerText')?.classList.remove('active');
             document.getElementById('timerBarContainer').style.display = 'none';
-
             try {
                 await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`);
                 currentRoom[col] = choice;
@@ -1000,31 +900,23 @@
             }
         }
 
-        // ✅ Анимация раскрытия ходов
         async function showRevealAnimation(room) {
             const overlay = document.getElementById('revealOverlay');
             const confetti = document.getElementById('confettiContainer');
-            
-            // Определяем, кто есть кто
             const isCreator = String(room.creator_tg_id) === String(MY_ID);
             const myMove = isCreator ? room.creator_choice : room.opponent_choice;
             const oppMove = isCreator ? room.opponent_choice : room.creator_choice;
             
-            // Устанавливаем данные для карточек
             document.getElementById('revealPlayer1Label').textContent = currentLang === 'ru' ? 'Вы' : 'You';
             document.getElementById('revealPlayer2Label').textContent = currentLang === 'ru' ? 'Соперник' : 'Opponent';
-            
             document.getElementById('card1Img').src = moveImages[myMove];
             document.getElementById('card1Name').textContent = t(myMove);
             document.getElementById('card2Img').src = moveImages[oppMove];
             document.getElementById('card2Name').textContent = t(oppMove);
             
-            // Показываем оверлей
             overlay.classList.remove('hidden');
             confetti.classList.add('hidden');
             confetti.innerHTML = '';
-            
-            // Сброс карт
             document.getElementById('card1').classList.remove('flipped');
             document.getElementById('card2').classList.remove('flipped');
             const resultEl = document.getElementById('revealResult');
@@ -1032,41 +924,28 @@
             resultEl.textContent = '';
             document.getElementById('revealCountdown').textContent = '';
             
-            // Анимация по шагам
             await sleep(500);
-            
-            // Переворот первой карты
             document.getElementById('card1').classList.add('flipped');
             await sleep(1000);
-            
-            // Переворот второй карты
             document.getElementById('card2').classList.add('flipped');
             await sleep(800);
             
-            // Показываем результат
             const result = calculateWinner(room);
             const msg = result.msg;
             const isWin = msg.includes('Победа') || msg.includes('Victory');
             const isDraw = msg.includes('Ничья') || msg.includes('Draw');
-            
             resultEl.textContent = msg;
             resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`;
             
-            // Конфетти при победе
-            if (isWin) {
-                createConfetti();
-            }
+            if (isWin) createConfetti();
             
-            // Обратный отсчет перед возвратом в лобби
             let countdown = 3;
             const countdownEl = document.getElementById('revealCountdown');
             countdownEl.textContent = countdown;
-            
             const countdownInterval = setInterval(() => {
                 countdown--;
-                if (countdown > 0) {
-                    countdownEl.textContent = countdown;
-                } else {
+                if (countdown > 0) countdownEl.textContent = countdown;
+                else {
                     clearInterval(countdownInterval);
                     overlay.classList.add('hidden');
                     confetti.classList.add('hidden');
@@ -1075,32 +954,17 @@
                 }
             }, 1000);
             
-            // Обновляем статус в БД
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`);
-            
-            // Обновляем статистику игроков
             const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
-            if (result.winnerId) {
-                db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false)
-                  .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`)).catch(console.warn);
-            }
-            if (loserId) {
-                db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false)
-                  .then(d => db('users', 'PATCH', { losses: (d[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`)).catch(console.warn);
-            }
+            if (result.winnerId) db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false).then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`)).catch(console.warn);
+            if (loserId) db('users', 'GET', null, `?telegram_id=eq.${loserId}&select=losses`, false).then(d => db('users', 'PATCH', { losses: (d[0]?.losses || 0) + 1 }, `?telegram_id=eq.${loserId}`)).catch(console.warn);
         }
         
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-        
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
         function createConfetti() {
             const container = document.getElementById('confettiContainer');
-            container.classList.remove('hidden');
-            container.innerHTML = '';
-            
+            container.classList.remove('hidden'); container.innerHTML = '';
             const colors = ['#6366f1', '#10b981', '#fbbf24', '#ef4444', '#8b5cf6', '#f59e0b'];
-            
             for (let i = 0; i < 50; i++) {
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti';
@@ -1127,25 +991,17 @@
             setTimeout(() => { forceExitToLobby(); }, 3000);
         }
 
-        async function finishGame(room) {
-            showRevealAnimation(room);
-        }
+        async function finishGame(room) { showRevealAnimation(room); }
 
         function calculateWinner(room) {
             const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room;
-            
             if (!c1 && !c2) return { msg: t('draw'), winnerId: null }; 
             if (!c1) return { msg: (MY_ID === id1) ? t('defeat') : t('victory'), winnerId: id2 }; 
             if (!c2) return { msg: (MY_ID === id2) ? t('defeat') : t('victory'), winnerId: id1 }; 
-
             if (c1 === c2) return { msg: t('draw'), winnerId: null };
             const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' };
             const creatorWins = beats[c1] === c2;
-            
-            return { 
-                msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? t('victory') : t('defeat'), 
-                winnerId: creatorWins ? id1 : id2 
-            };
+            return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? t('victory') : t('defeat'), winnerId: creatorWins ? id1 : id2 };
         }
 
         function renderSkins() {
@@ -1179,7 +1035,6 @@
         function equipSkin(id) { 
             currentSkin = id; 
             try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
-            
             const skin = SKINS.find(s => s.id === id);
             if (skin) {
                 const logo = document.getElementById('mainLogoImg');
@@ -1189,8 +1044,7 @@
                 if (badge) badge.textContent = getSkinName(skin);
                 if (level) level.textContent = SKINS.findIndex(s => s.id === skin.id) + 1;
             }
-            renderSkins(); 
-            updateStats(); 
+            renderSkins(); updateStats(); 
         }
 
         async function loadLeaderboard() {
@@ -1211,9 +1065,7 @@
 
         window.addEventListener('load', () => {
             const savedSkin = localStorage.getItem('echidna_selected_skin');
-            if (savedSkin && SKINS.find(s => s.id === savedSkin)) {
-                currentSkin = savedSkin;
-            }
+            if (savedSkin && SKINS.find(s => s.id === savedSkin)) currentSkin = savedSkin;
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.expand();
                 Telegram.WebApp.setHeaderColor('#0a0a1a');
