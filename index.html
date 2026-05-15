@@ -61,13 +61,9 @@
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
         .status-box { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
         
-        /* ✅ Стили для таймера */
-        .timer-bar-container {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--border); border-radius: 0 0 14px 14px; overflow: hidden;
-        }
-        .timer-bar {
-            height: 100%; background: var(--primary); width: 100%; transition: width 1s linear;
-        }
+        /* Стили для таймера */
+        .timer-bar-container { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--border); border-radius: 0 0 14px 14px; overflow: hidden; }
+        .timer-bar { height: 100%; background: var(--primary); width: 100%; transition: width 1s linear; }
         .timer-bar.urgent { background: var(--error); }
         .timer-text { font-size: 12px; color: var(--error); margin-top: 4px; display: none; }
         .timer-text.active { display: block; animation: pulse 1s infinite; }
@@ -204,7 +200,6 @@
             
             <div class="status-box" id="gameStatus">
                 <div class="spinner"></div>
-                <!-- ✅ Элементы таймера -->
                 <div class="timer-text" id="timerText">00:00</div>
                 <div class="timer-bar-container" id="timerBarContainer" style="display:none;">
                     <div class="timer-bar" id="timerBar"></div>
@@ -340,7 +335,7 @@
         let currentLang = 'ru';
         function setLanguage(lang) {
             currentLang = lang;
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.toLowerCase() === lang));
+            document.querySelectorAll('.lang-btn').forEach(btn => btn?.classList?.toggle('active', btn.textContent.toLowerCase() === lang));
             updateTexts();
         }
         function t(key) { return i18n[currentLang][key] || i18n['ru'][key] || key; }
@@ -354,7 +349,7 @@
         }
 
         function startGame() {
-            document.getElementById('splashScreen').classList.add('hidden');
+            document.getElementById('splashScreen')?.classList.add('hidden');
             if (window.Telegram?.WebApp) {
                 Telegram.WebApp.expand();
                 Telegram.WebApp.setHeaderColor('#0a0a1a');
@@ -420,9 +415,14 @@
         }
 
         function showScreen(name) {
-            ['lobbyScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
-            const target = document.getElementById(name + 'Screen'); if(target) target.classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', ['lobby', 'skins', 'leaderboard'][i] === name));
+            ['lobbyScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'].forEach(id => { 
+                const el = document.getElementById(id); 
+                if(el) el.classList.add('hidden'); 
+            });
+            const target = document.getElementById(name + 'Screen'); 
+            if(target) target.classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach((b, i) => b?.classList?.toggle('active', ['lobby', 'skins', 'leaderboard'][i] === name));
 
             if (name === 'lobby') {
                 currentRoom = null; isGameFinished = false;
@@ -463,18 +463,20 @@
 
         function openStakeModal() {
             selectedStake = 0.1; document.getElementById('stakeInput').value = ''; document.getElementById('stakeError').textContent = '';
-            document.querySelectorAll('.stake-preset-btn').forEach(btn => btn.classList.remove('selected'));
-            document.querySelector('.stake-preset-btn[data-stake="0.1"]').classList.add('selected');
-            document.getElementById('stakeModal').classList.remove('hidden');
+            document.querySelectorAll('.stake-preset-btn').forEach(btn => btn?.classList?.remove('selected'));
+            const defBtn = document.querySelector('.stake-preset-btn[data-stake="0.1"]');
+            if(defBtn) defBtn.classList.add('selected');
+            document.getElementById('stakeModal')?.classList.remove('hidden');
         }
-        function closeStakeModal(e) { if (!e || e.target.id === 'stakeModal' || e.target.className === 'skin-modal-close') document.getElementById('stakeModal').classList.add('hidden'); }
+        function closeStakeModal(e) { if (!e || e.target.id === 'stakeModal' || e.target.className === 'skin-modal-close') document.getElementById('stakeModal')?.classList.add('hidden'); }
         function selectStake(value, btn) {
             selectedStake = value; document.getElementById('stakeInput').value = ''; document.getElementById('stakeError').textContent = '';
-            document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected');
+            document.querySelectorAll('.stake-preset-btn').forEach(b => b?.classList?.remove('selected')); 
+            if(btn) btn.classList.add('selected');
         }
         function onStakeInput() {
             const val = parseFloat(document.getElementById('stakeInput').value);
-            document.querySelectorAll('.stake-preset-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.stake-preset-btn').forEach(b => b?.classList?.remove('selected'));
             if (isNaN(val)) { selectedStake = 0.1; document.getElementById('stakeError').textContent = ''; return; }
             if (val < 0.1) { document.getElementById('stakeError').textContent = t('minStake'); selectedStake = 0.1; }
             else if (val > 99) { document.getElementById('stakeError').textContent = t('maxStake'); selectedStake = 99; }
@@ -489,7 +491,7 @@
                 if (parsed < 0.1 || parsed > 99 || isNaN(parsed)) { document.getElementById('stakeError').textContent = t('enterValid'); return; }
                 finalStake = Math.round(parsed * 100) / 100;
             }
-            document.getElementById('stakeModal').classList.add('hidden');
+            document.getElementById('stakeModal')?.classList.add('hidden');
             try {
                 const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting' }], '', true);
                 currentRoom = room; showGameScreen(); startPolling(); loadRooms();
@@ -517,7 +519,7 @@
         }
 
         function renderRooms(id, rooms, isMy) {
-            const c = document.getElementById(id); c.innerHTML = '';
+            const c = document.getElementById(id); if(!c) return; c.innerHTML = '';
             if (!rooms.length) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; }
             
             rooms.forEach(r => {
@@ -578,6 +580,7 @@
         }
 
         async function joinRoom(roomId, btnElement) {
+            if(!btnElement) return;
             btnElement.disabled = true; btnElement.textContent = '⏳';
             try {
                 const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
@@ -590,22 +593,27 @@
         }
 
         function showGameScreen() {
-            ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-            document.getElementById('gameScreen').classList.remove('hidden');
-            if (!currentRoom) { document.getElementById('gameStatus').textContent = t('roomNotFound'); return; }
+            ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+            document.getElementById('gameScreen')?.classList.remove('hidden');
+            if (!currentRoom) { 
+                const gs = document.getElementById('gameStatus');
+                if(gs) gs.textContent = t('roomNotFound'); 
+                return; 
+            }
 
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const myCol = isCreator ? 'creator_choice' : 'opponent_choice';
             const oppCol = myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice';
 
+            const choices = document.querySelectorAll('.choice-btn');
             if (currentRoom[myCol] && currentRoom[oppCol]) {
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+                choices.forEach(b => b.disabled = true);
                 document.getElementById('gameStatus').textContent = t('summarizing');
             } else if (currentRoom[myCol]) {
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+                choices.forEach(b => b.disabled = true);
                 document.getElementById('gameStatus').textContent = t('yourMoveRecorded');
             } else {
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+                choices.forEach(b => b.disabled = false);
                 document.getElementById('gameStatus').innerHTML = '<div class="spinner"></div>';
             }
             isGameFinished = false;
@@ -624,7 +632,8 @@
             const timerBarContainer = document.getElementById('timerBarContainer');
             const timerBar = document.getElementById('timerBar');
             
-            // Сброс таймера
+            if(!timerText || !timerBarContainer || !timerBar) return;
+
             timerText.classList.remove('active');
             timerBarContainer.style.display = 'none';
             timerBar.style.width = '100%';
@@ -639,10 +648,8 @@
                 if (room[myCol] && room[oppCol]) {
                     statusEl.innerHTML = t('summarizing');
                 } else if (room[myCol]) {
-                    // Я сделал ход, жду соперника
                     statusEl.innerHTML = t('yourMoveRecorded');
                 } else {
-                    // Соперник сделал ход, теперь моя очередь -> ВКЛЮЧАЕМ ТАЙМЕР
                     statusEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;
                     timerText.classList.add('active');
                     timerBarContainer.style.display = 'block';
@@ -655,10 +662,11 @@
         function startTimer(startTimeStr) {
             if (timerInterval) clearInterval(timerInterval);
             const startTime = new Date(startTimeStr).getTime();
-            const timeLimit = 30000; // 30 секунд
+            const timeLimit = 30000;
             
             const timerBar = document.getElementById('timerBar');
             const timerText = document.getElementById('timerText');
+            if(!timerBar || !timerText) return;
 
             timerInterval = setInterval(() => {
                 const elapsed = Date.now() - startTime;
@@ -678,24 +686,21 @@
 
         async function handleTimeout() {
             if (!currentRoom || isGameFinished) return;
-            // Если я не сделал ход и время вышло -> Я проигрываю
             const myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
                 clearInterval(pollInterval); pollInterval = null;
                 clearInterval(timerInterval);
                 
-                // Обновляем статус в БД
                 await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${currentRoom.id}`);
                 
-                // Начисляем победу сопернику
                 const oppId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
                 db('users', 'GET', null, `?telegram_id=eq.${oppId}&select=wins`, false)
                   .then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${oppId}`)).catch(console.warn);
                 db('users', 'PATCH', { losses: (currentWins ? currentWins : 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn);
 
                 const statusEl = document.getElementById('gameStatus');
-                statusEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;
+                if(statusEl) statusEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;
                 updateStats();
                 setTimeout(() => forceExitToLobby(), 3000);
             }
@@ -733,8 +738,7 @@
             document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
             document.getElementById('gameStatus').textContent = t('yourMoveRecorded');
             
-            // Скрываем таймер, так как я сделал ход
-            document.getElementById('timerText').classList.remove('active');
+            document.getElementById('timerText')?.classList.remove('active');
             document.getElementById('timerBarContainer').style.display = 'none';
             if (timerInterval) clearInterval(timerInterval);
 
@@ -771,6 +775,7 @@
             const isWin = msg.includes('Победа') || msg.includes('Victory');
             const isDraw = msg.includes('Ничья') || msg.includes('Draw');
             const statusEl = document.getElementById('gameStatus');
+            if(!statusEl) return;
             statusEl.className = `status-box ${isWin ? 'win' : isDraw ? '' : 'lose'}`;
             statusEl.innerHTML = `<div style="animation:celebrate 0.5s ease-in-out; font-size: 18px;">${msg}</div>`;
             updateStats();
@@ -778,7 +783,7 @@
         }
 
         function renderSkins() {
-            const c = document.getElementById('skinsList'); c.innerHTML = '';
+            const c = document.getElementById('skinsList'); if(!c) return; c.innerHTML = '';
             SKINS.forEach(skin => {
                 const unlocked = currentWins >= skin.wins, active = currentSkin === skin.id;
                 const el = document.createElement('div');
@@ -790,7 +795,7 @@
         }
 
         function openSkinModal(skin, userWins) {
-            const modal = document.getElementById('skinModal');
+            const modal = document.getElementById('skinModal'); if(!modal) return;
             document.getElementById('modalImg').src = skin.img;
             document.getElementById('modalTitle').textContent = skin.name;
             document.getElementById('modalLevel').textContent = t('requires') + skin.wins + t('wins');
@@ -803,7 +808,7 @@
             reqDiv.className = 'skin-modal-req' + (unlocked ? '' : ' locked');
             modal.classList.remove('hidden');
         }
-        function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal').classList.add('hidden'); }
+        function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') document.getElementById('skinModal')?.classList.add('hidden'); }
         
         function equipSkin(id) { 
             currentSkin = id; 
@@ -823,7 +828,7 @@
         }
 
         async function loadLeaderboard() {
-            const c = document.getElementById('leaderboardList');
+            const c = document.getElementById('leaderboardList'); if(!c) return;
             try {
                 const users = await db('users','GET',null,'?select=username,wins,losses,telegram_id&order=wins.desc.nullslast&limit=10');
                 c.innerHTML = '';
