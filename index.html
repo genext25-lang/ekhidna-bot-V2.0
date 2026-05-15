@@ -419,13 +419,9 @@
         const tg = window.Telegram?.WebApp;
         if (tg) { tg.ready?.(); tg.expand?.(); }
 
-        // ✅ ФУНКЦИЯ: Убедиться, что пользователь есть в базе
         async function ensureUserExists(userId, username) {
             try {
-                // 1. Проверяем, есть ли пользователь
                 const existing = await db('users', 'GET', null, `?telegram_id=eq.${userId}&limit=1`);
-                
-                // 2. Если нет - создаем
                 if (!existing || existing.length === 0) {
                     console.log(`🆕 Creating new user in DB: ${username || userId}`);
                     await db('users', 'POST', [{ 
@@ -529,9 +525,7 @@
             }
             document.getElementById('stakeModal')?.classList.add('hidden');
             try {
-                // ✅ Регистрация создателя комнаты
                 await ensureUserExists(MY_ID, user.username);
-                
                 const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting' }], '', true);
                 currentRoom = room; showGameScreen(); startPolling(); loadRooms();
             } catch(e) { alert(t('createError') + e.message); }
@@ -655,7 +649,6 @@
                 const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false);
                 if (!check.length) throw new Error(t('roomLocked'));
 
-                // ✅ РЕГИСТРАЦИЯ НОВОГО ИГРОКА ПЕРЕД ВХОДОМ
                 await ensureUserExists(MY_ID, user.username);
 
                 const room = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true);
@@ -899,13 +892,13 @@
             const modal = document.getElementById('skinModal'); if(!modal) return;
             document.getElementById('modalImg').src = skin.img;
             document.getElementById('modalTitle').textContent = skin.name;
-            document.getElementById('modalLevel').textContent = t('requires') + skin.wins + t('wins');
+            document.getElementById('modalLevel').textContent = t('requires') + skin.wins + ' ' + t('wins');
             document.getElementById('modalDesc').textContent = skin.desc;
             const featuresList = document.getElementById('modalFeatures'); featuresList.innerHTML = '';
             skin.features.forEach(feat => { const li = document.createElement('li'); li.textContent = feat; featuresList.appendChild(li); });
             const reqDiv = document.getElementById('modalReq');
             const unlocked = userWins >= skin.wins;
-            reqDiv.textContent = unlocked ? t('unlocked') : t('needMore') + (skin.wins - userWins) + t('wins');
+            reqDiv.textContent = unlocked ? t('unlocked') : t('needMore') + (skin.wins - userWins) + ' ' + t('wins');
             reqDiv.className = 'skin-modal-req' + (unlocked ? '' : ' locked');
             modal.classList.remove('hidden');
         }
