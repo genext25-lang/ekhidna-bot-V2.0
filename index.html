@@ -50,12 +50,39 @@
         .stake-line { font-size: 14px; font-weight: 600; margin: 4px 0; display: flex; justify-content: space-between; padding: 0 10px; }
         .stake-value { color: var(--gold); }
         .stake-win { color: var(--success); font-size: 16px; }
-        .choices { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
-        .choice-btn { width: 100px; height: 100px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; transition: all 0.2s; }
-        .choice-btn:active:not(:disabled) { transform: scale(0.95); }
-        .choice-btn img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 4px; }
-        .choice-btn span { font-size: 11px; color: var(--sec); font-weight: 600; }
+        
+        /* ✅ УВЕЛИЧЕННЫЕ КНОПКИ ВЫБОРА */
+        .choices {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 20px 0;
+            width: 100%;
+        }
+        .choice-btn {
+            flex: 1; /* Растягиваем на всю ширину */
+            height: 135px; /* Увеличиваем высоту */
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: var(--card);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+        .choice-btn:active:not(:disabled) { transform: scale(0.96); }
+        .choice-btn img {
+            width: 65px; /* Увеличиваем картинку */
+            height: 65px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        .choice-btn span { font-size: 12px; color: var(--sec); font-weight: 600; }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
+        
         .status-box { background: var(--card); border-radius: 14px; padding: 16px 16px 24px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
         #statusMessage { min-height: 24px; display: flex; align-items: center; justify-content: center; }
         .timer-text { font-size: 14px; color: var(--error); font-weight: bold; margin-top: 6px; display: none; }
@@ -412,19 +439,32 @@
 
                     const el = document.createElement('div'); 
                     el.className = `room-card ${trulyMine ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`; 
+                    
+                    // ✅ ИСПРАВЛЕНИЕ: Создатель может зайти в свою комнату в любом статусе
+                    if (trulyMine) {
+                        el.onclick = () => resumeRoom(r.id);
+                        el.style.cursor = 'pointer';
+                    } else if (isOpponent) {
+                         el.onclick = () => resumeRoom(r.id);
+                         el.style.cursor = 'pointer';
+                    }
+
                     let badgeHtml = '', btnHtml = '', timerHtml = ''; 
                     const hasPassword = r.room_password && r.room_password.length > 0; 
                     let lockIcon = hasPassword ? '<span class="lock-icon">🔒</span>' : ''; 
+                    
                     if (isWaiting) {
                         badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`; 
                         if (!window.roomExpiry[r.id]) { window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000); } 
                         const remaining = window.roomExpiry[r.id] - Date.now(); 
                         timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`; 
                     }
+                    
                     if (trulyMine) {
-                        if (isPlaying) btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
                         const cancelBtn = !isFinished ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
-                        el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${r.stake || 0} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`; 
+                        // Для своих комнат кнопка "Войти" не нужна, так как клик по карточке работает
+                        const returnBtn = isPlaying ? `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>` : '';
+                        el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${r.stake || 0} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${returnBtn}${cancelBtn}</div>`; 
                     } else if (isOpponent) {
                         btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${isPlaying ? t('return') : t('join')}</button>`;
                         el.innerHTML = `<div class="room-icon">${r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?'}${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${r.stake || 0} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><div class="room-actions">${btnHtml}</div>`;
