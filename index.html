@@ -320,9 +320,10 @@
 
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
-            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }; 
+            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': method === 'DELETE' ? 'return=minimal' : 'return=representation' }; 
             const res = await fetch(url, { method, headers, body: payload ? JSON.stringify(payload) : null }); 
             if (!res.ok) { const errText = await res.text(); console.error(`DB Error ${res.status}:`, errText); throw new Error(`${res.status} ${errText}`); }
+            if (method === 'DELETE') return true;
             const data = await res.json(); return single && Array.isArray(data) ? data[0] : data; 
         }
 
@@ -369,7 +370,6 @@
 
         function formatCountdown(ms) { if (ms <= 0) return "00:00"; const totalSeconds = Math.floor(ms / 1000); const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60; return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`; }
         
-        // 🔥 ВИЗУАЛЬНЫЙ ТАЙМЕР (БЕЗ УДАЛЕНИЯ)
         setInterval(() => { 
             const now = Date.now(); 
             document.querySelectorAll('.room-timer').forEach(el => { 
@@ -388,10 +388,10 @@
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; } 
             try { 
                 fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abandoned_rooms`, { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).catch(e => console.log('Cleanup skipped')); 
-                // ✅ Загружаем все активные комнаты (кроме finished), чтобы они не пропадали у участников
+                // ✅ Исправлено: публичные комнаты теперь исключают комнату текущего пользователя
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`); 
-                const pub = await db('rooms', 'GET', null, `?status=neq.finished&order=created_at.desc&limit=20`); 
-                renderRooms('myRoomsList', my, true); renderRooms('roomsList', pub, false); 
+                const pub = await db('rooms', 'GET', null, `?status=neq.finished&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`); 
+                renderRooms('myRoomsList', my || [], true); renderRooms('roomsList', pub || [], false); 
             } catch(e) { console.error('Load rooms error:', e); document.getElementById('myRoomsList').innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
         }
 
@@ -406,25 +406,21 @@
                     const isPlaying = r.status === 'playing';
                     const isWaiting = r.status === 'waiting';
                     
-                    // Скрываем истекшие комнаты только для посторонних
                     const roomAge = Date.now() - new Date(r.created_at).getTime();
                     const isExpired = roomAge > 5 * 60 * 1000;
                     if (isExpired && !trulyMine && !isOpponent) return;
 
                     const el = document.createElement('div'); 
                     el.className = `room-card ${trulyMine ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`; 
-                    
                     let badgeHtml = '', btnHtml = '', timerHtml = ''; 
                     const hasPassword = r.room_password && r.room_password.length > 0; 
                     let lockIcon = hasPassword ? '<span class="lock-icon">🔒</span>' : ''; 
-                    
                     if (isWaiting) {
                         badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`; 
                         if (!window.roomExpiry[r.id]) { window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000); } 
                         const remaining = window.roomExpiry[r.id] - Date.now(); 
                         timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`; 
                     }
-                    
                     if (trulyMine) {
                         if (isPlaying) btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
                         const cancelBtn = !isFinished ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
@@ -441,12 +437,12 @@
             }); 
         }
 
-        async function resumeRoom(roomId) { try { const rooms = await db('rooms', 'GET', null, `?id=eq.${roomId}&(creator_tg_id=eq.${MY_ID},opponent_tg_id=eq.${MY_ID})`); if (!rooms.length) { alert('Room not found'); loadRooms(); return; } currentRoom = rooms[0]; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
+        async function resumeRoom(roomId) { try { const room = await db('rooms', 'GET', null, `?id=eq.${roomId}`, true); if (!room) { alert('Room not found'); loadRooms(); return; } currentRoom = room; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
 
         async function cancelRoom(roomId) {
             try {
                 console.log(`[DEBUG] Force deleting room ${roomId}`);
-                await db('rooms', 'DELETE', null, `?id=eq.${roomId}&(creator_tg_id=eq.${MY_ID})`);
+                await db('rooms', 'DELETE', null, `?id=eq.${roomId}`);
                 console.log(`[SUCCESS] Room ${roomId} deleted`);
                 delete window.roomExpiry[roomId];
                 if (currentRoom?.id === roomId) {
@@ -463,11 +459,11 @@
             if(!btnElement) return; btnElement.disabled = true; btnElement.textContent = '⏳'; 
             try { 
                 const roomData = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
-                if (!roomData.length) throw new Error(t('roomLocked'));
+                if (!roomData || !roomData.length) throw new Error(t('roomLocked'));
                 const room = roomData[0];
-                
-                // Если уже присоединен, просто входим
-                if (Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
+
+                // ✅ Если пользователь уже участник, просто заходим
+                if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
 
                 if (room.room_password) { 
                     const pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:'); 
