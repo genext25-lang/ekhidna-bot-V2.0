@@ -11,15 +11,14 @@
         /* ✅ АДАПТИВНАЯ МОДЕЛЬ LAYOUT ДЛЯ TELEGRAM DESKTOP/MOBILE */
         html { height: 100%; width: 100%; }
         body { 
-            height: 100%; width: 100%; overflow: hidden; /* ✅ Отключаем скролл body */
+            height: 100%; width: 100%; overflow: hidden; /* Отключаем скролл body */
             margin: 0; padding: 0; background: var(--bg); color: var(--text);
             font-family: system-ui, -apple-system, sans-serif;
         }
         
         .container {
             width: 100%; max-width: 480px; margin: 0 auto; padding: 15px; 
-            padding-bottom: 90px; /* ✅ Место под нижнюю панель */
-            box-sizing: border-box; height: 100%; overflow-y: auto; /* ✅ Скролл только внутри контейнера */
+            padding-bottom: 90px; box-sizing: border-box; height: 100%; overflow-y: auto; /* Скролл только внутри */
             -webkit-overflow-scrolling: touch; transform: translateZ(0);
         }
 
@@ -382,6 +381,7 @@
     </div>
 
     <script>
+        // Переводы для интерфейса
         const i18n = {
             ru: {
                 splashTitle: 'Echidna Naklz', rulesTitle: '📜 Правила игры',
@@ -682,7 +682,6 @@
             rooms.forEach((r, index) => {
                 try {
                     const createdDate = r.created_at ? new Date(r.created_at).getTime() : Date.now();
-                    const isOldWaitingRoom = (r.status === 'waiting' && (Date.now() - createdDate) > 5 * 60 * 1000);
                     const trulyMine = Number(r.creator_tg_id) === MY_ID;
 
                     const isFinished = r.status === 'finished', isPlaying = r.status === 'playing', isWaiting = r.status === 'waiting';
@@ -701,7 +700,7 @@
                         badgeHtml = `<span style="background:var(--primary);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${t('game')}</span>`;
                         btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
                     } else if (isWaiting) {
-                        // ✅ УБРАНА МЕТКА "СТАРАЯ" С ИНТЕРФЕЙСА
+                        // ✅ УБРАНА МЕТКА "СТАРАЯ"
                         badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`;
                         if (!window.roomExpiry[r.id]) { window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000); }
                         const remaining = window.roomExpiry[r.id] - Date.now();
@@ -955,17 +954,59 @@
             renderSkins(); updateStats(); 
         }
 
+        // ✅ РЕЙТИНГ: ТОП-20 + 21 строка с текущим местом
         async function loadLeaderboard() {
             const c = document.getElementById('leaderboardList'); if(!c) return;
             try {
-                const users = await db('users','GET',null,'?select=username,wins,losses,telegram_id&order=wins.desc.nullslast&limit=10');
+                // 1. Загружаем ТОП-20
+                const topUsers = await db('users','GET',null,'?select=username,wins,losses,telegram_id&order=wins.desc.nullslast&limit=20');
                 c.innerHTML = '';
-                users.forEach((u,i) => {
-                    const wins = u.wins || 0, skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0];
-                    const name = u.username || `User_${String(u.telegram_id).slice(-4)}`, el = document.createElement('div'); el.className = 'room-card';
+                
+                // Рендерим ТОП-20
+                topUsers.forEach((u,i) => {
+                    const wins = u.wins || 0;
+                    const skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0];
+                    const name = u.username || `User_${String(u.telegram_id).slice(-4)}`;
+                    const isMe = Number(u.telegram_id) === MY_ID;
+                    const el = document.createElement('div');
+                    el.className = `room-card ${isMe ? 'my-room' : ''}`;
                     el.innerHTML = `<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${name}</div><div class="lb-stats"><span>✅ ${wins}</span><span>❌ ${u.losses || 0}</span></div></div>`;
                     c.appendChild(el);
                 });
+
+                // 2. Получаем вашу статистику и считаем точный ранг
+                const myData = await db('users', 'GET', null, `?telegram_id=eq.${MY_ID}&select=wins,losses`, false);
+                let myWins = 0, myLosses = 0;
+                if (myData && myData.length > 0) { myWins = myData[0].wins || 0; myLosses = myData[0].losses || 0; }
+                currentWins = myWins;
+
+                // Считаем сколько игроков имеют БОЛЬШЕ побед
+                const betterPlayers = await db('users', 'GET', null, `?wins=gt.${myWins}&select=telegram_id`);
+                const myRank = betterPlayers.length + 1;
+
+                // 3. Если вы не в ТОП-20, добавляем 21-ю строку
+                if (myRank > 20) {
+                    const mySkin = SKINS[myWins>=300?4:myWins>=100?3:myWins>=50?2:myWins>=30?1:0];
+                    const myName = user.username || `User_${String(MY_ID).slice(-4)}`;
+                    const el = document.createElement('div');
+                    el.className = 'room-card my-room';
+                    el.style.border = '1px dashed var(--gold)';
+                    el.style.background = 'rgba(251,191,36,0.05)';
+                    el.innerHTML = `
+                        <div style="font-weight:700;width:30px; color:var(--gold);">${myRank}</div>
+                        <div class="room-icon"><img src="${mySkin.img}" alt=""></div>
+                        <div class="room-info">
+                            <div class="room-stake">@${myName} <span style="color:var(--success); font-size:10px; font-weight:bold;">(Вы)</span></div>
+                            <div class="lb-stats"><span>✅ ${myWins}</span><span>❌ ${myLosses}</span></div>
+                        </div>`;
+                    c.appendChild(el);
+                } else {
+                    // Если вы уже в ТОП-20, показываем красивую плашку снизу
+                    const note = document.createElement('div');
+                    note.style.cssText = 'text-align:center; padding:12px; color:var(--success); font-weight:600; background:var(--card); border-radius:12px; margin-top:8px;';
+                    note.innerHTML = `🎉 Вы в ТОП-20! Место: <span style="color:var(--gold);">#${myRank}</span>`;
+                    c.appendChild(note);
+                }
             } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; }
         }
 
