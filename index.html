@@ -368,7 +368,35 @@
         }
 
         function formatCountdown(ms) { if (ms <= 0) return "00:00"; const totalSeconds = Math.floor(ms / 1000); const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60; return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`; }
-        setInterval(() => { const now = Date.now(); document.querySelectorAll('.room-timer').forEach(el => { const roomId = el.dataset.roomId; if (roomId && window.roomExpiry[roomId]) { const remaining = window.roomExpiry[roomId] - now; el.textContent = formatCountdown(remaining); if (remaining <= 60000) el.classList.add('urgent'); else el.classList.remove('urgent'); if (remaining <= 0) { el.textContent = "00:00"; el.style.color = "var(--error)"; } } }); }, 1000);
+        
+        // 🔥 АВТОМАТИЧЕСКОЕ УДАЛЕНИЕ ПО ТАЙМЕРУ (5 МИНУТ)
+        setInterval(() => { 
+            const now = Date.now(); 
+            document.querySelectorAll('.room-timer').forEach(el => { 
+                const roomId = el.dataset.roomId;
+                if (roomId && window.roomExpiry[roomId]) { 
+                    const remaining = window.roomExpiry[roomId] - now; 
+                    el.textContent = formatCountdown(remaining); 
+                    if (remaining <= 60000) el.classList.add('urgent'); 
+                    else el.classList.remove('urgent'); 
+                    
+                    if (remaining <= 0) { 
+                        el.textContent = "00:00"; 
+                        el.style.color = "var(--error)";
+                        
+                        // Защита от повторных вызовов
+                        if (!window._autoDeletedRooms) window._autoDeletedRooms = new Set();
+                        if (!window._autoDeletedRooms.has(roomId)) {
+                            window._autoDeletedRooms.add(roomId);
+                            // Удаляем только если это комната текущего пользователя
+                            if (el.closest('.room-card')?.classList.contains('my-room')) {
+                                cancelRoom(roomId);
+                            }
+                        }
+                    } 
+                } 
+            }); 
+        }, 1000);
 
         async function loadRooms() { 
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; } 
@@ -412,7 +440,7 @@
                     const creatorInitial = r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?'; 
                     const stakeVal = r.stake || 0; 
                     if (trulyMine) { 
-                        // 🔥 ИСПРАВЛЕНИЕ: Кнопка ✕ теперь видна для всех комнат, кроме finished
+                        // ✅ Кнопка ✕ видна до статуса finished
                         const cancelBtn = !isFinished ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
                         el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${stakeVal} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`; 
                     } else { 
@@ -425,13 +453,13 @@
 
         async function resumeRoom(roomId) { try { const rooms = await db('rooms', 'GET', null, `?id=eq.${roomId}&creator_tg_id=eq.${MY_ID}`); if (!rooms.length) { alert('Room not found'); loadRooms(); return; } currentRoom = rooms[0]; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
 
-        // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТМЕНЫ КОМНАТЫ
         async function cancelRoom(roomId) {
             try {
                 console.log(`[DEBUG] Force deleting room ${roomId}`);
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}`);
                 console.log(`[SUCCESS] Room ${roomId} deleted`);
                 delete window.roomExpiry[roomId];
+                if (window._autoDeletedRooms) window._autoDeletedRooms.delete(roomId); // Сброс защиты при ручном удалении
                 if (currentRoom?.id === roomId) {
                     currentRoom = null;
                     isGameFinished = true;
@@ -439,7 +467,7 @@
                     if (window._timerInterval) { clearInterval(window._timerInterval); }
                     window._timerRunning = false;
                 }
-                loadRooms();
+                loadRooms(); // Обновляем список
             } catch(e) { 
                 console.error('Cancel room error:', e);
                 alert('Ошибка удаления: ' + e.message); 
