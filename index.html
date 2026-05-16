@@ -114,7 +114,7 @@
         .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; display: none !important; }
         .splash-content { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; flex-shrink: 0; }
         .splash-logo { flex-shrink: 0; width: 150px; height: 150px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 50px rgba(99,102,241,0.6); animation: splashFloat 2s ease-in-out infinite, splashPulse 2s ease-in-out infinite; }
-        @keyframes splashFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes splashFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         @keyframes splashPulse { 0%, 100% { box-shadow: 0 0 50px rgba(99,102,241,0.6); } 50% { box-shadow: 0 0 80px rgba(99,102,241,0.9); } }
         .splash-logo img { width: 100%; height: 100%; object-fit: cover; }
         .splash-title { flex-shrink: 0; margin-top: 20px; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: splashText 2s ease-in-out infinite; }
@@ -760,14 +760,50 @@
             } catch(e) { alert(t('cancelError') + e.message); }
         }
 
+        // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТМЕНЫ КОМНАТЫ
         async function cancelRoom(roomId) {
             try {
+                // Получаем актуальные данные комнаты
                 const roomCheck = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
-                if (!roomCheck.length || Number(roomCheck[0].creator_tg_id) !== MY_ID) { alert(t('onlyCreator')); return; }
-                await db('rooms', 'DELETE', null, `?id=eq.${roomId}&status=eq.waiting&creator_tg_id=eq.${MY_ID}`);
+                if (!roomCheck.length) { alert('Комната не найдена'); loadRooms(); return; }
+                
+                const room = roomCheck[0];
+                
+                // Проверяем, что текущий пользователь — создатель
+                if (Number(room.creator_tg_id) !== MY_ID) { 
+                    alert(t('onlyCreator')); 
+                    return; 
+                }
+                
+                // 🔥 ФИКС: Если комната в ожидании и нет оппонента — удаляем полностью
+                if (room.status === 'waiting' && !room.opponent_tg_id) {
+                    await db('rooms', 'DELETE', null, `?id=eq.${roomId}`);
+                    console.log(`[DEBUG] Room ${roomId} deleted by creator`);
+                } 
+                // Если игра уже идёт или есть оппонент — просто выходим локально
+                else {
+                    if (currentRoom?.id === roomId) {
+                        currentRoom = null;
+                        isGameFinished = true;
+                        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+                        if (window._timerInterval) { clearInterval(window._timerInterval); window._timerInterval = null; }
+                        window._timerRunning = false;
+                    }
+                    // Показываем сообщение, что комнату нельзя удалить, так как игра уже началась
+                    if (room.status !== 'waiting') {
+                        alert('Нельзя удалить комнату: игра уже началась или есть соперник.');
+                    }
+                }
+                
+                // Очищаем таймер комнаты
                 delete window.roomExpiry[roomId];
+                
+                // Перезагружаем список комнат
                 loadRooms();
-            } catch(e) { alert(t('cancelError') + e.message); }
+            } catch(e) { 
+                console.error('Cancel room error:', e);
+                alert(t('cancelError') + e.message); 
+            }
         }
 
         async function joinRoom(roomId, btnElement) {
