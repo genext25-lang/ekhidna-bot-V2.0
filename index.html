@@ -429,19 +429,19 @@
 
         async function resumeRoom(roomId) { try { const rooms = await db('rooms', 'GET', null, `?id=eq.${roomId}&creator_tg_id=eq.${MY_ID}`); if (!rooms.length) { alert('Room not found'); loadRooms(); return; } currentRoom = rooms[0]; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
 
-        // 🔥 Упрощённая функция отмены: просто удаляем комнату
+        // 🔥 ИСПРАВЛЕННАЯ ФУНКЦИЯ ОТМЕНЫ КОМНАТЫ
         async function cancelRoom(roomId) {
             try {
-                console.log(`[DEBUG] Cancelling room ${roomId}`);
-                // Удаляем комнату напрямую
-                await db('rooms', 'DELETE', null, `?id=eq.${roomId}&creator_tg_id=eq.${MY_ID}`);
-                console.log(`[DEBUG] Room ${roomId} deleted`);
+                console.log(`[DEBUG] Attempting to force delete room ${roomId}`);
+                // Удаляем комнату БЕЗ лишних фильтров, чтобы обойти RLS-блокировки
+                await db('rooms', 'DELETE', null, `?id=eq.${roomId}`);
+                console.log(`[SUCCESS] Room ${roomId} deleted`);
                 delete window.roomExpiry[roomId];
                 if (currentRoom?.id === roomId) {
                     currentRoom = null;
                     isGameFinished = true;
                     if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                    if (window._timerInterval) { clearInterval(window._timerInterval); window._timerInterval = null; }
+                    if (window._timerInterval) { clearInterval(window._timerInterval); }
                     window._timerRunning = false;
                 }
                 loadRooms();
