@@ -369,7 +369,7 @@
 
         function formatCountdown(ms) { if (ms <= 0) return "00:00"; const totalSeconds = Math.floor(ms / 1000); const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60; return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`; }
         
-        // 🔥 БЕЗОПАСНЫЙ ТАЙМЕР ТОЛЬКО ДЛЯ UI
+        // 🔥 ВИЗУАЛЬНЫЙ ТАЙМЕР (БЕЗ УДАЛЕНИЯ)
         setInterval(() => { 
             const now = Date.now(); 
             document.querySelectorAll('.room-timer').forEach(el => { 
@@ -379,13 +379,7 @@
                     el.textContent = formatCountdown(remaining); 
                     if (remaining <= 60000) el.classList.add('urgent'); 
                     else el.classList.remove('urgent'); 
-                    
-                    if (remaining <= 0) { 
-                        el.textContent = "⌛ Истекло";
-                        el.style.color = "var(--error)";
-                        // Удалено авто-удаление из JS! Оно вызывало гонку данных и дубликаты.
-                        // Очистка происходит на стороне сервера (Supabase).
-                    } 
+                    if (remaining <= 0) { el.textContent = "⌛ Истекло"; el.style.color = "var(--error)"; } 
                 } 
             }); 
         }, 1000);
@@ -394,8 +388,9 @@
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; } 
             try { 
                 fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abandoned_rooms`, { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).catch(e => console.log('Cleanup skipped')); 
-                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=in.(waiting,playing)&order=created_at.desc&limit=10`); 
-                const pub = await db('rooms', 'GET', null, `?status=eq.waiting&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`); 
+                // ✅ Загружаем все активные комнаты (кроме finished), чтобы они не пропадали у участников
+                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`); 
+                const pub = await db('rooms', 'GET', null, `?status=neq.finished&order=created_at.desc&limit=20`); 
                 renderRooms('myRoomsList', my, true); renderRooms('roomsList', pub, false); 
             } catch(e) { console.error('Load rooms error:', e); document.getElementById('myRoomsList').innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
         }
@@ -405,49 +400,53 @@
             if (!rooms || rooms.length === 0) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; } 
             rooms.forEach((r, index) => { 
                 try { 
-                    const trulyMine = Number(r.creator_tg_id) === MY_ID; 
-                    const isFinished = r.status === 'finished', isPlaying = r.status === 'playing', isWaiting = r.status === 'waiting'; 
+                    const trulyMine = Number(r.creator_tg_id) === MY_ID;
+                    const isOpponent = Number(r.opponent_tg_id) === MY_ID;
+                    const isFinished = r.status === 'finished';
+                    const isPlaying = r.status === 'playing';
+                    const isWaiting = r.status === 'waiting';
+                    
+                    // Скрываем истекшие комнаты только для посторонних
+                    const roomAge = Date.now() - new Date(r.created_at).getTime();
+                    const isExpired = roomAge > 5 * 60 * 1000;
+                    if (isExpired && !trulyMine && !isOpponent) return;
+
                     const el = document.createElement('div'); 
-                    el.className = `room-card ${isMy ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`; 
-                    if (isMy && (isPlaying || isFinished)) { el.onclick = () => resumeRoom(r.id); el.style.cursor = 'pointer'; } 
+                    el.className = `room-card ${trulyMine ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`; 
+                    
                     let badgeHtml = '', btnHtml = '', timerHtml = ''; 
                     const hasPassword = r.room_password && r.room_password.length > 0; 
                     let lockIcon = hasPassword ? '<span class="lock-icon">🔒</span>' : ''; 
-                    if (isFinished) { 
-                        const res = calculateWinner(r); 
-                        const isWin = res.msg.includes('Победа') || res.msg.includes('Victory') || res.msg.includes('timeout'); 
-                        const isDraw = res.msg.includes('Ничья') || res.msg.includes('Draw'); 
-                        badgeHtml = `<span style="background:${isWin ? 'var(--success)' : isDraw ? 'var(--gold)' : 'var(--error)'};color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${isWin ? t('victoryBadge') : isDraw ? t('drawBadge') : t('defeatBadge')}</span>`; 
-                        btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('viewResults')}</button>`; 
-                    } else if (isPlaying) { 
-                        badgeHtml = `<span style="background:var(--primary);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:6px;">${t('game')}</span>`; 
-                        btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`; 
-                    } else if (isWaiting) { 
+                    
+                    if (isWaiting) {
                         badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`; 
                         if (!window.roomExpiry[r.id]) { window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000); } 
                         const remaining = window.roomExpiry[r.id] - Date.now(); 
                         timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`; 
-                        btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); joinRoom('${r.id}', this)">${t('join')}</button>`; 
-                    } 
-                    const creatorInitial = r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?'; 
-                    const stakeVal = r.stake || 0; 
-                    if (trulyMine) { 
+                    }
+                    
+                    if (trulyMine) {
+                        if (isPlaying) btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
                         const cancelBtn = !isFinished ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
-                        el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${stakeVal} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`; 
-                    } else { 
-                        el.innerHTML = `<div class="room-icon">${creatorInitial}${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${stakeVal} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><button class="room-btn join" onclick="event.stopPropagation(); joinRoom('${r.id}', this)">${t('join')}</button>`; 
+                        el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${r.stake || 0} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang === 'ru' ? 'Твоя комната' : 'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`; 
+                    } else if (isOpponent) {
+                        btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${isPlaying ? t('return') : t('join')}</button>`;
+                        el.innerHTML = `<div class="room-icon">${r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?'}${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${r.stake || 0} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><div class="room-actions">${btnHtml}</div>`;
+                    } else {
+                        btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); joinRoom('${r.id}', this)">${t('join')}</button>`;
+                        el.innerHTML = `<div class="room-icon">${r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?'}${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${r.stake || 0} TON ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><div class="room-actions">${btnHtml}</div>`; 
                     } 
                     c.appendChild(el); 
                 } catch (err) { console.error(`[ERROR] Failed to render room ${index+1}:`, err); } 
             }); 
         }
 
-        async function resumeRoom(roomId) { try { const rooms = await db('rooms', 'GET', null, `?id=eq.${roomId}&creator_tg_id=eq.${MY_ID}`); if (!rooms.length) { alert('Room not found'); loadRooms(); return; } currentRoom = rooms[0]; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
+        async function resumeRoom(roomId) { try { const rooms = await db('rooms', 'GET', null, `?id=eq.${roomId}&(creator_tg_id=eq.${MY_ID},opponent_tg_id=eq.${MY_ID})`); if (!rooms.length) { alert('Room not found'); loadRooms(); return; } currentRoom = rooms[0]; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
 
         async function cancelRoom(roomId) {
             try {
                 console.log(`[DEBUG] Force deleting room ${roomId}`);
-                await db('rooms', 'DELETE', null, `?id=eq.${roomId}`);
+                await db('rooms', 'DELETE', null, `?id=eq.${roomId}&(creator_tg_id=eq.${MY_ID})`);
                 console.log(`[SUCCESS] Room ${roomId} deleted`);
                 delete window.roomExpiry[roomId];
                 if (currentRoom?.id === roomId) {
@@ -463,15 +462,19 @@
         async function joinRoom(roomId, btnElement) { 
             if(!btnElement) return; btnElement.disabled = true; btnElement.textContent = '⏳'; 
             try { 
-                const check = await db('rooms', 'GET', null, `?id=eq.${roomId}&status=eq.waiting`, false); 
-                if (!check.length) throw new Error(t('roomLocked')); 
-                const room = check[0]; 
+                const roomData = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
+                if (!roomData.length) throw new Error(t('roomLocked'));
+                const room = roomData[0];
+                
+                // Если уже присоединен, просто входим
+                if (Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
+
                 if (room.room_password) { 
                     const pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:'); 
                     if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = t('join'); return; } 
                 } 
                 await ensureUserExists(MY_ID, user.username); 
-                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true); 
+                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=in.(waiting,playing)`, true); 
                 if (!res) throw new Error(t('joinError')); 
                 currentRoom = res; showGameScreen(); startPolling(); loadRooms(); 
             } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
@@ -502,17 +505,17 @@
             const msgEl = document.getElementById('statusMessage'), timerText = document.getElementById('timerText'), timerBarContainer = document.getElementById('timerBarContainer'), timerBar = document.getElementById('timerBar'); 
             if(!msgEl || !timerText || !timerBarContainer || !timerBar) return; 
             const isCreator = String(room.creator_tg_id) === String(MY_ID), myCol = isCreator ? 'creator_choice' : 'opponent_choice'; 
-            if (room[myCol] && (myCol === 'creator_choice' ? room.opponent_choice : room.creator_choice)) { 
+            if (room[myCol] && room[myCol !== 'creator_choice' ? 'creator_choice' : 'opponent_choice']) { 
                 msgEl.textContent = t('summarizing'); timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; window._timerRunning = false; if (window._timerInterval) clearInterval(window._timerInterval); return; 
             } 
             timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; timerBar.style.width = '100%'; timerBar.classList.remove('urgent'); 
             if (room.status === 'waiting') msgEl.textContent = t('waitingForOpponent'); 
             else if (room.status === 'playing') { 
                 if (room[myCol]) { msgEl.textContent = t('yourMoveRecorded'); window._timerRunning = false; } 
-                else if (myCol === 'creator_choice' ? room.opponent_choice : room.creator_choice) { 
+                else { 
                     msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`; timerText.classList.add('active'); timerBarContainer.style.display = 'block'; 
                     if (!window._timerRunning) { window._timerRunning = true; window._timerStart = Date.now(); startTimer(window._timerStart); } 
-                } else { msgEl.textContent = t('waitingForOpponent'); window._timerRunning = false; } 
+                } 
             } else { msgEl.textContent = t('gameOver'); window._timerRunning = false; } 
         }
         
