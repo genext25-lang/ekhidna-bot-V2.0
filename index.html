@@ -192,7 +192,7 @@
                 <div class="stat-box"><div class="stat-val" id="statLevel">1</div><div class="stat-lbl" data-i18n="level">Уровень</div><div class="skin-badge" id="statSkinBadge">Обычная</div></div>
             </div>
             <button class="btn btn-success" onclick="openStakeModal()" data-i18n="createRoom">💎 Создать комнату</button>
-            <button class="btn btn-sec" onclick="loadRooms()" data-i18n="refresh">🔄 Обновить</button>
+            <button class="btn btn-sec" onclick="loadRooms(true)" data-i18n="refresh">🔄 Обновить</button>
             <div class="section-title" data-i18n="myRooms">Мои комнаты</div>
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div>
             <div class="section-title" data-i18n="availableRooms">
@@ -325,7 +325,7 @@
                 'Authorization': `Bearer ${SUPABASE_KEY}`, 
                 'Content-Type': 'application/json', 
                 'Prefer': method === 'DELETE' ? 'return=minimal' : 'return=representation',
-                'Cache-Control': 'no-cache'
+                'Cache-Control': 'no-cache, no-store, must-revalidate'
             }; 
             const res = await fetch(url, { method, headers, body: payload ? JSON.stringify(payload) : null }); 
             if (!res.ok) { const errText = await res.text(); console.error(`DB Error ${res.status}:`, errText); throw new Error(`${res.status} ${errText}`); }
@@ -345,10 +345,13 @@
                 currentRoom = null; isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                lobbyRefreshInterval = setInterval(loadRooms, 3000);
-                loadRooms(); updateStats(); 
-            } else { if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } }
-            if (name === 'skins') renderSkins(); if (name === 'leaderboard') loadLeaderboard(); 
+                lobbyRefreshInterval = setInterval(() => loadRooms(false), 3000);
+                loadRooms(true); updateStats(); 
+            } else {
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+            }
+            if (name === 'skins') renderSkins();
+            if (name === 'leaderboard') loadLeaderboard(); 
         }
 
         function forceExitToLobby() { isGameFinished = true; currentRoom = null; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (window._timerInterval) clearInterval(window._timerInterval); window._timerRunning = false; document.getElementById('revealOverlay')?.classList.add('hidden'); document.getElementById('confettiContainer')?.classList.add('hidden'); showScreen('lobby'); }
@@ -370,7 +373,7 @@
             try { 
                 await ensureUserExists(MY_ID, user.username); 
                 const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: pwd || null }], '', true); 
-                currentRoom = room; showGameScreen(); startPolling(); loadRooms(); 
+                currentRoom = room; showGameScreen(); startPolling(); loadRooms(true); 
             } catch(e) { alert(t('createError') + e.message); } 
         }
 
@@ -390,20 +393,26 @@
             }); 
         }, 1000);
 
-        // ✅ ИСПРАВЛЕННАЯ ЗАГРУЗКА: запрашиваем ТОЛЬКО активные комнаты (limit 50)
-        async function loadRooms() { 
-            document.getElementById('myRoomsList').innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-            document.getElementById('roomsList').innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+        // ✅ ПЛАВНАЯ ЗАГРУЗКА КОМНАТ (без скачков)
+        async function loadRooms(isManual = false) { 
+            const myEl = document.getElementById('myRoomsList');
+            const pubEl = document.getElementById('roomsList');
+            
+            // Показываем загрузчик только при ручном обновлении или если списки пусты
+            if (isManual || (!myEl.querySelector('.room-card') && !myEl.querySelector('.loader'))) {
+                myEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+                pubEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+            }
 
             if (!MY_ID || MY_ID === 999999) { 
-                document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; 
+                myEl.innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; 
                 return; 
             } 
             
             try { 
-                // Загружаем только активные комнаты, чтобы база не раздувалась в запросах
-                const activeRooms = await db('rooms', 'GET', null, `?status=in.(waiting,playing)&order=created_at.desc&limit=50`); 
-                const safeRooms = Array.isArray(activeRooms) ? activeRooms : [];
+                // Запрашиваем последние 50 записей без сложных фильтров для стабильности
+                const allRooms = await db('rooms', 'GET', null, `?order=created_at.desc&limit=50`); 
+                const safeRooms = Array.isArray(allRooms) ? allRooms.filter(r => r.status === 'waiting' || r.status === 'playing') : [];
                 
                 const my = safeRooms.filter(r => Number(r.creator_tg_id) === MY_ID);
                 const pub = safeRooms.filter(r => Number(r.creator_tg_id) !== MY_ID);
@@ -412,9 +421,10 @@
                 renderRooms('roomsList', pub, false); 
             } catch(e) { 
                 console.error('Load rooms error:', e); 
-                const errMsg = `<div style="color:red;padding:15px;">Ошибка загрузки</div>`;
-                document.getElementById('myRoomsList').innerHTML = errMsg;
-                document.getElementById('roomsList').innerHTML = errMsg;
+                if (isManual) {
+                    myEl.innerHTML = `<div style="color:red;padding:15px;">Ошибка загрузки</div>`;
+                    pubEl.innerHTML = '';
+                }
             } 
         }
 
@@ -438,7 +448,7 @@
                     if (isExpired && !trulyMine && !isOpponent) return;
 
                     const el = document.createElement('div'); 
-                    el.className = `room-card ${trulyMine ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`; 
+                    el.className = `room-card ${trulyMine ? 'my-room' : ''} ${isPlaying ? 'playing' : ''}`; 
                     if (trulyMine || isOpponent) { el.onclick = () => resumeRoom(r.id); el.style.cursor = 'pointer'; }
 
                     let badgeHtml = '', btnHtml = '', timerHtml = ''; 
@@ -466,7 +476,7 @@
             }); 
         }
 
-        async function resumeRoom(roomId) { try { const room = await db('rooms', 'GET', null, `?id=eq.${roomId}`, true); if (!room) { alert('Room not found'); loadRooms(); return; } currentRoom = room; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
+        async function resumeRoom(roomId) { try { const room = await db('rooms', 'GET', null, `?id=eq.${roomId}`, true); if (!room) { alert('Room not found'); loadRooms(true); return; } currentRoom = room; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
 
         async function cancelRoom(roomId) {
             try {
@@ -478,7 +488,7 @@
                     if (window._timerInterval) { clearInterval(window._timerInterval); }
                     window._timerRunning = false;
                 }
-                loadRooms();
+                loadRooms(true);
             } catch(e) { console.error('Cancel room error:', e); alert('Ошибка удаления: ' + e.message); }
         }
 
@@ -496,9 +506,9 @@
                     if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = t('join'); return; } 
                 } 
                 await ensureUserExists(MY_ID, user.username); 
-                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=in.(waiting,playing)`, true); 
+                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}`, true); 
                 if (!res) throw new Error(t('joinError')); 
-                currentRoom = res; showGameScreen(); startPolling(); loadRooms(); 
+                currentRoom = res; showGameScreen(); startPolling(); loadRooms(true); 
             } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
         }
 
