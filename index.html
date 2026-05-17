@@ -334,6 +334,7 @@
         function getSkinFeatures(skin) { return i18n[currentLang][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || i18n['ru'][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || []; }
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0; window.roomExpiry = {};
+        window._lastStatsUpdate = 0; // Для защиты от спама запросов
 
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
@@ -496,35 +497,43 @@
 
         // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ СТАТИСТИКИ И АВАТАРОВ
         async function renderPlayerStats() {
+            if (!currentRoom) return;
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const creatorId = currentRoom.creator_tg_id;
             const opponentId = currentRoom.opponent_tg_id;
-            
-            // Рендерим аватар создателя
-            renderAvatar('playerAvatar', MY_PHOTO_URL, user.username);
-            
-            // Рендерим аватар соперника (берем ник из комнаты)
-            const opponentUsername = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
-            renderAvatar('opponentAvatar', null, opponentUsername || '?');
+
+            // Обновляем аватары
+            renderAvatar('playerAvatar', isCreator ? MY_PHOTO_URL : null, isCreator ? user.username : (currentRoom.opponent_username || '?'));
+            renderAvatar('opponentAvatar', !isCreator ? MY_PHOTO_URL : null, !isCreator ? user.username : (currentRoom.creator_username || '?'));
+
+            // Если соперник ещё не присоединился, показываем ожидание
+            if (!opponentId) {
+                document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
+                return;
+            }
+
+            // Защита от частых запросов к БД (не чаще раза в 3 секунды)
+            const now = Date.now();
+            if (now - window._lastStatsUpdate < 3000) return;
+            window._lastStatsUpdate = now;
 
             // Загружаем статистику обоих игроков параллельно
             try {
-                const [creatorData, opponentData] = await Promise.all([
+                const results = await Promise.allSettled([
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${creatorId}`, false),
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${opponentId}`, false)
                 ]);
 
-                const cW = creatorData[0]?.wins || 0, cL = creatorData[0]?.losses || 0;
-                const oW = opponentData[0]?.wins || 0, oL = opponentData[0]?.losses || 0;
+                const cData = results[0].status === 'fulfilled' && results[0].value[0] ? results[0].value[0] : { wins: 0, losses: 0 };
+                const oData = results[1].status === 'fulfilled' && results[1].value[0] ? results[1].value[0] : { wins: 0, losses: 0 };
 
-                // Обновляем статистику под аватарами
-                document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = `<span style="color:var(--success)">✅ ${cW}</span><br><span style="color:var(--error)">❌ ${cL}</span>`;
-                document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = `<span style="color:var(--success)">✅ ${oW}</span><br><span style="color:var(--error)">❌ ${oL}</span>`;
-            } catch(e) {
+                const myStatsId = isCreator ? 'playerStats' : 'opponentStats';
+                const oppStatsId = isCreator ? 'opponentStats' : 'playerStats';
+
+                document.getElementById(myStatsId).innerHTML = `<span style="color:var(--success)">✅ ${cData.wins || 0}</span><br><span style="color:var(--error)">❌ ${cData.losses || 0}</span>`;
+                document.getElementById(oppStatsId).innerHTML = `<span style="color:var(--success)">✅ ${oData.wins || 0}</span><br><span style="color:var(--error)">❌ ${oData.losses || 0}</span>`;
+            } catch (e) {
                 console.warn('Stats load error:', e);
-                // Фолбэк на нули, если БД не ответил
-                document.getElementById('playerStats').innerHTML = `<span>✅ 0</span><br><span>❌ 0</span>`;
-                document.getElementById('opponentStats').innerHTML = `<span>✅ 0</span><br><span>❌ 0</span>`;
             }
         }
         
