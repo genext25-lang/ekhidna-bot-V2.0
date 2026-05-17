@@ -155,6 +155,8 @@
         .confetti-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 2001; overflow: hidden; }
         .confetti { position: absolute; width: 10px; height: 10px; animation: confettiFall 3s ease-out forwards; }
         @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; }
+        .search-input:focus { border-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -197,7 +199,7 @@
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div>
             <div class="section-title" data-i18n="availableRooms">
                 <span>Доступные комнаты</span>
-                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск по нику..." style="width: auto; margin: 0; padding: 5px 10px; font-size: 12px;" oninput="filterRooms()">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск по нику..." oninput="filterRooms()">
             </div>
             <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
         </div>
@@ -306,7 +308,7 @@
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
         
-        function getCurrentUser() { if (window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user; try { const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash; const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search; const full = `${hash}&${search}`; const params = new URLSearchParams(full); const tgData = params.get('tgWebAppData'); if (tgData) { const dataParams = new URLSearchParams(decodeURIComponent(tgData)); const userJSON = dataParams.get('user'); if (userJSON) return JSON.parse(decodeURIComponent(userJSON)); } } catch (e) { console.warn('User parse error:', e); } return { id: 999999, username: 'Guest' }; }
+        function getCurrentUser() { if (window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user; try { const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash; const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search; const full = `${hash}&${search}`; const params = new URLSearchParams(full); const tgData = params.get('tgWebAppData'); if (tgData) { const dataParams = new URLSearchParams(decodeURIComponent(tgData)); const userJSON = dataParams.get('user'); if (userJSON) return JSON.parse(decodeURIComponent(userJSON)); } } catch (e) { console.warn('User parse error:', e); } return { id: Math.floor(Math.random() * 1000000), username: 'Guest' }; }
         const user = getCurrentUser();
         const MY_ID = Number(user.id);
         const MY_PHOTO_URL = user.photo_url || null;
@@ -318,11 +320,9 @@
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0; window.roomExpiry = {};
 
-        // ✅ ИСПРАВЛЕННЫЙ DB-FETCH С ОБХОДОМ КЭША TELEGRAM WEBVIEW
+        // ФУНКЦИЯ ЗАПРОСА С ЗАГОЛОВКАМИ ПРОТИВ КЭША
         async function db(table, method, payload = null, filters = '', single = false) { 
-            // Добавляем уникальный hash к URL для принудительного обхода кэша мобильных WebView
-            // Сервер Supabase игнорирует фрагмент #, но браузер считает URL новым
-            const url = `${SUPABASE_URL}/rest/v1/${table}${filters}#t=${Date.now()}`;
+            const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
             const headers = { 
                 'apikey': SUPABASE_KEY, 
                 'Authorization': `Bearer ${SUPABASE_KEY}`, 
@@ -379,9 +379,8 @@
             try { 
                 await ensureUserExists(MY_ID, user.username); 
                 const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: pwd || null }], '', true); 
-                currentRoom = room; showGameScreen(); startPolling(); 
-                // Принудительно обновляем список с небольшой задержкой для синхронизации БД
-                setTimeout(() => loadRooms(), 500);
+                console.log('✅ Комната создана:', room);
+                currentRoom = room; showGameScreen(); startPolling(); loadRooms(); 
             } catch(e) { alert(t('createError') + e.message); } 
         }
 
@@ -401,15 +400,32 @@
             }); 
         }, 1000);
 
+        // ⚡ ГЛАВНОЕ ИСПРАВЛЕНИЕ: Убираем фильтрацию creator_tg_id=neq
         async function loadRooms() { 
             if (!MY_ID || MY_ID === 999999) { 
                 document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; 
                 return; 
             } 
             try { 
-                // Запросы теперь с хэшем для обхода кэша
+                console.log('🔍 Загружаем комнаты для пользователя:', MY_ID);
+                
+                // Мои комнаты
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`); 
-                const pub = await db('rooms', 'GET', null, `?status=neq.finished&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`); 
+                
+                // ✅ ИСПРАВЛЕНИЕ: Показываем ВСЕ активные комнаты, кроме finished
+                // Убираем фильтр creator_tg_id=neq.${MY_ID}, который мог блокировать комнаты
+                const allRooms = await db('rooms', 'GET', null, `?status=neq.finished&order=created_at.desc&limit=50`); 
+                
+                // Фильтруем комнаты на клиенте: убираем finished и комнаты создателя из публичного списка
+                const pub = (allRooms || []).filter(r => Number(r.creator_tg_id) !== MY_ID);
+                
+                console.log('📋 Мои комнаты:', my?.length || 0);
+                console.log('🌍 Всего комнат:', allRooms?.length || 0);
+                console.log('👥 Публичных комнат (не моих):', pub.length);
+                
+                if (pub.length === 0 && allRooms?.length > 0) {
+                    console.log('ℹ️ Все комнаты принадлежат текущему пользователю');
+                }
                 
                 const myRooms = Array.isArray(my) ? my : [];
                 const pubRooms = Array.isArray(pub) ? pub : [];
@@ -418,7 +434,7 @@
                 renderRooms('roomsList', pubRooms, false); 
             } catch(e) { 
                 console.error('Load rooms error:', e); 
-                const err = `<div style="color:var(--error);padding:15px;text-align:center;">⚠️ Ошибка загрузки<br><small>${e.message}</small></div>`;
+                const err = `<div style="color:var(--error);padding:15px;text-align:center;">⚠️ ${t('noRooms')}<br><small>${e.message}</small></div>`;
                 document.getElementById('myRoomsList').innerHTML = err;
                 document.getElementById('roomsList').innerHTML = err;
             } 
@@ -440,12 +456,18 @@
                     const isPlaying = r.status === 'playing';
                     const isWaiting = r.status === 'waiting';
                     
-                    const roomAge = Date.now() - new Date(r.created_at).getTime();
-                    const isExpired = roomAge > 5 * 60 * 1000;
-                    if (isExpired && !trulyMine && !isOpponent) return;
+                    // Не показываем finished комнаты
+                    if (isFinished && !trulyMine && !isOpponent) return;
 
                     const el = document.createElement('div'); 
                     el.className = `room-card ${trulyMine ? 'my-room' : ''} ${isFinished ? 'finished' : ''} ${isPlaying ? 'playing' : ''}`; 
+                    
+                    // Клик по комнате для возврата
+                    if (trulyMine || isOpponent) {
+                        el.onclick = () => resumeRoom(r.id);
+                        el.style.cursor = 'pointer';
+                    }
+                    
                     let badgeHtml = '', btnHtml = '', timerHtml = ''; 
                     const hasPassword = r.room_password && r.room_password.length > 0; 
                     let lockIcon = hasPassword ? '<span class="lock-icon">🔒</span>' : ''; 
@@ -455,6 +477,7 @@
                         const remaining = window.roomExpiry[r.id] - Date.now(); 
                         timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`; 
                     }
+                    
                     if (trulyMine) {
                         if (isPlaying) btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
                         const cancelBtn = !isFinished ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
@@ -738,6 +761,7 @@
             const savedSkin = localStorage.getItem('echidna_selected_skin'); 
             if (savedSkin && SKINS.find(s => s.id === savedSkin)) currentSkin = savedSkin; 
             if (window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } 
+            loadRooms();
         });
     </script>
 </body>
