@@ -318,13 +318,27 @@
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0; window.roomExpiry = {};
 
+        // ✅ УСИЛЕННАЯ ФУНКЦИЯ ЗАПРОСА С ДИАГНОСТИКОЙ
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
-            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': method === 'DELETE' ? 'return=minimal' : 'return=representation' }; 
+            console.log(`[DB] ${method} ${url}`); // 🔍 Лог запроса
+            const headers = { 
+                'apikey': SUPABASE_KEY, 
+                'Authorization': `Bearer ${SUPABASE_KEY}`, 
+                'Content-Type': 'application/json', 
+                'Prefer': method === 'DELETE' ? 'return=minimal' : 'return=representation',
+                'Cache-Control': 'no-cache, no-store, must-revalidate' // 🔍 Отключаем кэш
+            }; 
             const res = await fetch(url, { method, headers, body: payload ? JSON.stringify(payload) : null }); 
-            if (!res.ok) { const errText = await res.text(); console.error(`DB Error ${res.status}:`, errText); throw new Error(`${res.status} ${errText}`); }
+            if (!res.ok) { 
+                const errText = await res.text(); 
+                console.error(`[DB ERROR] ${res.status}:`, errText); 
+                throw new Error(`${res.status} ${errText}`); 
+            }
             if (method === 'DELETE') return true;
-            const data = await res.json(); return single && Array.isArray(data) ? data[0] : data; 
+            const data = await res.json(); 
+            console.log(`[DB RESPONSE] ${table}:`, Array.isArray(data) ? `${data.length} items` : data); // 🔍 Лог ответа
+            return single && Array.isArray(data) ? data[0] : data; 
         }
 
         const tg = window.Telegram?.WebApp; if (tg) { tg.ready?.(); tg.expand?.(); }
@@ -384,22 +398,51 @@
             }); 
         }, 1000);
 
+        // ✅ ИСПРАВЛЕННАЯ ЗАГРУЗКА С ЗАЩИТОЙ ОТ RLS И КЭША
         async function loadRooms() { 
-            if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; } 
+            if (!MY_ID || MY_ID === 999999) { 
+                document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; 
+                return; 
+            } 
             try { 
-                fetch(`${SUPABASE_URL}/rest/v1/rpc/cleanup_abandoned_rooms`, { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({}) }).catch(e => console.log('Cleanup skipped')); 
-                // ✅ Исправлено: публичные комнаты теперь исключают комнату текущего пользователя
-                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`); 
-                const pub = await db('rooms', 'GET', null, `?status=neq.finished&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`); 
-                renderRooms('myRoomsList', my || [], true); renderRooms('roomsList', pub || [], false); 
-            } catch(e) { console.error('Load rooms error:', e); document.getElementById('myRoomsList').innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
+                // 🔍 Добавляем случайный параметр для обхода кэша
+                const cacheBuster = `&t=${Date.now()}`;
+                
+                // Загружаем мои комнаты
+                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10${cacheBuster}`); 
+                // Загружаем публичные комнаты (исключаем свои)
+                const pub = await db('rooms', 'GET', null, `?status=neq.finished&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20${cacheBuster}`); 
+                
+                // 🔍 Гарантируем, что это массивы
+                const myRooms = Array.isArray(my) ? my : [];
+                const pubRooms = Array.isArray(pub) ? pub : [];
+                
+                console.log(`[LOAD] My rooms: ${myRooms.length}, Public: ${pubRooms.length}`);
+                
+                renderRooms('myRoomsList', myRooms, true); 
+                renderRooms('roomsList', pubRooms, false); 
+            } catch(e) { 
+                console.error('Load rooms error:', e); 
+                // 🔍 Показываем ошибку вместо пустого экрана
+                const err = `<div style="color:var(--error);padding:15px;text-align:center;">⚠️ ${t('noRooms')}<br><small>${e.message}</small></div>`;
+                document.getElementById('myRoomsList').innerHTML = err;
+                document.getElementById('roomsList').innerHTML = err;
+            } 
         }
 
+        // ✅ УСИЛЕННАЯ ЗАЩИТА В renderRooms
         function renderRooms(id, rooms, isMy) { 
-            const c = document.getElementById(id); if(!c) return; c.innerHTML = ''; 
-            if (!rooms || rooms.length === 0) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; } 
+            const c = document.getElementById(id); if(!c) return; 
+            c.innerHTML = ''; 
+            
+            // 🔍 Защита от undefined/null/не-массива
+            if (!rooms || !Array.isArray(rooms) || rooms.length === 0) { 
+                c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; 
+                return; 
+            } 
             rooms.forEach((r, index) => { 
                 try { 
+                    if (!r || !r.creator_tg_id) return;
                     const trulyMine = Number(r.creator_tg_id) === MY_ID;
                     const isOpponent = Number(r.opponent_tg_id) === MY_ID;
                     const isFinished = r.status === 'finished';
