@@ -318,9 +318,11 @@
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0; window.roomExpiry = {};
 
-        // ✅ ФУНКЦИЯ ЗАПРОСА С ЗАГОЛОВКАМИ ПРОТИВ КЭША (БЕЗ ПАРАМЕТРОВ В URL)
+        // ✅ ИСПРАВЛЕННЫЙ DB-FETCH С ОБХОДОМ КЭША TELEGRAM WEBVIEW
         async function db(table, method, payload = null, filters = '', single = false) { 
-            const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
+            // Добавляем уникальный hash к URL для принудительного обхода кэша мобильных WebView
+            // Сервер Supabase игнорирует фрагмент #, но браузер считает URL новым
+            const url = `${SUPABASE_URL}/rest/v1/${table}${filters}#t=${Date.now()}`;
             const headers = { 
                 'apikey': SUPABASE_KEY, 
                 'Authorization': `Bearer ${SUPABASE_KEY}`, 
@@ -377,7 +379,9 @@
             try { 
                 await ensureUserExists(MY_ID, user.username); 
                 const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: pwd || null }], '', true); 
-                currentRoom = room; showGameScreen(); startPolling(); loadRooms(); 
+                currentRoom = room; showGameScreen(); startPolling(); 
+                // Принудительно обновляем список с небольшой задержкой для синхронизации БД
+                setTimeout(() => loadRooms(), 500);
             } catch(e) { alert(t('createError') + e.message); } 
         }
 
@@ -397,14 +401,13 @@
             }); 
         }, 1000);
 
-        // ✅ ИСПРАВЛЕННАЯ ЗАГРУЗКА (БЕЗ &t= В ЗАПРОСАХ)
         async function loadRooms() { 
             if (!MY_ID || MY_ID === 999999) { 
                 document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; 
                 return; 
             } 
             try { 
-                // ✅ Запросы БЕЗ кэш-бастера в URL — только заголовки Cache-Control
+                // Запросы теперь с хэшем для обхода кэша
                 const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`); 
                 const pub = await db('rooms', 'GET', null, `?status=neq.finished&creator_tg_id=neq.${MY_ID}&order=created_at.desc&limit=20`); 
                 
@@ -415,7 +418,7 @@
                 renderRooms('roomsList', pubRooms, false); 
             } catch(e) { 
                 console.error('Load rooms error:', e); 
-                const err = `<div style="color:var(--error);padding:15px;text-align:center;">⚠️ ${t('noRooms')}<br><small>${e.message}</small></div>`;
+                const err = `<div style="color:var(--error);padding:15px;text-align:center;">⚠️ Ошибка загрузки<br><small>${e.message}</small></div>`;
                 document.getElementById('myRoomsList').innerHTML = err;
                 document.getElementById('roomsList').innerHTML = err;
             } 
