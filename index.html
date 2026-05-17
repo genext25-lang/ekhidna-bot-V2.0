@@ -501,52 +501,50 @@
                 if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
                 if (room.room_password) { const pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:'); if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = t('join'); return; } } 
                 await ensureUserExists(MY_ID, user.username); 
-                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=in.(waiting,playing)`, true); 
+                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true); 
                 if (!res) throw new Error(t('joinError')); 
                 currentRoom = res; showGameScreen(); startPolling(); loadRooms(); 
             } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
         }
 
-        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ СТАТИСТИКИ И АВАТАРОВ
+        // ✅ ИСПРАВЛЕННАЯ И УЛУЧШЕННАЯ ФУНКЦИЯ СТАТИСТИКИ
         async function renderPlayerStats() {
-            if (!currentRoom) return;
-            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
-            const creatorId = currentRoom.creator_tg_id;
-            const opponentId = currentRoom.opponent_tg_id;
-
-            // Обновляем аватары сразу
-            if (isCreator) {
-                renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?');
-                if (opponentId && currentRoom.opponent_username) {
-                    renderAvatar('opponentAvatar', null, currentRoom.opponent_username);
-                } else {
-                    document.getElementById('opponentAvatar').innerHTML = '?';
-                }
-            } else {
-                renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username || '?');
-                if (creatorId && currentRoom.creator_username) {
-                    renderAvatar('playerAvatar', null, currentRoom.creator_username);
-                } else {
-                    document.getElementById('playerAvatar').innerHTML = '?';
-                }
-            }
-
-            // Если нет ID соперника или создателя, показываем ожидание и выходим
-            if (!opponentId || !creatorId) {
-                document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
-                document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span style="color:var(--success)">✅ 0</span><br><span style="color:var(--error)">❌ 0</span>';
-                return;
-            }
-
-            // Защита от частых запросов (не чаще раза в 2 секунды)
-            const now = Date.now();
-            if (now - window._lastStatsUpdate < 2000) return;
-            window._lastStatsUpdate = now;
-
+            if (!currentRoom || !currentRoom.id) return;
+            
             try {
+                // Загружаем свежие данные комнаты, чтобы гарантированно получить оба ID
+                const roomData = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`, true);
+                if (!roomData) return;
+
+                const creatorId = roomData.creator_tg_id;
+                const opponentId = roomData.opponent_tg_id;
+                const isCreator = String(creatorId) === String(MY_ID);
+
+                // Рендерим аватары
+                if (isCreator) {
+                    renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?');
+                    if (opponentId) renderAvatar('opponentAvatar', null, roomData.opponent_username || '?');
+                } else {
+                    renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username || '?');
+                    if (creatorId) renderAvatar('playerAvatar', null, roomData.creator_username || '?');
+                }
+
+                // Если один из игроков ещё не присоединился
+                if (!creatorId || !opponentId) {
+                    document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
+                    document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span>✅ 0</span><br><span>❌ 0</span>';
+                    return;
+                }
+
+                // Защита от спама запросов (не чаще раза в 2 секунды)
+                const now = Date.now();
+                if (now - window._lastStatsUpdate < 2000) return;
+                window._lastStatsUpdate = now;
+
+                // Загружаем статистику параллельно
                 const results = await Promise.allSettled([
-                    db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${creatorId}`, false),
-                    db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${opponentId}`, false)
+                    db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${String(creatorId)}`, false),
+                    db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${String(opponentId)}`, false)
                 ]);
 
                 const cData = (results[0].status === 'fulfilled' && results[0].value?.[0]) ? results[0].value[0] : { wins: 0, losses: 0 };
@@ -577,7 +575,7 @@
             const stake = parseFloat(currentRoom.stake || 0); 
             document.getElementById('stakeAmount').textContent = stake.toFixed(2); 
             document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2); 
-            renderPlayerStats();
+            renderPlayerStats(); // Обновляем статистику при входе
             updateGameStatus(currentRoom); 
         }
         
@@ -635,6 +633,7 @@
                 try { 
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`); 
                     const room = res[0]; if (!room) return; currentRoom = room; updateGameStatus(room); 
+                    renderPlayerStats(); // Обновляем статистику при каждом обновлении polling
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') { 
                         isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return; 
                     } 
