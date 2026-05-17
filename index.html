@@ -43,7 +43,6 @@
         .room-btn.cancel { background: var(--error); color: #fff; }
         .room-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* ✅ УВЕЛИЧЕННАЯ И УЛУЧШЕННАЯ СТАТИСТИКА */
         .player-wrapper { display: flex; flex-direction: column; align-items: center; width: 90px; }
         .player-avatar { width: 85px; height: 85px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--sec); }
         .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -334,7 +333,7 @@
         function getSkinFeatures(skin) { return i18n[currentLang][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || i18n['ru'][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || []; }
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0; window.roomExpiry = {};
-        window._lastStatsUpdate = 0; // Для защиты от спама запросов
+        window._lastStatsUpdate = 0;
 
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
@@ -477,8 +476,21 @@
 
         async function resumeRoom(roomId) { try { const room = await db('rooms', 'GET', null, `?id=eq.${roomId}`, true); if (!room) { alert('Room not found'); loadRooms(); return; } currentRoom = room; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
         async function cancelRoom(roomId) {
-            try { await db('rooms', 'DELETE', null, `?id=eq.${roomId}`); delete window.roomExpiry[roomId]; if (currentRoom?.id === roomId) { currentRoom = null; isGameFinished = true; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (window._timerInterval) { clearInterval(window._timerInterval); } window._timerRunning = false; } loadRooms(); } 
-            catch(e) { console.error('Cancel error:', e); alert('Ошибка: ' + e.message); }
+            if (!roomId) return;
+            try { 
+                await db('rooms', 'DELETE', null, `?id=eq.${roomId}`); 
+                delete window.roomExpiry[roomId]; 
+                if (currentRoom?.id === roomId) { 
+                    currentRoom = null; isGameFinished = true; 
+                    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } 
+                    if (window._timerInterval) { clearInterval(window._timerInterval); } 
+                    window._timerRunning = false; 
+                } 
+                loadRooms(); 
+            } catch(e) { 
+                console.warn('Cancel room warning:', e); 
+                loadRooms(); 
+            }
         }
         async function joinRoom(roomId, btnElement) { 
             if(!btnElement) return; btnElement.disabled = true; btnElement.textContent = '⏳'; 
@@ -502,30 +514,43 @@
             const creatorId = currentRoom.creator_tg_id;
             const opponentId = currentRoom.opponent_tg_id;
 
-            // Обновляем аватары
-            renderAvatar('playerAvatar', isCreator ? MY_PHOTO_URL : null, isCreator ? user.username : (currentRoom.opponent_username || '?'));
-            renderAvatar('opponentAvatar', !isCreator ? MY_PHOTO_URL : null, !isCreator ? user.username : (currentRoom.creator_username || '?'));
+            // Обновляем аватары сразу
+            if (isCreator) {
+                renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?');
+                if (opponentId && currentRoom.opponent_username) {
+                    renderAvatar('opponentAvatar', null, currentRoom.opponent_username);
+                } else {
+                    document.getElementById('opponentAvatar').innerHTML = '?';
+                }
+            } else {
+                renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username || '?');
+                if (creatorId && currentRoom.creator_username) {
+                    renderAvatar('playerAvatar', null, currentRoom.creator_username);
+                } else {
+                    document.getElementById('playerAvatar').innerHTML = '?';
+                }
+            }
 
-            // Если соперник ещё не присоединился, показываем ожидание
-            if (!opponentId) {
+            // Если нет ID соперника или создателя, показываем ожидание и выходим
+            if (!opponentId || !creatorId) {
                 document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
+                document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span style="color:var(--success)">✅ 0</span><br><span style="color:var(--error)">❌ 0</span>';
                 return;
             }
 
-            // Защита от частых запросов к БД (не чаще раза в 3 секунды)
+            // Защита от частых запросов (не чаще раза в 2 секунды)
             const now = Date.now();
-            if (now - window._lastStatsUpdate < 3000) return;
+            if (now - window._lastStatsUpdate < 2000) return;
             window._lastStatsUpdate = now;
 
-            // Загружаем статистику обоих игроков параллельно
             try {
                 const results = await Promise.allSettled([
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${creatorId}`, false),
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${opponentId}`, false)
                 ]);
 
-                const cData = results[0].status === 'fulfilled' && results[0].value[0] ? results[0].value[0] : { wins: 0, losses: 0 };
-                const oData = results[1].status === 'fulfilled' && results[1].value[0] ? results[1].value[0] : { wins: 0, losses: 0 };
+                const cData = (results[0].status === 'fulfilled' && results[0].value?.[0]) ? results[0].value[0] : { wins: 0, losses: 0 };
+                const oData = (results[1].status === 'fulfilled' && results[1].value?.[0]) ? results[1].value[0] : { wins: 0, losses: 0 };
 
                 const myStatsId = isCreator ? 'playerStats' : 'opponentStats';
                 const oppStatsId = isCreator ? 'opponentStats' : 'playerStats';
