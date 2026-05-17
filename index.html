@@ -43,13 +43,14 @@
         .room-btn.cancel { background: var(--error); color: #fff; }
         .room-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* ✅ Аватары + статистика */
-        .player-wrapper { display: flex; flex-direction: column; align-items: center; }
-        .player-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: var(--sec); }
+        /* ✅ УВЕЛИЧЕННАЯ И УЛУЧШЕННАЯ СТАТИСТИКА */
+        .player-wrapper { display: flex; flex-direction: column; align-items: center; width: 90px; }
+        .player-avatar { width: 85px; height: 85px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--sec); }
         .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .player-stats-small { font-size: 10px; color: var(--sec); margin-top: 6px; text-align: center; line-height: 1.2; background: rgba(26,26,46,0.8); padding: 3px 6px; border-radius: 6px; }
+        .player-stats-small { font-size: 13px; line-height: 1.4; margin-top: 10px; padding: 5px 10px; background: rgba(26,26,46,0.9); border-radius: 10px; border: 1px solid var(--border); text-align: center; min-width: 60px; }
+        .player-stats-small span { display: block; }
         .game-players { display: flex; justify-content: space-around; align-items: flex-start; margin: 15px 0; }
-        .vs-badge { font-size: 20px; font-weight: 700; color: var(--error); margin-top: 25px; }
+        .vs-badge { font-size: 22px; font-weight: 700; color: var(--error); margin-top: 30px; }
         
         .game-stakes { background: rgba(251,191,36,0.05); border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; border: 1px solid var(--border); }
         .stake-line { font-size: 14px; font-weight: 600; margin: 4px 0; display: flex; justify-content: space-between; padding: 0 10px; }
@@ -76,7 +77,6 @@
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* ✅ Панель на всю ширину */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--card); border-top: 2px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 10000; padding: 0 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.3); width: 100%; max-width: 100%; margin: 0; }
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--sec); font-size: 11px; cursor: pointer; padding: 5px 0; }
         .nav-btn.active { color: var(--primary); }
@@ -215,9 +215,15 @@
         <div id="gameScreen" class="hidden">
             <div class="header"><h2 data-i18n="battle">⚔️ Битва!</h2></div>
             <div class="game-players">
-                <div class="player-wrapper"><div class="player-avatar" id="playerAvatar"></div><div class="player-stats-small" id="playerStats"></div></div>
+                <div class="player-wrapper">
+                    <div class="player-avatar" id="playerAvatar"></div>
+                    <div class="player-stats-small" id="playerStats"></div>
+                </div>
                 <div class="vs-badge">VS</div>
-                <div class="player-wrapper"><div class="player-avatar" id="opponentAvatar"></div><div class="player-stats-small" id="opponentStats"></div></div>
+                <div class="player-wrapper">
+                    <div class="player-avatar" id="opponentAvatar"></div>
+                    <div class="player-stats-small" id="opponentStats"></div>
+                </div>
             </div>
             <div class="game-stakes" id="gameStakes">
                 <div class="stake-line">💰 <span data-i18n="stake">Ставка</span>: <span id="stakeAmount" class="stake-value">0.1</span> TON</div>
@@ -388,11 +394,7 @@
         async function confirmStake() { 
             const inputVal = document.getElementById('stakeInput').value; 
             let finalStake = selectedStake; 
-            if (inputVal) { 
-                const parsed = parseFloat(inputVal); 
-                if (parsed < 0.1 || parsed > 99 || isNaN(parsed)) { document.getElementById('stakeError').textContent = t('enterValid'); return; } 
-                finalStake = Math.round(parsed * 100) / 100; 
-            } 
+            if (inputVal) { const parsed = parseFloat(inputVal); if (parsed < 0.1 || parsed > 99 || isNaN(parsed)) { document.getElementById('stakeError').textContent = t('enterValid'); return; } finalStake = Math.round(parsed * 100) / 100; } 
             let pwd = document.getElementById('roomPassword').value.trim();
             if (pwd && !/^\d{1,4}$/.test(pwd)) { document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; return; }
             document.getElementById('stakeModal')?.classList.add('hidden'); 
@@ -492,6 +494,40 @@
             } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
         }
 
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ СТАТИСТИКИ И АВАТАРОВ
+        async function renderPlayerStats() {
+            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
+            const creatorId = currentRoom.creator_tg_id;
+            const opponentId = currentRoom.opponent_tg_id;
+            
+            // Рендерим аватар создателя
+            renderAvatar('playerAvatar', MY_PHOTO_URL, user.username);
+            
+            // Рендерим аватар соперника (берем ник из комнаты)
+            const opponentUsername = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
+            renderAvatar('opponentAvatar', null, opponentUsername || '?');
+
+            // Загружаем статистику обоих игроков параллельно
+            try {
+                const [creatorData, opponentData] = await Promise.all([
+                    db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${creatorId}`, false),
+                    db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${opponentId}`, false)
+                ]);
+
+                const cW = creatorData[0]?.wins || 0, cL = creatorData[0]?.losses || 0;
+                const oW = opponentData[0]?.wins || 0, oL = opponentData[0]?.losses || 0;
+
+                // Обновляем статистику под аватарами
+                document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = `<span style="color:var(--success)">✅ ${cW}</span><br><span style="color:var(--error)">❌ ${cL}</span>`;
+                document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = `<span style="color:var(--success)">✅ ${oW}</span><br><span style="color:var(--error)">❌ ${oL}</span>`;
+            } catch(e) {
+                console.warn('Stats load error:', e);
+                // Фолбэк на нули, если БД не ответил
+                document.getElementById('playerStats').innerHTML = `<span>✅ 0</span><br><span>❌ 0</span>`;
+                document.getElementById('opponentStats').innerHTML = `<span>✅ 0</span><br><span>❌ 0</span>`;
+            }
+        }
+        
         function showGameScreen() { 
             ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden')); 
             document.getElementById('gameScreen')?.classList.remove('hidden'); 
@@ -506,34 +542,9 @@
             isGameFinished = false; window._timerRunning = false; 
             const stake = parseFloat(currentRoom.stake || 0); 
             document.getElementById('stakeAmount').textContent = stake.toFixed(2); 
-            // ✅ Расчет с вычетом 5%, но текст просто "Ты получишь"
             document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2); 
-            renderAvatar('playerAvatar', MY_PHOTO_URL, user.username); 
-            renderAvatar('opponentAvatar', null, isCreator ? currentRoom.opponent_username : currentRoom.creator_username); 
             renderPlayerStats();
             updateGameStatus(currentRoom); 
-        }
-        
-        // ✅ Статистика под аватарами
-        async function renderPlayerStats() {
-            try {
-                const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
-                const creatorId = currentRoom.creator_tg_id;
-                const opponentId = currentRoom.opponent_tg_id;
-
-                let cW = 0, cL = 0, oW = 0, oL = 0;
-                if (creatorId) {
-                    const c = await db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${creatorId}`, false);
-                    if(c[0]) { cW = c[0].wins || 0; cL = c[0].losses || 0; }
-                }
-                if (opponentId) {
-                    const o = await db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${opponentId}`, false);
-                    if(o[0]) { oW = o[0].wins || 0; oL = o[0].losses || 0; }
-                }
-                
-                document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = `✅ ${cW}<br>❌ ${cL}`;
-                document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = `✅ ${oW}<br>❌ ${oL}`;
-            } catch(e) { console.warn('Stats load error:', e); }
         }
         
         function updateGameStatus(room) { 
