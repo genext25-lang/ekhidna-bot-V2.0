@@ -647,30 +647,6 @@
             } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
         }
 
-        // ✅ ФУНКЦИЯ СОХРАНЕНИЯ ИСТОРИИ ИГР С ЛОГАМИ
-        async function saveGameHistory(resultStr, playerMove) {
-            if (!currentRoom) return;
-            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
-            const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
-            
-            const historyData = {
-                player_id: MY_ID,
-                opponent_name: opponentName || '???',
-                stake: currentRoom.stake,
-                player_move: playerMove,
-                result: resultStr
-            };
-
-            console.log("📝 Saving game history:", historyData); // Лог для проверки
-
-            try {
-                await db('game_history', 'POST', [historyData]);
-                console.log("✅ Game history saved!");
-            } catch (e) {
-                console.error('❌ Failed to save game history:', e);
-            }
-        }
-
         async function renderPlayerStats() {
             if (!currentRoom || !currentRoom.id) return;
             try {
@@ -769,10 +745,6 @@
                 db('users', 'PATCH', { losses: (currentWins ? currentWins : 0) + 1 }, `?telegram_id=eq.${MY_ID}`).catch(console.warn); 
                 const msgEl = document.getElementById('statusMessage'); 
                 if(msgEl) msgEl.innerHTML = `<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`; 
-                
-                // Сохраняем поражение из-за таймаута
-                saveGameHistory('lose', null);
-
                 updateStats(); setTimeout(() => forceExitToLobby(), 3000); 
             } 
         }
@@ -805,6 +777,25 @@
             try { await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`); currentRoom[col] = choice; } 
             catch(e) { alert(t('moveError') + e.message); document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); } 
         }
+
+        // ✅ ФУНКЦИЯ СОХРАНЕНИЯ ИСТОРИИ ИГР
+        async function saveGameHistory(resultStr, playerMove) {
+            if (!currentRoom) return;
+            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
+            const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
+            
+            try {
+                await db('game_history', 'POST', [{
+                    player_id: MY_ID,
+                    opponent_name: opponentName || '???',
+                    stake: currentRoom.stake,
+                    player_move: playerMove,
+                    result: resultStr
+                }]);
+            } catch (e) {
+                console.error('Failed to save game history:', e);
+            }
+        }
         
         async function showRevealAnimation(room) { 
             const overlay = document.getElementById('revealOverlay'), confetti = document.getElementById('confettiContainer'); 
@@ -826,12 +817,11 @@
             resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`; 
             if (isWin) createConfetti(); 
             
-            // Определяем результат для истории
+            // ✅ Сохраняем результат в историю
             let resultForHistory = 'draw';
             if (result.winnerId) {
                 resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
             }
-            // Сохраняем историю
             saveGameHistory(resultForHistory, myMove);
             
             let countdown = 3; const countdownEl = document.getElementById('revealCountdown'); countdownEl.textContent = countdown; 
