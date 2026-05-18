@@ -446,7 +446,7 @@
         function startGame() { document.getElementById('splashScreen')?.classList.add('hidden'); if (window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } showScreen('lobby'); }
         
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_lNnsJa932mOhwMX21GSnWQ_UG2TjSoe';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlam5kd3Rja2R2dWV1ZnFoaXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjY5MjcsImV4cCI6MjA5MzgwMjkyN30.tDP9B-nWPMsuANJ4JiASs0UYgJqJZtm9Sj3jUs13l9c';
         
         function getCurrentUser() { if (window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user; try { const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash; const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search; const full = `${hash}&${search}`; const params = new URLSearchParams(full); const tgData = params.get('tgWebAppData'); if (tgData) { const dataParams = new URLSearchParams(decodeURIComponent(tgData)); const userJSON = dataParams.get('user'); if (userJSON) return JSON.parse(decodeURIComponent(userJSON)); } } catch (e) { console.warn('User parse error:', e); } return { id: Math.floor(Math.random() * 1000000), username: 'Guest' }; }
         const user = getCurrentUser();
