@@ -181,8 +181,8 @@
                 <ul data-i18n="rulesList">
                     <li>Создай комнату или присоединись к существующей</li>
                     <li>Выбери ставку от 0.1 до 99 TON</li>
-                    <li>Выбери один из трёх ходов: Кулак, Шип или Кристалл</li>
-                    <li>Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак</li>
+                    <li>Выбери один из трёх ходов: Камень, Ножницы или Бумага</li>
+                    <li>Камень побеждает Ножницы, Ножницы режут Бумагу, Бумага накрывает Камень</li>
                     <li>Победитель забирает банк (минус 5% комиссия)</li>
                 </ul>
                 <button class="splash-btn" onclick="startGame()" data-i18n="playBtn">🎮 Играть</button>
@@ -194,7 +194,7 @@
             <div class="header">
                 <div class="header-logo"><img src="" id="mainLogoImg" alt="logo"></div>
                 <h1 data-i18n="title">Echidna Naklz</h1>
-                <div class="header-sub" data-i18n="subtitle">Кулак • Шип • Кристалл</div>
+                <div class="header-sub" data-i18n="subtitle">Камень • Ножницы • Бумага</div>
             </div>
             <div class="player-stats">
                 <div class="stat-box"><div class="stat-val" id="statWins">0</div><div class="stat-lbl" data-i18n="wins">Побед</div></div>
@@ -236,9 +236,9 @@
                 </div>
             </div>
             <div class="choices" id="choicesArea">
-                <button class="choice-btn" onclick="makeMove('fist')"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-fist.png" alt="Кулак"><span data-i18n="fist">Кулак</span></button>
-                <button class="choice-btn" onclick="makeMove('spike')"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-spike.png" alt="Шип"><span data-i18n="spike">Шип</span></button>
-                <button class="choice-btn" onclick="makeMove('crystal')"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-crystal.png" alt="Кристалл"><span data-i18n="crystal">Кристалл</span></button>
+                <button class="choice-btn" onclick="makeMove('rock')"><img src="move-rock.png" alt="Камень"><span data-i18n="rock">Камень</span></button>
+                <button class="choice-btn" onclick="makeMove('scissors')"><img src="move-scissors.png" alt="Ножницы"><span data-i18n="scissors">Ножницы</span></button>
+                <button class="choice-btn" onclick="makeMove('paper')"><img src="move-paper.png" alt="Бумага"><span data-i18n="paper">Бумага</span></button>
             </div>
         </div>
         <div id="skinsScreen" class="hidden">
@@ -308,11 +308,11 @@
 
     <script>
         const i18n = {
-            ru: { splashTitle: 'Echidna Naklz', rulesTitle: '📜 Правила игры', rulesList: '<li>Создай комнату или присоединись к существующей</li><li>Выбери ставку от 0.1 до 99 TON</li><li>Выбери один из трёх ходов: Кулак, Шип или Кристалл</li><li>Кулак бьёт Шип, Шип режет Кристалл, Кристалл ломает Кулак</li><li>Победитель забирает банк (минус 5% комиссия)</li>', playBtn: '🎮 Играть', title: 'Echidna Naklz', subtitle: 'Кулак • Шип • Кристалл', wins: 'Побед', games: 'Игр', level: 'Уровень', createRoom: '💎 Создать комнату', refresh: '🔄 Обновить', myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь', fist: 'Кулак', spike: 'Шип', crystal: 'Кристалл', toLobby: '🏠 В лобби', skins: '🎨 Скины', skinsSubtitle: 'Нажми на скин для подробной информации', leaderboard: '🏆 Рейтинг', features: '✨ Особенности:', selectStake: '💎 Выбери ставку', orEnter: 'Или введи:', createRoomBtn: 'Создать комнату', cancel: 'Отмена', navLobby: 'Лобби', navSkins: 'Скины', navLeaderboard: 'Рейтинг', waitingForOpponent: '⏳ Ждём соперника...', gameNotActive: '⚠️ Игра не активна, второй игрок ещё не присоединился', yourMoveRecorded: '✅ Ваш ход записан. Ждём соперника...', opponentThinking: '⏳ Соперник думает...', yourTurn: '👉 Ваш ход!', summarizing: '⏳ Подведение итогов...', gameOver: '🏁 Игра окончена', victory: '🏆 Победа!', defeat: '😢 Поражение', draw: '🤝 Ничья!', timeoutWin: '🏆 Соперник не успел! Ты победил!', timeoutLose: '😢 Время вышло! Ты проиграл.', leftGame: '😢 Вы покинули игру', roomNotFound: '❌ Ошибка: комната не найдена', minStake: 'Мин: 0.1 TON', maxStake: 'Макс: 99 TON', enterValid: 'Введи от 0.1 до 99', createError: 'Ошибка создания: ', userNotFound: '⚠️ Не удалось определить пользователя.', noRooms: 'Нет комнат', roomLocked: 'Комната уже занята', joinError: 'Ошибка: ', moveError: 'Ошибка хода: ', cancelError: 'Ошибка: ', onlyCreator: '⛔ Только создатель может отменить!', requires: 'Требуется: ', unlocked: '✅ Разблокировано', needMore: '🔒 Нужно ещё ', equip: 'Надеть', locked: '🔒', checkmark: '✓', waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', drawBadge: '🤝 Ничья', return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти', revealTitle: 'Раскрытие ходов', skinDefaultName: 'Обычная', skinDefaultDesc: 'Стартовая ехидна.', skinDefaultFeatures: ['Базовый скин', 'Для новичков'], skinIceName: 'Ледяная', skinIceDesc: 'Холодный расчёт.', skinIceFeatures: ['Ледяные иглы', 'Стратег'], skinFireName: 'Огненная', skinFireDesc: 'Огненный темперамент.', skinFireFeatures: ['Агрессивный стиль', 'Быстрая реакция'], skinShadowName: 'Теневая', skinShadowDesc: 'Сила тени.', skinShadowFeatures: ['Мистика', 'Непредсказуемость'], skinGoldenName: 'Золотая', skinGoldenDesc: 'Легенда.', skinGoldenFeatures: ['Корона чемпиона', '300+ побед'] },
-            en: { splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules', rulesList: '<li>Create a room or join an existing one</li><li>Choose a stake from 0.1 to 99 TON</li><li>Choose one of three moves: Fist, Spike or Crystal</li><li>Fist beats Spike, Spike cuts Crystal, Crystal breaks Fist</li><li>Winner takes the pot (minus 5% commission)</li>', playBtn: '🎮 Play', title: 'Echidna Naklz', subtitle: 'Fist • Spike • Crystal', wins: 'Wins', games: 'Games', level: 'Level', createRoom: '💎 Create Room', refresh: '🔄 Refresh', myRooms: 'My Rooms', availableRooms: 'Available Rooms', battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get', fist: 'Fist', spike: 'Spike', crystal: 'Crystal', toLobby: '🏠 To Lobby', skins: '🎨 Skins', skinsSubtitle: 'Click on a skin for details', leaderboard: '🏆 Leaderboard', features: '✨ Features:', selectStake: '💎 Select Stake', orEnter: 'Or enter:', createRoomBtn: 'Create Room', cancel: 'Cancel', navLobby: 'Lobby', navSkins: 'Skins', navLeaderboard: 'Leaderboard', waitingForOpponent: '⏳ Waiting for opponent...', gameNotActive: '⚠️ Game not active, second player has not joined yet', yourMoveRecorded: '✅ Your move recorded. Waiting for opponent...', opponentThinking: '⏳ Opponent is thinking...', yourTurn: '👉 Your turn!', summarizing: '⏳ Summarizing...', gameOver: '🏁 Game Over', victory: '🏆 Victory!', defeat: '😢 Defeat', draw: '🤝 Draw!', timeoutWin: '🏆 Opponent timed out! You win!', timeoutLose: '😢 Time is up! You lost.', leftGame: '😢 You left the game', roomNotFound: '❌ Error: room not found', minStake: 'Min: 0.1 TON', maxStake: 'Max: 99 TON', enterValid: 'Enter from 0.1 to 99', createError: 'Create error: ', userNotFound: '⚠️ Could not identify user.', noRooms: 'No rooms', roomLocked: 'Room is already occupied', joinError: 'Error: ', moveError: 'Move error: ', cancelError: 'Error: ', onlyCreator: '⛔ Only creator can cancel!', requires: 'Requires: ', unlocked: '✅ Unlocked', needMore: '🔒 Need ', equip: 'Equip', locked: '🔒', checkmark: '✓', waiting: 'WAITING', game: 'GAME', victoryBadge: '✅ Victory', defeatBadge: '❌ Defeat', drawBadge: '🤝 Draw', return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join', revealTitle: 'Move Reveal', skinDefaultName: 'Default', skinDefaultDesc: 'Starting echidna.', skinDefaultFeatures: ['Basic skin', 'For beginners'], skinIceName: 'Ice', skinIceDesc: 'Cold calculation.', skinIceFeatures: ['Ice spikes', 'Strategist'], skinFireName: 'Fire', skinFireDesc: 'Fiery temperament.', skinFireFeatures: ['Aggressive style', 'Quick reaction'], skinShadowName: 'Shadow', skinShadowDesc: 'Power of shadow.', skinShadowFeatures: ['Mysticism', 'Unpredictability'], skinGoldenName: 'Golden', skinGoldenDesc: 'Legend.', skinGoldenFeatures: ['Champion crown', '300+ wins'] }
+            ru: { splashTitle: 'Echidna Naklz', rulesTitle: '📜 Правила игры', rulesList: '<li>Создай комнату или присоединись к существующей</li><li>Выбери ставку от 0.1 до 99 TON</li><li>Выбери один из трёх ходов: Камень, Ножницы или Бумага</li><li>Камень побеждает Ножницы, Ножницы режут Бумагу, Бумага накрывает Камень</li><li>Победитель забирает банк (минус 5% комиссия)</li>', playBtn: '🎮 Играть', title: 'Echidna Naklz', subtitle: 'Камень • Ножницы • Бумага', wins: 'Побед', games: 'Игр', level: 'Уровень', createRoom: '💎 Создать комнату', refresh: '🔄 Обновить', myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь', rock: 'Камень', scissors: 'Ножницы', paper: 'Бумага', toLobby: '🏠 В лобби', skins: '🎨 Скины', skinsSubtitle: 'Нажми на скин для подробной информации', leaderboard: '🏆 Рейтинг', features: '✨ Особенности:', selectStake: '💎 Выбери ставку', orEnter: 'Или введи:', createRoomBtn: 'Создать комнату', cancel: 'Отмена', navLobby: 'Лобби', navSkins: 'Скины', navLeaderboard: 'Рейтинг', waitingForOpponent: '⏳ Ждём соперника...', gameNotActive: '⚠️ Игра не активна, второй игрок ещё не присоединился', yourMoveRecorded: '✅ Ваш ход записан. Ждём соперника...', opponentThinking: '⏳ Соперник думает...', yourTurn: '👉 Ваш ход!', summarizing: '⏳ Подведение итогов...', gameOver: '🏁 Игра окончена', victory: '🏆 Победа!', defeat: '😢 Поражение', draw: '🤝 Ничья!', timeoutWin: '🏆 Соперник не успел! Ты победил!', timeoutLose: '😢 Время вышло! Ты проиграл.', leftGame: '😢 Вы покинули игру', roomNotFound: '❌ Ошибка: комната не найдена', minStake: 'Мин: 0.1 TON', maxStake: 'Макс: 99 TON', enterValid: 'Введи от 0.1 до 99', createError: 'Ошибка создания: ', userNotFound: '⚠️ Не удалось определить пользователя.', noRooms: 'Нет комнат', roomLocked: 'Комната уже занята', joinError: 'Ошибка: ', moveError: 'Ошибка хода: ', cancelError: 'Ошибка: ', onlyCreator: '⛔ Только создатель может отменить!', requires: 'Требуется: ', unlocked: '✅ Разблокировано', needMore: '🔒 Нужно ещё ', equip: 'Надеть', locked: '🔒', checkmark: '✓', waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', drawBadge: '🤝 Ничья', return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти', revealTitle: 'Раскрытие ходов', skinDefaultName: 'Обычная', skinDefaultDesc: 'Стартовая ехидна.', skinDefaultFeatures: ['Базовый скин', 'Для новичков'], skinIceName: 'Ледяная', skinIceDesc: 'Холодный расчёт.', skinIceFeatures: ['Ледяные иглы', 'Стратег'], skinFireName: 'Огненная', skinFireDesc: 'Огненный темперамент.', skinFireFeatures: ['Агрессивный стиль', 'Быстрая реакция'], skinShadowName: 'Теневая', skinShadowDesc: 'Сила тени.', skinShadowFeatures: ['Мистика', 'Непредсказуемость'], skinGoldenName: 'Золотая', skinGoldenDesc: 'Легенда.', skinGoldenFeatures: ['Корона чемпиона', '300+ побед'] },
+            en: { splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules', rulesList: '<li>Create a room or join an existing one</li><li>Choose a stake from 0.1 to 99 TON</li><li>Choose one of three moves: Rock, Scissors or Paper</li><li>Rock beats Scissors, Scissors cuts Paper, Paper covers Rock</li><li>Winner takes the pot (minus 5% commission)</li>', playBtn: '🎮 Play', title: 'Echidna Naklz', subtitle: 'Rock • Scissors • Paper', wins: 'Wins', games: 'Games', level: 'Level', createRoom: '💎 Create Room', refresh: '🔄 Refresh', myRooms: 'My Rooms', availableRooms: 'Available Rooms', battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get', rock: 'Rock', scissors: 'Scissors', paper: 'Paper', toLobby: '🏠 To Lobby', skins: '🎨 Skins', skinsSubtitle: 'Click on a skin for details', leaderboard: '🏆 Leaderboard', features: '✨ Features:', selectStake: '💎 Select Stake', orEnter: 'Or enter:', createRoomBtn: 'Create Room', cancel: 'Cancel', navLobby: 'Lobby', navSkins: 'Skins', navLeaderboard: 'Leaderboard', waitingForOpponent: '⏳ Waiting for opponent...', gameNotActive: '⚠️ Game not active, second player has not joined yet', yourMoveRecorded: '✅ Your move recorded. Waiting for opponent...', opponentThinking: '⏳ Opponent is thinking...', yourTurn: '👉 Your turn!', summarizing: '⏳ Summarizing...', gameOver: '🏁 Game Over', victory: '🏆 Victory!', defeat: '😢 Defeat', draw: '🤝 Draw!', timeoutWin: '🏆 Opponent timed out! You win!', timeoutLose: '😢 Time is up! You lost.', leftGame: '😢 You left the game', roomNotFound: '❌ Error: room not found', minStake: 'Min: 0.1 TON', maxStake: 'Max: 99 TON', enterValid: 'Enter from 0.1 to 99', createError: 'Create error: ', userNotFound: '⚠️ Could not identify user.', noRooms: 'No rooms', roomLocked: 'Room is already occupied', joinError: 'Error: ', moveError: 'Move error: ', cancelError: 'Error: ', onlyCreator: '⛔ Only creator can cancel!', requires: 'Requires: ', unlocked: '✅ Unlocked', needMore: '🔒 Need ', equip: 'Equip', locked: '🔒', checkmark: '✓', waiting: 'WAITING', game: 'GAME', victoryBadge: '✅ Victory', defeatBadge: '❌ Defeat', drawBadge: '🤝 Draw', return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join', revealTitle: 'Move Reveal', skinDefaultName: 'Default', skinDefaultDesc: 'Starting echidna.', skinDefaultFeatures: ['Basic skin', 'For beginners'], skinIceName: 'Ice', skinIceDesc: 'Cold calculation.', skinIceFeatures: ['Ice spikes', 'Strategist'], skinFireName: 'Fire', skinFireDesc: 'Fiery temperament.', skinFireFeatures: ['Aggressive style', 'Quick reaction'], skinShadowName: 'Shadow', skinShadowDesc: 'Power of shadow.', skinShadowFeatures: ['Mysticism', 'Unpredictability'], skinGoldenName: 'Golden', skinGoldenDesc: 'Legend.', skinGoldenFeatures: ['Champion crown', '300+ wins'] }
         };
 
-        const moveImages = { fist: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-fist.png', spike: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-spike.png', crystal: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/move-crystal.png' };
+        const moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
         let currentLang = 'ru';
         function setLanguage(lang) { currentLang = lang; document.querySelectorAll('.lang-btn').forEach(btn => btn?.classList?.toggle('active', btn.textContent.toLowerCase() === lang)); updateTexts(); }
         function t(key) { return i18n[currentLang][key] || i18n['ru'][key] || key; }
@@ -512,7 +512,6 @@
             if (!currentRoom || !currentRoom.id) return;
             
             try {
-                // Загружаем свежие данные комнаты, чтобы гарантированно получить оба ID
                 const roomData = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`, true);
                 if (!roomData) return;
 
@@ -520,7 +519,6 @@
                 const opponentId = roomData.opponent_tg_id;
                 const isCreator = String(creatorId) === String(MY_ID);
 
-                // Рендерим аватары
                 if (isCreator) {
                     renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?');
                     if (opponentId) renderAvatar('opponentAvatar', null, roomData.opponent_username || '?');
@@ -529,19 +527,16 @@
                     if (creatorId) renderAvatar('playerAvatar', null, roomData.creator_username || '?');
                 }
 
-                // Если один из игроков ещё не присоединился
                 if (!creatorId || !opponentId) {
                     document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
                     document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span>✅ 0</span><br><span>❌ 0</span>';
                     return;
                 }
 
-                // Защита от спама запросов (не чаще раза в 2 секунды)
                 const now = Date.now();
                 if (now - window._lastStatsUpdate < 2000) return;
                 window._lastStatsUpdate = now;
 
-                // Загружаем статистику параллельно
                 const results = await Promise.allSettled([
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${String(creatorId)}`, false),
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${String(opponentId)}`, false)
@@ -575,7 +570,7 @@
             const stake = parseFloat(currentRoom.stake || 0); 
             document.getElementById('stakeAmount').textContent = stake.toFixed(2); 
             document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2); 
-            renderPlayerStats(); // Обновляем статистику при входе
+            renderPlayerStats(); 
             updateGameStatus(currentRoom); 
         }
         
@@ -633,7 +628,7 @@
                 try { 
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`); 
                     const room = res[0]; if (!room) return; currentRoom = room; updateGameStatus(room); 
-                    renderPlayerStats(); // Обновляем статистику при каждом обновлении polling
+                    renderPlayerStats(); 
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') { 
                         isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return; 
                     } 
@@ -711,7 +706,7 @@
             if (!c1) return { msg: (MY_ID === id1) ? t('defeat') : t('victory'), winnerId: id2 }; 
             if (!c2) return { msg: (MY_ID === id2) ? t('defeat') : t('victory'), winnerId: id1 }; 
             if (c1 === c2) return { msg: t('draw'), winnerId: null }; 
-            const beats = { fist: 'spike', spike: 'crystal', crystal: 'fist' }; 
+            const beats = { rock: 'scissors', scissors: 'paper', paper: 'rock' }; 
             const creatorWins = beats[c1] === c2; 
             return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? t('victory') : t('defeat'), winnerId: creatorWins ? id1 : id2 }; 
         }
