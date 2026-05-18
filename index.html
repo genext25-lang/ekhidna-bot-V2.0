@@ -436,7 +436,28 @@
         const MY_PHOTO_URL = user.photo_url || null;
         const MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
         const SKINS = [{ id: 'default', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' }, { id: 'ice', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png' }, { id: 'fire', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png' }, { id: 'shadow', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png' }, { id: 'golden', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png' }];
-        function getSkinName(skin) { return t(`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Name`); }
+        
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ НАЗВАНИЙ СКИНОВ
+        function getSkinName(skin) { 
+            const names = {
+                ru: { 
+                    default: 'Обычная', 
+                    ice: 'Ледяная', 
+                    fire: 'Огненная', 
+                    shadow: 'Теневая', 
+                    golden: 'Золотая' 
+                },
+                en: { 
+                    default: 'Default', 
+                    ice: 'Ice', 
+                    fire: 'Fire', 
+                    shadow: 'Shadow', 
+                    golden: 'Golden' 
+                }
+            };
+            return names[currentLang]?.[skin.id] || names['ru'][skin.id] || skin.id.toUpperCase(); 
+        }
+        
         function getSkinDesc(skin) { return t(`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Desc`); }
         function getSkinFeatures(skin) { return i18n[currentLang][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || i18n['ru'][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || []; }
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
