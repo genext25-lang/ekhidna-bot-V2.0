@@ -42,7 +42,6 @@
         .room-btn.join { background: var(--primary); color: #fff; }
         .room-btn.cancel { background: var(--error); color: #fff; }
         .room-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
         .player-wrapper { display: flex; flex-direction: column; align-items: center; width: 90px; }
         .player-avatar { width: 85px; height: 85px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--sec); }
         .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -50,19 +49,16 @@
         .player-stats-small span { display: block; }
         .game-players { display: flex; justify-content: space-around; align-items: flex-start; margin: 15px 0; }
         .vs-badge { font-size: 22px; font-weight: 700; color: var(--error); margin-top: 30px; }
-        
         .game-stakes { background: rgba(251,191,36,0.05); border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; border: 1px solid var(--border); }
         .stake-line { font-size: 14px; font-weight: 600; margin: 4px 0; display: flex; justify-content: space-between; padding: 0 10px; }
         .stake-value { color: var(--gold); }
         .stake-win { color: var(--success); font-size: 16px; }
-        
         .choices { display: flex; justify-content: space-between; gap: 12px; margin: 20px 0; width: 100%; }
         .choice-btn { flex: 1; height: 150px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; transition: all 0.2s; }
         .choice-btn:active:not(:disabled) { transform: scale(0.96); }
         .choice-btn img { width: 85px; height: 85px; object-fit: contain; margin-bottom: 10px; }
         .choice-btn span { font-size: 13px; color: var(--gold); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
-        
         .status-box { background: var(--card); border-radius: 14px; padding: 16px 16px 24px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
         #statusMessage { min-height: 24px; display: flex; align-items: center; justify-content: center; }
         .timer-text { font-size: 14px; color: var(--error); font-weight: bold; margin-top: 6px; display: none; }
@@ -75,12 +71,10 @@
         .loader { text-align: center; padding: 30px; color: var(--sec); min-height: 60px; }
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--card); border-top: 2px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 10000; padding: 0 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.3); width: 100%; max-width: 100%; margin: 0; }
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--sec); font-size: 10px; cursor: pointer; padding: 5px 0; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn svg { width: 28px; height: 28px; }
-        
         .lang-switcher { position: fixed; top: 15px; right: 15px; z-index: 10001; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
         .lang-btn { padding: 6px 12px; border: none; border-radius: 16px; background: transparent; color: var(--sec); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .lang-btn.active { background: var(--primary); color: #fff; }
@@ -165,18 +159,15 @@
         @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
         .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; }
         .search-input:focus { border-color: var(--primary); }
-        
         .stats-header { text-align: center; margin-bottom: 20px; }
         .stats-header h2 { font-size: 22px; margin-bottom: 5px; }
         .stats-header .subtitle { color: var(--sec); font-size: 13px; }
-        
         .stats-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .stat-card { background: var(--card); border-radius: 16px; padding: 14px 10px; text-align: center; border: 1px solid var(--border); }
         .stat-card .stat-icon { font-size: 28px; margin-bottom: 6px; }
         .stat-card .stat-value { font-size: 20px; font-weight: 700; color: var(--primary); }
         .stat-card .stat-label { font-size: 10px; color: var(--sec); text-transform: uppercase; margin-top: 4px; }
         .stat-card .stat-sub { font-size: 11px; color: var(--gold); margin-top: 4px; font-weight: 600; }
-        
         .games-table { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
         .games-table-header { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; background: rgba(99,102,241,0.1); font-size: 11px; color: var(--sec); text-transform: uppercase; font-weight: 600; }
         .game-row { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; border-top: 1px solid var(--border); font-size: 12px; align-items: center; }
@@ -190,7 +181,6 @@
         .game-move { font-size: 18px; }
         .games-empty { text-align: center; padding: 30px; color: var(--sec); }
         .games-empty .empty-icon { font-size: 40px; margin-bottom: 10px; }
-        
         .no-stats-msg { text-align: center; padding: 40px 20px; color: var(--sec); }
         .no-stats-msg .icon { font-size: 50px; margin-bottom: 15px; }
     </style>
@@ -239,13 +229,11 @@
             </div>
             <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
         </div>
-        
         <div id="statsScreen" class="hidden">
             <div class="stats-header">
                 <h2 data-i18n="statsTitle">📊 Статистика</h2>
                 <div class="subtitle" data-i18n="statsSubtitle">Твоя игровая история</div>
             </div>
-            
             <div class="stats-cards" id="statsCards">
                 <div class="stat-card">
                     <div class="stat-icon">🏆</div>
@@ -263,7 +251,6 @@
                     <div class="stat-label" data-i18n="totalWon">Выиграно TON</div>
                 </div>
             </div>
-            
             <div class="section-title" data-i18n="recentGames">🎮 Последние игры</div>
             <div class="games-table" id="gamesTable">
                 <div class="games-table-header">
@@ -277,7 +264,6 @@
                 </div>
             </div>
         </div>
-        
         <div id="gameScreen" class="hidden">
             <div class="header"><h2 data-i18n="battle">⚔️ Битва!</h2></div>
             <div class="game-players">
@@ -317,7 +303,6 @@
             <div id="leaderboardList"><div class="loader"><div class="spinner"></div></div></div>
         </div>
     </div>
-
     <div id="skinModal" class="skin-modal hidden" onclick="closeSkinModal(event)">
         <div class="skin-modal-content" onclick="event.stopPropagation()">
             <button class="skin-modal-close" onclick="closeSkinModal()">✕</button>
@@ -332,7 +317,6 @@
             <div class="skin-modal-req" id="modalReq"></div>
         </div>
     </div>
-
     <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)">
         <div class="stake-modal-content" onclick="event.stopPropagation()">
             <button class="skin-modal-close" onclick="closeStakeModal()">✕</button>
@@ -355,7 +339,6 @@
             <button class="btn stake-cancel-btn" onclick="closeStakeModal()" style="margin-top: 8px;" data-i18n="cancel">Отмена</button>
         </div>
     </div>
-
     <div id="revealOverlay" class="reveal-overlay hidden">
         <div class="reveal-title" data-i18n="revealTitle">Раскрытие ходов</div>
         <div class="reveal-players">
@@ -373,7 +356,6 @@
         <button class="nav-btn" onclick="showScreen('skins')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg><span data-i18n="navSkins">Скины</span></button>
         <button class="nav-btn" onclick="showScreen('leaderboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10c1 0 2 .5 2 2v3c0 1-1 2-2 2H7c-1 0-2-1-2-2V6c0-1.5 1-2 2-2zM6 11h12"/></svg><span data-i18n="navLeaderboard">Рейтинг</span></button>
     </div>
-
     <script>
         const i18n = {
             ru: { 
@@ -446,7 +428,7 @@
         function startGame() { document.getElementById('splashScreen')?.classList.add('hidden'); if (window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } showScreen('lobby'); }
         
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlam5kd3Rja2R2dWV1ZnFoaXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjY5MjcsImV4cCI6MjA5MzgwMjkyN30.tDP9B-nWPMsuANJ4JiASs0UYgJqJZtm9Sj3jUs13l9c';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlam5kd3Rja2R2dWV1ZnFoaXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjY5MjcsImV4cCI6MjA5MzgwMjkyN30.tDP9B-nWPMsuANJ4JiASs0UYgJqJZtm9Sj3jUs13l9c';
         
         function getCurrentUser() { if (window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user; try { const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash; const search = window.location.search.startsWith('?') ? window.location.search.slice(1) : window.location.search; const full = `${hash}&${search}`; const params = new URLSearchParams(full); const tgData = params.get('tgWebAppData'); if (tgData) { const dataParams = new URLSearchParams(decodeURIComponent(tgData)); const userJSON = dataParams.get('user'); if (userJSON) return JSON.parse(decodeURIComponent(userJSON)); } } catch (e) { console.warn('User parse error:', e); } return { id: Math.floor(Math.random() * 1000000), username: 'Guest' }; }
         const user = getCurrentUser();
@@ -461,23 +443,31 @@
         let currentWins = 0; window.roomExpiry = {};
         window._lastStatsUpdate = 0;
 
-        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ db с добавлением заголовка Authorization для всех запросов
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
             const headers = { 
-                'apikey': SUPABASE_KEY, 
-                'Authorization': `Bearer ${SUPABASE_KEY}`, 
-                'Content-Type': 'application/json', 
-                'Prefer': method === 'DELETE' ? 'return=minimal' : 'return=representation' 
+                'apikey': SUPABASE_ANON_KEY, 
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 
+                'Content-Type': 'application/json'
             }; 
-            const res = await fetch(url, { method, headers, body: payload ? JSON.stringify(payload) : null }); 
-            if (!res.ok) { 
-                const errText = await res.text(); 
-                console.error(`[DB ERROR] ${res.status}:`, errText); 
-                throw new Error(`${res.status} ${errText}`); 
+            if (method === 'POST') headers['Prefer'] = 'return=representation';
+            else if (method === 'DELETE') headers['Prefer'] = 'return=minimal';
+            else if (method === 'PATCH') headers['Prefer'] = 'return=representation';
+            
+            try {
+                const res = await fetch(url, { method, headers, body: payload ? JSON.stringify(payload) : null }); 
+                if (!res.ok) { 
+                    const errText = await res.text(); 
+                    console.error(`[DB ERROR] ${res.status}:`, errText); 
+                    throw new Error(`${res.status} ${errText}`); 
+                }
+                if (method === 'DELETE') return true;
+                const data = await res.json(); 
+                return single && Array.isArray(data) ? data[0] : data;
+            } catch (error) {
+                console.error(`[DB ERROR] ${method} ${table}:`, error);
+                throw error;
             }
-            const data = await res.json(); 
-            return single && Array.isArray(data) ? data[0] : data; 
         }
 
         const tg = window.Telegram?.WebApp; if (tg) { tg.ready?.(); tg.expand?.(); }
@@ -783,35 +773,28 @@
             catch(e) { alert(t('moveError') + e.message); document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); } 
         }
 
-        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ИСТОРИИ ИГР - теперь с правильными заголовками
         async function saveGameHistory(resultStr, playerMove) {
             if (!currentRoom) return;
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
             
+            const historyData = {
+                player_id: MY_ID,
+                opponent_name: opponentName || 'unknown',
+                stake: currentRoom.stake,
+                player_move: playerMove,
+                result: resultStr,
+                played_at: new Date().toISOString()
+            };
+            
+            console.log('📝 Сохранение истории игры:', historyData);
+            
             try {
-                console.log('📝 Saving game history:', {
-                    player_id: MY_ID,
-                    opponent_name: opponentName,
-                    stake: currentRoom.stake,
-                    player_move: playerMove,
-                    result: resultStr
-                });
-                
-                const result = await db('game_history', 'POST', [{
-                    player_id: MY_ID,
-                    opponent_name: opponentName || '???',
-                    stake: currentRoom.stake,
-                    player_move: playerMove,
-                    result: resultStr,
-                    played_at: new Date().toISOString()
-                }]);
-                
-                console.log('✅ Game history saved successfully:', result);
+                const result = await db('game_history', 'POST', [historyData]);
+                console.log('✅ История сохранена успешно:', result);
                 return result;
             } catch (e) {
-                console.error('❌ Failed to save game history:', e);
-                // Не показываем ошибку пользователю, чтобы не прерывать игру
+                console.error('❌ Ошибка сохранения истории:', e);
                 return null;
             }
         }
@@ -836,7 +819,6 @@
             resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`; 
             if (isWin) createConfetti(); 
             
-            // Сохраняем результат в историю
             let resultForHistory = 'draw';
             if (result.winnerId) {
                 resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
@@ -1033,10 +1015,15 @@
                 el.style.display = creatorText.includes(query) ? 'flex' : 'none'; 
             }); 
         }
+        
         window.addEventListener('load', () => { 
             const savedSkin = localStorage.getItem('echidna_selected_skin'); 
             if (savedSkin && SKINS.find(s => s.id === savedSkin)) currentSkin = savedSkin; 
-            if (window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } 
+            if (window.Telegram?.WebApp) { 
+                Telegram.WebApp.expand(); 
+                Telegram.WebApp.setHeaderColor('#0a0a1a'); 
+                Telegram.WebApp.setBackgroundColor('#0a0a1a'); 
+            } 
             loadRooms();
         });
     </script>
