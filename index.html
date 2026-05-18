@@ -57,34 +57,10 @@
         .stake-win { color: var(--success); font-size: 16px; }
         
         .choices { display: flex; justify-content: space-between; gap: 12px; margin: 20px 0; width: 100%; }
-        .choice-btn { 
-            flex: 1; 
-            height: 150px; 
-            border: 2px solid var(--border); 
-            border-radius: 20px; 
-            background: var(--card); 
-            cursor: pointer; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 10px; 
-            transition: all 0.2s; 
-        }
+        .choice-btn { flex: 1; height: 150px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; transition: all 0.2s; }
         .choice-btn:active:not(:disabled) { transform: scale(0.96); }
-        .choice-btn img { 
-            width: 85px;  
-            height: 85px; 
-            object-fit: contain; 
-            margin-bottom: 10px; 
-        }
-        .choice-btn span { 
-            font-size: 13px; 
-            color: var(--gold); 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-        }
+        .choice-btn img { width: 85px; height: 85px; object-fit: contain; margin-bottom: 10px; }
+        .choice-btn span { font-size: 13px; color: var(--gold); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
         
         .status-box { background: var(--card); border-radius: 14px; padding: 16px 16px 24px; text-align: center; margin: 15px 0; border: 1px solid var(--border); min-height: 50px; font-weight: 600; transition: all 0.3s; position: relative; }
@@ -101,7 +77,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--card); border-top: 2px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 10000; padding: 0 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.3); width: 100%; max-width: 100%; margin: 0; }
-        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--sec); font-size: 11px; cursor: pointer; padding: 5px 0; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--sec); font-size: 10px; cursor: pointer; padding: 5px 0; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn svg { width: 28px; height: 28px; }
         
@@ -175,7 +151,6 @@
         .reveal-card-front { background: var(--card); }
         .reveal-card-front .card-icon { font-size: 40px; }
         .reveal-card-back { background: linear-gradient(135deg, var(--primary), #8b5cf6); transform: rotateY(180deg); border-color: var(--primary); }
-        /* ✅ УВЕЛИЧЕННЫЕ КАРТИНКИ И ТЕКСТ В КАРТОЧКАХ */
         .reveal-card-back img { width: 80px; height: 80px; object-fit: contain; }
         .reveal-card-back .move-name { font-size: 14px; color: #fff; margin-top: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .reveal-vs { font-size: 24px; font-weight: 700; color: var(--error); animation: pulse 1s infinite; }
@@ -190,6 +165,37 @@
         @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
         .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; }
         .search-input:focus { border-color: var(--primary); }
+        
+        /* ✅ НОВЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ СТАТИСТИКИ */
+        .stats-header { text-align: center; margin-bottom: 20px; }
+        .stats-header h2 { font-size: 22px; margin-bottom: 5px; }
+        .stats-header .subtitle { color: var(--sec); font-size: 13px; }
+        
+        /* Карточки общей статистики */
+        .stats-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); border-radius: 16px; padding: 14px 10px; text-align: center; border: 1px solid var(--border); }
+        .stat-card .stat-icon { font-size: 28px; margin-bottom: 6px; }
+        .stat-card .stat-value { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .stat-card .stat-label { font-size: 10px; color: var(--sec); text-transform: uppercase; margin-top: 4px; }
+        .stat-card .stat-sub { font-size: 11px; color: var(--gold); margin-top: 4px; font-weight: 600; }
+        
+        /* Таблица игр */
+        .games-table { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+        .games-table-header { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; background: rgba(99,102,241,0.1); font-size: 11px; color: var(--sec); text-transform: uppercase; font-weight: 600; }
+        .game-row { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; border-top: 1px solid var(--border); font-size: 12px; align-items: center; }
+        .game-row:last-child { border-bottom: none; }
+        .game-opponent { color: var(--text); font-weight: 600; }
+        .game-stake { color: var(--gold); }
+        .game-result { font-weight: 600; }
+        .game-result.win { color: var(--success); }
+        .game-result.lose { color: var(--error); }
+        .game-result.draw { color: var(--gold); }
+        .game-move { font-size: 18px; }
+        .games-empty { text-align: center; padding: 30px; color: var(--sec); }
+        .games-empty .empty-icon { font-size: 40px; margin-bottom: 10px; }
+        
+        .no-stats-msg { text-align: center; padding: 40px 20px; color: var(--sec); }
+        .no-stats-msg .icon { font-size: 50px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -236,6 +242,48 @@
             </div>
             <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
         </div>
+        
+        <!-- ✅ НОВЫЙ ЭКРАН СТАТИСТИКИ -->
+        <div id="statsScreen" class="hidden">
+            <div class="stats-header">
+                <h2 data-i18n="statsTitle">📊 Статистика</h2>
+                <div class="subtitle" data-i18n="statsSubtitle">Твоя игровая история</div>
+            </div>
+            
+            <!-- Карточки общей статистики -->
+            <div class="stats-cards" id="statsCards">
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value" id="statsWinRate">0%</div>
+                    <div class="stat-label" data-i18n="winRate">Побед</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✊</div>
+                    <div class="stat-value" id="statsFavMove">-</div>
+                    <div class="stat-label" data-i18n="favMove">Любимый ход</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value" id="statsTotalWon">0</div>
+                    <div class="stat-label" data-i18n="totalWon">Выиграно TON</div>
+                </div>
+            </div>
+            
+            <!-- Таблица последних игр -->
+            <div class="section-title" data-i18n="recentGames">🎮 Последние игры</div>
+            <div class="games-table" id="gamesTable">
+                <div class="games-table-header">
+                    <span data-i18n="opponent">Соперник</span>
+                    <span data-i18n="stake">Ставка</span>
+                    <span data-i18n="result">Результат</span>
+                    <span data-i18n="move">Ход</span>
+                </div>
+                <div id="gamesTableBody">
+                    <div class="loader" style="padding: 20px;"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+        
         <div id="gameScreen" class="hidden">
             <div class="header"><h2 data-i18n="battle">⚔️ Битва!</h2></div>
             <div class="game-players">
@@ -327,14 +375,74 @@
     <div id="confettiContainer" class="confetti-container hidden"></div>
     <div class="bottom-nav">
         <button class="nav-btn active" onclick="showScreen('lobby')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span data-i18n="navLobby">Лобби</span></button>
+        <button class="nav-btn" onclick="showScreen('stats')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span data-i18n="navStats">Статистика</span></button>
         <button class="nav-btn" onclick="showScreen('skins')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg><span data-i18n="navSkins">Скины</span></button>
         <button class="nav-btn" onclick="showScreen('leaderboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10c1 0 2 .5 2 2v3c0 1-1 2-2 2H7c-1 0-2-1-2-2V6c0-1.5 1-2 2-2zM6 11h12"/></svg><span data-i18n="navLeaderboard">Рейтинг</span></button>
     </div>
 
     <script>
         const i18n = {
-            ru: { splashTitle: 'Echidna Naklz', rulesTitle: '📜 Правила игры', rulesList: '<li>Создай комнату или присоединись к существующей</li><li>Выбери ставку от 0.1 до 99 TON</li><li>Выбери один из трёх ходов: Камень, Ножницы или Бумага</li><li>Камень побеждает Ножницы, Ножницы режут Бумагу, Бумага накрывает Камень</li><li>Победитель забирает банк (минус 5% комиссия)</li>', playBtn: '🎮 Играть', title: 'Echidna Naklz', subtitle: 'Камень • Ножницы • Бумага', wins: 'Побед', games: 'Игр', level: 'Уровень', createRoom: '💎 Создать комнату', refresh: '🔄 Обновить', myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь', rock: 'Камень', scissors: 'Ножницы', paper: 'Бумага', toLobby: '🏠 В лобби', skins: '🎨 Скины', skinsSubtitle: 'Нажми на скин для подробной информации', leaderboard: '🏆 Рейтинг', features: '✨ Особенности:', selectStake: '💎 Выбери ставку', orEnter: 'Или введи:', createRoomBtn: 'Создать комнату', cancel: 'Отмена', navLobby: 'Лобби', navSkins: 'Скины', navLeaderboard: 'Рейтинг', waitingForOpponent: '⏳ Ждём соперника...', gameNotActive: '⚠️ Игра не активна, второй игрок ещё не присоединился', yourMoveRecorded: '✅ Ваш ход записан. Ждём соперника...', opponentThinking: '⏳ Соперник думает...', yourTurn: '👉 Ваш ход!', summarizing: '⏳ Подведение итогов...', gameOver: '🏁 Игра окончена', victory: '🏆 Победа!', defeat: '😢 Поражение', draw: '🤝 Ничья!', timeoutWin: '🏆 Соперник не успел! Ты победил!', timeoutLose: '😢 Время вышло! Ты проиграл.', leftGame: '😢 Вы покинули игру', roomNotFound: '❌ Ошибка: комната не найдена', minStake: 'Мин: 0.1 TON', maxStake: 'Макс: 99 TON', enterValid: 'Введи от 0.1 до 99', createError: 'Ошибка создания: ', userNotFound: '⚠️ Не удалось определить пользователя.', noRooms: 'Нет комнат', roomLocked: 'Комната уже занята', joinError: 'Ошибка: ', moveError: 'Ошибка хода: ', cancelError: 'Ошибка: ', onlyCreator: '⛔ Только создатель может отменить!', requires: 'Требуется: ', unlocked: '✅ Разблокировано', needMore: '🔒 Нужно ещё ', equip: 'Надеть', locked: '🔒', checkmark: '✓', waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', drawBadge: '🤝 Ничья', return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти', revealTitle: 'Раскрытие ходов', skinDefaultName: 'Обычная', skinDefaultDesc: 'Стартовая ехидна.', skinDefaultFeatures: ['Базовый скин', 'Для новичков'], skinIceName: 'Ледяная', skinIceDesc: 'Холодный расчёт.', skinIceFeatures: ['Ледяные иглы', 'Стратег'], skinFireName: 'Огненная', skinFireDesc: 'Огненный темперамент.', skinFireFeatures: ['Агрессивный стиль', 'Быстрая реакция'], skinShadowName: 'Теневая', skinShadowDesc: 'Сила тени.', skinShadowFeatures: ['Мистика', 'Непредсказуемость'], skinGoldenName: 'Золотая', skinGoldenDesc: 'Легенда.', skinGoldenFeatures: ['Корона чемпиона', '300+ побед'] },
-            en: { splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules', rulesList: '<li>Create a room or join an existing one</li><li>Choose a stake from 0.1 to 99 TON</li><li>Choose one of three moves: Rock, Scissors or Paper</li><li>Rock beats Scissors, Scissors cuts Paper, Paper covers Rock</li><li>Winner takes the pot (minus 5% commission)</li>', playBtn: '🎮 Play', title: 'Echidna Naklz', subtitle: 'Rock • Scissors • Paper', wins: 'Wins', games: 'Games', level: 'Level', createRoom: '💎 Create Room', refresh: '🔄 Refresh', myRooms: 'My Rooms', availableRooms: 'Available Rooms', battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get', rock: 'Rock', scissors: 'Scissors', paper: 'Paper', toLobby: '🏠 To Lobby', skins: '🎨 Skins', skinsSubtitle: 'Click on a skin for details', leaderboard: '🏆 Leaderboard', features: '✨ Features:', selectStake: '💎 Select Stake', orEnter: 'Or enter:', createRoomBtn: 'Create Room', cancel: 'Cancel', navLobby: 'Lobby', navSkins: 'Skins', navLeaderboard: 'Leaderboard', waitingForOpponent: '⏳ Waiting for opponent...', gameNotActive: '⚠️ Game not active, second player has not joined yet', yourMoveRecorded: '✅ Your move recorded. Waiting for opponent...', opponentThinking: '⏳ Opponent is thinking...', yourTurn: '👉 Your turn!', summarizing: '⏳ Summarizing...', gameOver: '🏁 Game Over', victory: '🏆 Victory!', defeat: '😢 Defeat', draw: '🤝 Draw!', timeoutWin: '🏆 Opponent timed out! You win!', timeoutLose: '😢 Time is up! You lost.', leftGame: '😢 You left the game', roomNotFound: '❌ Error: room not found', minStake: 'Min: 0.1 TON', maxStake: 'Max: 99 TON', enterValid: 'Enter from 0.1 to 99', createError: 'Create error: ', userNotFound: '⚠️ Could not identify user.', noRooms: 'No rooms', roomLocked: 'Room is already occupied', joinError: 'Error: ', moveError: 'Move error: ', cancelError: 'Error: ', onlyCreator: '⛔ Only creator can cancel!', requires: 'Requires: ', unlocked: '✅ Unlocked', needMore: '🔒 Need ', equip: 'Equip', locked: '🔒', checkmark: '✓', waiting: 'WAITING', game: 'GAME', victoryBadge: '✅ Victory', defeatBadge: '❌ Defeat', drawBadge: '🤝 Draw', return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join', revealTitle: 'Move Reveal', skinDefaultName: 'Default', skinDefaultDesc: 'Starting echidna.', skinDefaultFeatures: ['Basic skin', 'For beginners'], skinIceName: 'Ice', skinIceDesc: 'Cold calculation.', skinIceFeatures: ['Ice spikes', 'Strategist'], skinFireName: 'Fire', skinFireDesc: 'Fiery temperament.', skinFireFeatures: ['Aggressive style', 'Quick reaction'], skinShadowName: 'Shadow', skinShadowDesc: 'Power of shadow.', skinShadowFeatures: ['Mysticism', 'Unpredictability'], skinGoldenName: 'Golden', skinGoldenDesc: 'Legend.', skinGoldenFeatures: ['Champion crown', '300+ wins'] }
+            ru: { 
+                splashTitle: 'Echidna Naklz', rulesTitle: '📜 Правила игры', 
+                rulesList: '<li>Создай комнату или присоединись к существующей</li><li>Выбери ставку от 0.1 до 99 TON</li><li>Выбери один из трёх ходов: Камень, Ножницы или Бумага</li><li>Камень побеждает Ножницы, Ножницы режут Бумагу, Бумага накрывает Камень</li><li>Победитель забирает банк (минус 5% комиссия)</li>', 
+                playBtn: '🎮 Играть', title: 'Echidna Naklz', subtitle: 'Камень • Ножницы • Бумага', 
+                wins: 'Побед', games: 'Игр', level: 'Уровень', 
+                createRoom: '💎 Создать комнату', refresh: '🔄 Обновить', myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', 
+                battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь', 
+                rock: 'Камень', scissors: 'Ножницы', paper: 'Бумага', 
+                toLobby: '🏠 В лобби', skins: '🎨 Скины', skinsSubtitle: 'Нажми на скин для подробной информации', 
+                leaderboard: '🏆 Рейтинг', features: '✨ Особенности:', 
+                selectStake: '💎 Выбери ставку', orEnter: 'Или введи:', createRoomBtn: 'Создать комнату', cancel: 'Отмена', 
+                navLobby: 'Лобби', navStats: 'Статистика', navSkins: 'Скины', navLeaderboard: 'Рейтинг', 
+                waitingForOpponent: '⏳ Ждём соперника...', gameNotActive: '⚠️ Игра не активна', yourMoveRecorded: '✅ Ход записан', 
+                opponentThinking: '⏳ Соперник думает...', yourTurn: '👉 Ваш ход!', summarizing: '⏳ Итоги...', 
+                gameOver: '🏁 Игра окончена', victory: '🏆 Победа!', defeat: '😢 Поражение', draw: '🤝 Ничья!', 
+                timeoutWin: '🏆 Соперник не успел!', timeoutLose: '😢 Время вышло!', leftGame: '😢 Вы покинули игру', 
+                roomNotFound: '❌ Комната не найдена', minStake: 'Мин: 0.1 TON', maxStake: 'Макс: 99 TON', 
+                enterValid: 'Введи от 0.1 до 99', createError: 'Ошибка создания: ', userNotFound: '⚠️ Пользователь не найден', 
+                noRooms: 'Нет комнат', roomLocked: 'Комната занята', joinError: 'Ошибка: ', moveError: 'Ошибка хода: ', 
+                cancelError: 'Ошибка: ', onlyCreator: '⛔ Только создатель!', requires: 'Требуется: ', 
+                unlocked: '✅ Разблокировано', needMore: '🔒 Нужно ещё ', equip: 'Надеть', locked: '🔒', 
+                checkmark: '✓', waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', 
+                drawBadge: '🤝 Ничья', return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти', 
+                revealTitle: 'Раскрытие ходов',
+                // Статистика
+                statsTitle: '📊 Статистика', statsSubtitle: 'Твоя игровая история',
+                winRate: 'Побед', favMove: 'Любимый ход', totalWon: 'Выиграно TON',
+                recentGames: '🎮 Последние игры', opponent: 'Соперник', result: 'Результат', move: 'Ход',
+                noGames: 'Пока нет игр', winText: 'Победа', loseText: 'Поражение', drawText: 'Ничья',
+                rockEmoji: '🪨', scissorsEmoji: '✂️', paperEmoji: '📄'
+            },
+            en: { 
+                splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules', 
+                rulesList: '<li>Create a room or join an existing one</li><li>Choose a stake from 0.1 to 99 TON</li><li>Choose one of three moves: Rock, Scissors or Paper</li><li>Rock beats Scissors, Scissors cuts Paper, Paper covers Rock</li><li>Winner takes the pot (minus 5% commission)</li>', 
+                playBtn: '🎮 Play', title: 'Echidna Naklz', subtitle: 'Rock • Scissors • Paper', 
+                wins: 'Wins', games: 'Games', level: 'Level', 
+                createRoom: '💎 Create Room', refresh: '🔄 Refresh', myRooms: 'My Rooms', availableRooms: 'Available Rooms', 
+                battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get', 
+                rock: 'Rock', scissors: 'Scissors', paper: 'Paper', 
+                toLobby: '🏠 To Lobby', skins: '🎨 Skins', skinsSubtitle: 'Click on a skin for details', 
+                leaderboard: '🏆 Leaderboard', features: '✨ Features:', 
+                selectStake: '💎 Select Stake', orEnter: 'Or enter:', createRoomBtn: 'Create Room', cancel: 'Cancel', 
+                navLobby: 'Lobby', navStats: 'Stats', navSkins: 'Skins', navLeaderboard: 'Leaderboard', 
+                waitingForOpponent: '⏳ Waiting...', gameNotActive: '⚠️ Game not active', yourMoveRecorded: '✅ Move recorded', 
+                opponentThinking: '⏳ Opponent thinking...', yourTurn: '👉 Your turn!', summarizing: '⏳ Results...', 
+                gameOver: '🏁 Game Over', victory: '🏆 Victory!', defeat: '😢 Defeat', draw: '🤝 Draw!', 
+                timeoutWin: '🏆 Opponent timed out!', timeoutLose: '😢 Time is up!', leftGame: '😢 You left', 
+                roomNotFound: '❌ Room not found', minStake: 'Min: 0.1 TON', maxStake: 'Max: 99 TON', 
+                enterValid: 'Enter from 0.1 to 99', createError: 'Create error: ', userNotFound: '⚠️ User not found', 
+                noRooms: 'No rooms', roomLocked: 'Room occupied', joinError: 'Error: ', moveError: 'Move error: ', 
+                cancelError: 'Error: ', onlyCreator: '⛔ Creator only!', requires: 'Requires: ', 
+                unlocked: '✅ Unlocked', needMore: '🔒 Need more ', equip: 'Equip', locked: '🔒', 
+                checkmark: '✓', waiting: 'WAITING', game: 'GAME', victoryBadge: '✅ Victory', defeatBadge: '❌ Defeat', 
+                drawBadge: '🤝 Draw', return: '🔄 Return', viewResults: '👁 Results', watch: '👁 Watch', join: 'Join', 
+                revealTitle: 'Move Reveal',
+                statsTitle: '📊 Statistics', statsSubtitle: 'Your game history',
+                winRate: 'Win Rate', favMove: 'Favorite Move', totalWon: 'Won TON',
+                recentGames: '🎮 Recent Games', opponent: 'Opponent', result: 'Result', move: 'Move',
+                noGames: 'No games yet', winText: 'Win', loseText: 'Lose', drawText: 'Draw',
+                rockEmoji: '🪨', scissorsEmoji: '✂️', paperEmoji: '📄'
+            }
         };
 
         const moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
@@ -373,17 +481,25 @@
         function renderAvatar(elementId, photoUrl, username) { const el = document.getElementById(elementId); if (!el) return; el.innerHTML = photoUrl ? `<img src="${photoUrl}" alt="${username || 'User'}" onerror="this.parentElement.innerHTML='${username ? username.charAt(0).toUpperCase() : '?'}'">` : (username ? username.charAt(0).toUpperCase() : '?'); }
         
         function showScreen(name) { 
-            ['lobbyScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+            ['lobbyScreen', 'statsScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
             const target = document.getElementById(name + 'Screen'); if(target) target.classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach((b, i) => b?.classList?.toggle('active', ['lobby', 'skins', 'leaderboard'][i] === name));
+            document.querySelectorAll('.nav-btn').forEach((b, i) => b?.classList?.toggle('active', ['lobby', 'stats', 'skins', 'leaderboard'][i] === name));
             if (name === 'lobby') { 
                 currentRoom = null; isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 lobbyRefreshInterval = setInterval(loadRooms, 3000);
                 loadRooms(); updateStats(); 
-            } else { if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } }
-            if (name === 'skins') renderSkins(); if (name === 'leaderboard') loadLeaderboard(); 
+            } else if (name === 'stats') {
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+                loadStats();
+            } else if (name === 'leaderboard') {
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+                loadLeaderboard();
+            } else {
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+            }
+            if (name === 'skins') renderSkins();
         }
 
         function forceExitToLobby() { isGameFinished = true; currentRoom = null; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (window._timerInterval) clearInterval(window._timerInterval); window._timerRunning = false; document.getElementById('revealOverlay')?.classList.add('hidden'); document.getElementById('confettiContainer')?.classList.add('hidden'); showScreen('lobby'); }
@@ -532,18 +648,14 @@
             } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
         }
 
-        // ✅ ИСПРАВЛЕННАЯ И УЛУЧШЕННАЯ ФУНКЦИЯ СТАТИСТИКИ
         async function renderPlayerStats() {
             if (!currentRoom || !currentRoom.id) return;
-            
             try {
                 const roomData = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`, true);
                 if (!roomData) return;
-
                 const creatorId = roomData.creator_tg_id;
                 const opponentId = roomData.opponent_tg_id;
                 const isCreator = String(creatorId) === String(MY_ID);
-
                 if (isCreator) {
                     renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?');
                     if (opponentId) renderAvatar('opponentAvatar', null, roomData.opponent_username || '?');
@@ -551,37 +663,29 @@
                     renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username || '?');
                     if (creatorId) renderAvatar('playerAvatar', null, roomData.creator_username || '?');
                 }
-
                 if (!creatorId || !opponentId) {
                     document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
                     document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span>✅ 0</span><br><span>❌ 0</span>';
                     return;
                 }
-
                 const now = Date.now();
                 if (now - window._lastStatsUpdate < 2000) return;
                 window._lastStatsUpdate = now;
-
                 const results = await Promise.allSettled([
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${String(creatorId)}`, false),
                     db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${String(opponentId)}`, false)
                 ]);
-
                 const cData = (results[0].status === 'fulfilled' && results[0].value?.[0]) ? results[0].value[0] : { wins: 0, losses: 0 };
                 const oData = (results[1].status === 'fulfilled' && results[1].value?.[0]) ? results[1].value[0] : { wins: 0, losses: 0 };
-
                 const myStatsId = isCreator ? 'playerStats' : 'opponentStats';
                 const oppStatsId = isCreator ? 'opponentStats' : 'playerStats';
-
                 document.getElementById(myStatsId).innerHTML = `<span style="color:var(--success)">✅ ${cData.wins || 0}</span><br><span style="color:var(--error)">❌ ${cData.losses || 0}</span>`;
                 document.getElementById(oppStatsId).innerHTML = `<span style="color:var(--success)">✅ ${oData.wins || 0}</span><br><span style="color:var(--error)">❌ ${oData.losses || 0}</span>`;
-            } catch (e) {
-                console.warn('Stats load error:', e);
-            }
+            } catch (e) { console.warn('Stats load error:', e); }
         }
         
         function showGameScreen() { 
-            ['lobbyScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden')); 
+            ['lobbyScreen','statsScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden')); 
             document.getElementById('gameScreen')?.classList.remove('hidden'); 
             if (!currentRoom) { const sm = document.getElementById('statusMessage'); if(sm) sm.textContent = t('roomNotFound'); return; } 
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID); 
@@ -794,6 +898,80 @@
                     c.appendChild(note); 
                 } 
             } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
+        }
+
+        // ✅ ФУНКЦИЯ ЗАГРУЗКИ СТАТИСТИКИ
+        async function loadStats() {
+            if (!MY_ID || MY_ID === 999999) return;
+            
+            const tableBody = document.getElementById('gamesTableBody');
+            tableBody.innerHTML = '<div class="loader" style="padding: 20px;"><div class="spinner"></div></div>';
+            
+            try {
+                // Загружаем последние 20 игр пользователя
+                const games = await db('game_history', 'GET', null, `?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`, false);
+                const gamesList = Array.isArray(games) ? games : [];
+                
+                if (gamesList.length === 0) {
+                    tableBody.innerHTML = `<div class="games-empty"><div class="empty-icon">🎮</div><div>${t('noGames')}</div></div>`;
+                    document.getElementById('statsWinRate').textContent = '0%';
+                    document.getElementById('statsFavMove').textContent = '-';
+                    document.getElementById('statsTotalWon').textContent = '0';
+                    return;
+                }
+                
+                // Подсчитываем статистику
+                let wins = 0, losses = 0, draws = 0;
+                let totalWon = 0;
+                const moveCounts = { rock: 0, scissors: 0, paper: 0 };
+                
+                gamesList.forEach(game => {
+                    if (game.result === 'win') { wins++; totalWon += (game.stake || 0) * 0.95; }
+                    else if (game.result === 'lose') losses++;
+                    else draws++;
+                    
+                    if (game.player_move && moveCounts[game.player_move] !== undefined) {
+                        moveCounts[game.player_move]++;
+                    }
+                });
+                
+                const totalGames = wins + losses + draws;
+                const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+                
+                // Определяем любимый ход
+                const maxMoves = Object.entries(moveCounts).sort((a, b) => b[1] - a[1]);
+                const favMove = maxMoves[0] && maxMoves[0][1] > 0 ? maxMoves[0][0] : null;
+                const moveEmojis = { rock: t('rockEmoji'), scissors: t('scissorsEmoji'), paper: t('paperEmoji') };
+                const moveNames = { rock: t('rock'), scissors: t('scissors'), paper: t('paper') };
+                
+                document.getElementById('statsWinRate').textContent = winRate + '%';
+                document.getElementById('statsFavMove').textContent = favMove ? `${moveEmojis[favMove]} ${moveNames[favMove]}` : '-';
+                document.getElementById('statsTotalWon').textContent = totalWon.toFixed(2);
+                
+                // Рендерим таблицу игр
+                let rowsHtml = '';
+                gamesList.slice(0, 20).forEach(game => {
+                    const opponentName = game.opponent_name || game.opponent_username || '???';
+                    const resultClass = game.result === 'win' ? 'win' : game.result === 'lose' ? 'lose' : 'draw';
+                    const resultText = game.result === 'win' ? t('winText') : game.result === 'lose' ? t('loseText') : t('drawText');
+                    const moveEmoji = game.player_move ? (moveEmojis[game.player_move] || '') : '';
+                    
+                    rowsHtml += `
+                        <div class="game-row">
+                            <span class="game-opponent">${opponentName}</span>
+                            <span class="game-stake">${game.stake || 0} TON</span>
+                            <span class="game-result ${resultClass}">${resultText}</span>
+                            <span class="game-move">${moveEmoji}</span>
+                        </div>
+                    `;
+                });
+                
+                tableBody.innerHTML = rowsHtml;
+                
+            } catch(e) {
+                console.error('Load stats error:', e);
+                tableBody.innerHTML = `<div class="games-empty"><div class="empty-icon">⚠️</div><div>Ошибка загрузки</div></div>`;
+            }
         }
         
         function filterRooms() { 
