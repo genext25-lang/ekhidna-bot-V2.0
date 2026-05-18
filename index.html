@@ -166,12 +166,10 @@
         .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; }
         .search-input:focus { border-color: var(--primary); }
         
-        /* ✅ НОВЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ СТАТИСТИКИ */
         .stats-header { text-align: center; margin-bottom: 20px; }
         .stats-header h2 { font-size: 22px; margin-bottom: 5px; }
         .stats-header .subtitle { color: var(--sec); font-size: 13px; }
         
-        /* Карточки общей статистики */
         .stats-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .stat-card { background: var(--card); border-radius: 16px; padding: 14px 10px; text-align: center; border: 1px solid var(--border); }
         .stat-card .stat-icon { font-size: 28px; margin-bottom: 6px; }
@@ -179,7 +177,6 @@
         .stat-card .stat-label { font-size: 10px; color: var(--sec); text-transform: uppercase; margin-top: 4px; }
         .stat-card .stat-sub { font-size: 11px; color: var(--gold); margin-top: 4px; font-weight: 600; }
         
-        /* Таблица игр */
         .games-table { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
         .games-table-header { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; background: rgba(99,102,241,0.1); font-size: 11px; color: var(--sec); text-transform: uppercase; font-weight: 600; }
         .game-row { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; border-top: 1px solid var(--border); font-size: 12px; align-items: center; }
@@ -243,14 +240,12 @@
             <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
         </div>
         
-        <!-- ✅ ЭКРАН СТАТИСТИКИ -->
         <div id="statsScreen" class="hidden">
             <div class="stats-header">
                 <h2 data-i18n="statsTitle">📊 Статистика</h2>
                 <div class="subtitle" data-i18n="statsSubtitle">Твоя игровая история</div>
             </div>
             
-            <!-- Карточки общей статистики -->
             <div class="stats-cards" id="statsCards">
                 <div class="stat-card">
                     <div class="stat-icon">🏆</div>
@@ -269,7 +264,6 @@
                 </div>
             </div>
             
-            <!-- Таблица последних игр -->
             <div class="section-title" data-i18n="recentGames">🎮 Последние игры</div>
             <div class="games-table" id="gamesTable">
                 <div class="games-table-header">
@@ -467,12 +461,23 @@
         let currentWins = 0; window.roomExpiry = {};
         window._lastStatsUpdate = 0;
 
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ db с добавлением заголовка Authorization для всех запросов
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
-            const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': method === 'DELETE' ? 'return=minimal' : 'return=representation' }; 
+            const headers = { 
+                'apikey': SUPABASE_KEY, 
+                'Authorization': `Bearer ${SUPABASE_KEY}`, 
+                'Content-Type': 'application/json', 
+                'Prefer': method === 'DELETE' ? 'return=minimal' : 'return=representation' 
+            }; 
             const res = await fetch(url, { method, headers, body: payload ? JSON.stringify(payload) : null }); 
-            if (!res.ok) { const errText = await res.text(); console.error(`[DB ERROR] ${res.status}:`, errText); throw new Error(`${res.status} ${errText}`); }
-            const data = await res.json(); return single && Array.isArray(data) ? data[0] : data; 
+            if (!res.ok) { 
+                const errText = await res.text(); 
+                console.error(`[DB ERROR] ${res.status}:`, errText); 
+                throw new Error(`${res.status} ${errText}`); 
+            }
+            const data = await res.json(); 
+            return single && Array.isArray(data) ? data[0] : data; 
         }
 
         const tg = window.Telegram?.WebApp; if (tg) { tg.ready?.(); tg.expand?.(); }
@@ -778,22 +783,36 @@
             catch(e) { alert(t('moveError') + e.message); document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); } 
         }
 
-        // ✅ ФУНКЦИЯ СОХРАНЕНИЯ ИСТОРИИ ИГР
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ СОХРАНЕНИЯ ИСТОРИИ ИГР - теперь с правильными заголовками
         async function saveGameHistory(resultStr, playerMove) {
             if (!currentRoom) return;
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
             
             try {
-                await db('game_history', 'POST', [{
+                console.log('📝 Saving game history:', {
+                    player_id: MY_ID,
+                    opponent_name: opponentName,
+                    stake: currentRoom.stake,
+                    player_move: playerMove,
+                    result: resultStr
+                });
+                
+                const result = await db('game_history', 'POST', [{
                     player_id: MY_ID,
                     opponent_name: opponentName || '???',
                     stake: currentRoom.stake,
                     player_move: playerMove,
-                    result: resultStr
+                    result: resultStr,
+                    played_at: new Date().toISOString()
                 }]);
+                
+                console.log('✅ Game history saved successfully:', result);
+                return result;
             } catch (e) {
-                console.error('Failed to save game history:', e);
+                console.error('❌ Failed to save game history:', e);
+                // Не показываем ошибку пользователю, чтобы не прерывать игру
+                return null;
             }
         }
         
@@ -817,12 +836,12 @@
             resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`; 
             if (isWin) createConfetti(); 
             
-            // ✅ Сохраняем результат в историю
+            // Сохраняем результат в историю
             let resultForHistory = 'draw';
             if (result.winnerId) {
                 resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
             }
-            saveGameHistory(resultForHistory, myMove);
+            await saveGameHistory(resultForHistory, myMove);
             
             let countdown = 3; const countdownEl = document.getElementById('revealCountdown'); countdownEl.textContent = countdown; 
             const countdownInterval = setInterval(() => { 
@@ -926,7 +945,6 @@
             } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
         }
 
-        // ✅ ФУНКЦИЯ ЗАГРУЗКИ СТАТИСТИКИ
         async function loadStats() {
             if (!MY_ID || MY_ID === 999999) return;
             
@@ -934,7 +952,6 @@
             tableBody.innerHTML = '<div class="loader" style="padding: 20px;"><div class="spinner"></div></div>';
             
             try {
-                // Загружаем последние 20 игр пользователя
                 const games = await db('game_history', 'GET', null, `?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`, false);
                 const gamesList = Array.isArray(games) ? games : [];
                 
@@ -946,7 +963,6 @@
                     return;
                 }
                 
-                // Подсчитываем статистику
                 let wins = 0, losses = 0, draws = 0;
                 let totalWon = 0;
                 const moveCounts = { rock: 0, scissors: 0, paper: 0 };
@@ -964,7 +980,6 @@
                 const totalGames = wins + losses + draws;
                 const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
                 
-                // Определяем любимый ход
                 const maxMoves = Object.entries(moveCounts).sort((a, b) => b[1] - a[1]);
                 const favMove = maxMoves[0] && maxMoves[0][1] > 0 ? maxMoves[0][0] : null;
                 const moveEmojis = { rock: t('rockEmoji'), scissors: t('scissorsEmoji'), paper: t('paperEmoji') };
@@ -974,7 +989,6 @@
                 document.getElementById('statsFavMove').textContent = favMove ? `${moveEmojis[favMove]} ${moveNames[favMove]}` : '-';
                 document.getElementById('statsTotalWon').textContent = totalWon.toFixed(2);
                 
-                // Рендерим таблицу игр
                 let rowsHtml = '';
                 gamesList.slice(0, 20).forEach(game => {
                     const opponentName = game.opponent_name || '???';
@@ -984,7 +998,7 @@
                     
                     rowsHtml += `
                         <div class="game-row">
-                            <span class="game-opponent">${opponentName}</span>
+                            <span class="game-opponent">${escapeHtml(opponentName)}</span>
                             <span class="game-stake">${game.stake || 0} TON</span>
                             <span class="game-result ${resultClass}">${resultText}</span>
                             <span class="game-move">${moveEmoji}</span>
@@ -998,6 +1012,16 @@
                 console.error('Load stats error:', e);
                 tableBody.innerHTML = `<div class="games-empty"><div class="empty-icon">⚠️</div><div>Ошибка загрузки</div></div>`;
             }
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
         
         function filterRooms() { 
