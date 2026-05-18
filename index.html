@@ -243,7 +243,7 @@
             <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
         </div>
         
-        <!-- ✅ НОВЫЙ ЭКРАН СТАТИСТИКИ -->
+        <!-- ✅ ЭКРАН СТАТИСТИКИ -->
         <div id="statsScreen" class="hidden">
             <div class="stats-header">
                 <h2 data-i18n="statsTitle">📊 Статистика</h2>
@@ -406,7 +406,6 @@
                 checkmark: '✓', waiting: 'ЖДЁТ', game: 'ИГРА', victoryBadge: '✅ Победа', defeatBadge: '❌ Поражение', 
                 drawBadge: '🤝 Ничья', return: '🔄 Вернуться', viewResults: '👁 Итоги', watch: '👁 Смотреть', join: 'Войти', 
                 revealTitle: 'Раскрытие ходов',
-                // Статистика
                 statsTitle: '📊 Статистика', statsSubtitle: 'Твоя игровая история',
                 winRate: 'Побед', favMove: 'Любимый ход', totalWon: 'Выиграно TON',
                 recentGames: '🎮 Последние игры', opponent: 'Соперник', result: 'Результат', move: 'Ход',
@@ -778,6 +777,25 @@
             try { await db('rooms','PATCH', {[col]: choice}, `?id=eq.${currentRoom.id}`); currentRoom[col] = choice; } 
             catch(e) { alert(t('moveError') + e.message); document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false); } 
         }
+
+        // ✅ ФУНКЦИЯ СОХРАНЕНИЯ ИСТОРИИ ИГР
+        async function saveGameHistory(resultStr, playerMove) {
+            if (!currentRoom) return;
+            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
+            const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
+            
+            try {
+                await db('game_history', 'POST', [{
+                    player_id: MY_ID,
+                    opponent_name: opponentName || '???',
+                    stake: currentRoom.stake,
+                    player_move: playerMove,
+                    result: resultStr
+                }]);
+            } catch (e) {
+                console.error('Failed to save game history:', e);
+            }
+        }
         
         async function showRevealAnimation(room) { 
             const overlay = document.getElementById('revealOverlay'), confetti = document.getElementById('confettiContainer'); 
@@ -798,6 +816,14 @@
             const isWin = msg.includes('Победа') || msg.includes('Victory'), isDraw = msg.includes('Ничья') || msg.includes('Draw'); 
             resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`; 
             if (isWin) createConfetti(); 
+            
+            // ✅ Сохраняем результат в историю
+            let resultForHistory = 'draw';
+            if (result.winnerId) {
+                resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
+            }
+            saveGameHistory(resultForHistory, myMove);
+            
             let countdown = 3; const countdownEl = document.getElementById('revealCountdown'); countdownEl.textContent = countdown; 
             const countdownInterval = setInterval(() => { 
                 countdown--; if (countdown > 0) countdownEl.textContent = countdown; 
@@ -951,7 +977,7 @@
                 // Рендерим таблицу игр
                 let rowsHtml = '';
                 gamesList.slice(0, 20).forEach(game => {
-                    const opponentName = game.opponent_name || game.opponent_username || '???';
+                    const opponentName = game.opponent_name || '???';
                     const resultClass = game.result === 'win' ? 'win' : game.result === 'lose' ? 'lose' : 'draw';
                     const resultText = game.result === 'win' ? t('winText') : game.result === 'lose' ? t('loseText') : t('drawText');
                     const moveEmoji = game.player_move ? (moveEmojis[game.player_move] || '') : '';
