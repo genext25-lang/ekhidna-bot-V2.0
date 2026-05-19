@@ -969,15 +969,21 @@
             document.getElementById('card1').classList.remove('flipped'); document.getElementById('card2').classList.remove('flipped'); 
             const resultEl = document.getElementById('revealResult'); resultEl.className = 'reveal-result'; resultEl.textContent = ''; 
             document.getElementById('revealCountdown').textContent = ''; 
+            
+            // ✅ СБРАСЫВАЕМ СТАРУЮ ЭМОЦИЮ ПРИ ОТКРЫТИИ (чтобы не мигало)
+            const emotionDiv = document.getElementById('revealEmotion');
+            const emotionImg = document.getElementById('emotionImg');
+            emotionDiv.classList.add('hidden');
+            emotionImg.src = '';
+            
             await sleep(500); document.getElementById('card1').classList.add('flipped'); await sleep(1000); 
             document.getElementById('card2').classList.add('flipped'); await sleep(800); 
+            
             const result = calculateWinner(room), msg = result.msg; 
             const isWin = msg.includes('Победа') || msg.includes('Victory'), isDraw = msg.includes('Ничья') || msg.includes('Draw'); 
             resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`; 
             
-            // ✅ ПОКАЗЫВАЕМ ЭМОЦИЮ ЕХИДНЫ
-            const emotionDiv = document.getElementById('revealEmotion');
-            const emotionImg = document.getElementById('emotionImg');
+            // ✅ ПОКАЗЫВАЕМ ЭМОЦИЮ ЕХИДНЫ ПОСЛЕ РАСКРЫТИЯ КАРТ
             emotionDiv.classList.remove('hidden');
             
             if (isWin) {
