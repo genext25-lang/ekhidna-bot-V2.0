@@ -138,14 +138,22 @@
         .reveal-players { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
         .reveal-player { display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .reveal-player-label { font-size: 14px; color: var(--sec); font-weight: 600; }
-        .reveal-card { width: 100px; height: 120px; perspective: 1000px; }
+        .reveal-card { 
+            width: 110px;   /* ✅ УВЕЛИЧЕНО: было 100px */
+            height: 130px;  /* ✅ УВЕЛИЧЕНО: было 120px */
+            perspective: 1000px; 
+        }
         .reveal-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; transform: rotateY(0deg); }
         .reveal-card-inner.flipped { transform: rotateY(180deg); }
         .reveal-card-front, .reveal-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); }
         .reveal-card-front { background: var(--card); }
         .reveal-card-front .card-icon { font-size: 40px; }
         .reveal-card-back { background: linear-gradient(135deg, var(--primary), #8b5cf6); transform: rotateY(180deg); border-color: var(--primary); }
-        .reveal-card-back img { width: 80px; height: 80px; object-fit: contain; }
+        .reveal-card-back img { 
+            width: 90px;    /* ✅ УВЕЛИЧЕНО: было 80px */
+            height: 90px;   /* ✅ УВЕЛИЧЕНО: было 80px */
+            object-fit: contain; 
+        }
         .reveal-card-back .move-name { font-size: 14px; color: #fff; margin-top: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .reveal-vs { font-size: 24px; font-weight: 700; color: var(--error); animation: pulse 1s infinite; }
         .reveal-result { font-size: 28px; font-weight: 700; opacity: 0; transform: scale(0.8); transition: all 0.5s ease-out; text-align: center; padding: 0 20px; }
@@ -435,6 +443,7 @@
                 recentGames: '🎮 Последние игры', opponent: 'Соперник', result: 'Результат', move: 'Ход',
                 noGames: 'Пока нет игр', winText: 'Победа', loseText: 'Поражение', drawText: 'Ничья',
                 rockEmoji: '🪨', scissorsEmoji: '✂️', paperEmoji: '📄',
+                top20Note: '🎉 Вы в ТОП-20! Место: ',  // ✅ ДОБАВЛЕНО
                 
                 // ✅ ОПИСАНИЯ СКИНОВ (РУ)
                 skinDefaultName: 'Обычная',
@@ -486,6 +495,7 @@
                 recentGames: '🎮 Recent Games', opponent: 'Opponent', result: 'Result', move: 'Move',
                 noGames: 'No games yet', winText: 'Win', loseText: 'Lose', drawText: 'Draw',
                 rockEmoji: '🪨', scissorsEmoji: '✂️', paperEmoji: '📄',
+                top20Note: '🎉 You are in TOP-20! Place: ',  // ✅ ДОБАВЛЕНО
                 
                 // ✅ SKIN DESCRIPTIONS (EN)
                 skinDefaultName: 'Default',
@@ -525,7 +535,15 @@
         const MY_ID = Number(user.id);
         const MY_PHOTO_URL = user.photo_url || null;
         const MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
-        const SKINS = [{ id: 'default', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' }, { id: 'ice', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png' }, { id: 'fire', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png' }, { id: 'shadow', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png' }, { id: 'golden', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png' }];
+        
+        // ✅ ИЗМЕНЕНЫ ТРЕБОВАНИЯ К СКИНАМ
+        const SKINS = [
+            { id: 'default', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
+            { id: 'ice', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png' },      // было 30
+            { id: 'fire', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png' },    // было 50
+            { id: 'shadow', wins: 500, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png' },  // было 100
+            { id: 'golden', wins: 1000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png' } // было 300
+        ];
         
         // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ НАЗВАНИЙ СКИНОВ
         function getSkinName(skin) { 
@@ -1010,7 +1028,7 @@
                 c.innerHTML = ''; 
                 topUsers.forEach((u,i) => { 
                     const wins = u.wins || 0; 
-                    const skin = SKINS[wins>=300?4:wins>=100?3:wins>=50?2:wins>=30?1:0]; 
+                    const skin = SKINS[wins>=1000?4:wins>=500?3:wins>=100?2:wins>=50?1:0];  // ✅ ОБНОВЛЕНО: новые пороги
                     const name = u.username || `User_${String(u.telegram_id).slice(-4)}`; 
                     const isMe = Number(u.telegram_id) === MY_ID; 
                     const el = document.createElement('div'); el.className = `room-card ${isMe ? 'my-room' : ''}`; 
@@ -1024,7 +1042,7 @@
                 const betterPlayers = await db('users', 'GET', null, `?wins=gt.${myWins}&select=telegram_id`); 
                 const myRank = betterPlayers.length + 1; 
                 if (myRank > 20) { 
-                    const mySkin = SKINS[myWins>=300?4:myWins>=100?3:myWins>=50?2:myWins>=30?1:0]; 
+                    const mySkin = SKINS[myWins>=1000?4:myWins>=500?3:myWins>=100?2:myWins>=50?1:0];  // ✅ ОБНОВЛЕНО: новые пороги
                     const myName = user.username || `User_${String(MY_ID).slice(-4)}`; 
                     const el = document.createElement('div'); el.className = 'room-card my-room'; 
                     el.style.border = '1px dashed var(--gold)'; el.style.background = 'rgba(251,191,36,0.05)'; 
@@ -1032,7 +1050,8 @@
                     c.appendChild(el); 
                 } else { 
                     const note = document.createElement('div'); note.style.cssText = 'text-align:center; padding:12px; color:var(--success); font-weight:600; background:var(--card); border-radius:12px; margin-top:8px;'; 
-                    note.innerHTML = `🎉 Вы в ТОП-20! Место: <span style="color:var(--gold);">#${myRank}</span>`; 
+                    // ✅ ИСПОЛЬЗУЕМ ПЕРЕВОД
+                    note.innerHTML = `${t('top20Note')}<span style="color:var(--gold);">#${myRank}</span>`; 
                     c.appendChild(note); 
                 } 
             } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
