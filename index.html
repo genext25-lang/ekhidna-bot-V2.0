@@ -49,36 +49,6 @@
         .player-stats-small span { display: block; }
         .game-players { display: flex; justify-content: space-around; align-items: flex-start; margin: 15px 0; }
         .vs-badge { font-size: 22px; font-weight: 700; color: var(--error); margin-top: 30px; }
-        
-        /* ✅ СТИЛИ ДЛЯ ЗАДУМЧИВОЙ ЕХИДНЫ */
-        .vs-wrapper { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        .thinking-echidna { 
-            width: 70px; 
-            height: 70px; 
-            border-radius: 50%; 
-            overflow: hidden; 
-            background: var(--card); 
-            border: 3px solid var(--border); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            animation: bounce 2s ease-in-out infinite;
-        }
-        .thinking-echidna img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-        
         .game-stakes { background: rgba(251,191,36,0.05); border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; border: 1px solid var(--border); }
         .stake-line { font-size: 14px; font-weight: 600; margin: 4px 0; display: flex; justify-content: space-between; padding: 0 10px; }
         .stake-value { color: var(--gold); }
@@ -213,6 +183,41 @@
         .games-empty .empty-icon { font-size: 40px; margin-bottom: 10px; }
         .no-stats-msg { text-align: center; padding: 40px 20px; color: var(--sec); }
         .no-stats-msg .icon { font-size: 50px; margin-bottom: 15px; }
+        
+        /* ✅ СТИЛИ ДЛЯ ЗАДУМЧИВОЙ ЕХИДНЫ В БИТВЕ */
+        .thinking-echidna-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+        }
+        .thinking-echidna {
+            width: 85px;
+            height: 85px;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            animation: bounce 2s ease-in-out infinite;
+            transition: all 0.2s;
+        }
+        .thinking-echidna:hover {
+            transform: scale(1.05);
+            border-color: var(--gold);
+        }
+        .thinking-echidna img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 4px;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
     </style>
 </head>
 <body>
@@ -304,12 +309,13 @@
                     <div class="player-stats-small" id="playerStats"></div>
                 </div>
                 
-                <!-- ✅ НОВЫЙ БЛОК С ЗАДУМЧИВОЙ ЕХИДНОЙ -->
-                <div class="vs-wrapper">
+                <!-- ✅ НОВЫЙ БЛОК С ЗАДУМЧИВОЙ ЕХИДНОЙ (вместо VS) -->
+                <div class="thinking-echidna-wrapper">
                     <div class="thinking-echidna">
-                        <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-thinking.png" alt="Thinking" onerror="this.style.display='none'">
+                        <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-thinking.png" 
+                             alt="Thinking Echidna" 
+                             onerror="this.style.display='none'; this.parentElement.innerHTML='🤔'">
                     </div>
-                    <div class="vs-badge">VS</div>
                 </div>
                 
                 <div class="player-wrapper">
@@ -360,7 +366,7 @@
     </div>
     <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)">
         <div class="stake-modal-content" onclick="event.stopPropagation()">
-            <button class="skin-modal-close" onclick="closeStakeModal()">✕</button>
+            <button class="skin-modal-close" onclick="closeSkinModal()">✕</button>
             <div class="stake-modal-title" data-i18n="selectStake">💎 Выбери ставку</div>
             <div class="stake-presets" id="stakePresets">
                 <button class="stake-preset-btn selected" data-stake="0.1" onclick="selectStake(0.1, this)">0.1 TON</button>
@@ -521,13 +527,27 @@
         const MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
         const SKINS = [{ id: 'default', wins: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' }, { id: 'ice', wins: 30, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-ice.png' }, { id: 'fire', wins: 50, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-fire.png' }, { id: 'shadow', wins: 100, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-shadow.png' }, { id: 'golden', wins: 300, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-golden.png' }];
         
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ НАЗВАНИЙ СКИНОВ
         function getSkinName(skin) { 
             const names = {
-                ru: { default: 'Обычная', ice: 'Ледяная', fire: 'Огненная', shadow: 'Теневая', golden: 'Золотая' },
-                en: { default: 'Default', ice: 'Ice', fire: 'Fire', shadow: 'Shadow', golden: 'Golden' }
+                ru: { 
+                    default: 'Обычная', 
+                    ice: 'Ледяная', 
+                    fire: 'Огненная', 
+                    shadow: 'Теневая', 
+                    golden: 'Золотая' 
+                },
+                en: { 
+                    default: 'Default', 
+                    ice: 'Ice', 
+                    fire: 'Fire', 
+                    shadow: 'Shadow', 
+                    golden: 'Golden' 
+                }
             };
             return names[currentLang]?.[skin.id] || names['ru'][skin.id] || skin.id.toUpperCase(); 
         }
+        
         function getSkinDesc(skin) { return t(`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Desc`); }
         function getSkinFeatures(skin) { return i18n[currentLang][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || i18n['ru'][`skin${skin.id.charAt(0).toUpperCase() + skin.id.slice(1)}Features`] || []; }
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
@@ -536,16 +556,29 @@
 
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
-            const headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' }; 
+            const headers = { 
+                'apikey': SUPABASE_ANON_KEY, 
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 
+                'Content-Type': 'application/json'
+            }; 
             if (method === 'POST') headers['Prefer'] = 'return=representation';
             else if (method === 'DELETE') headers['Prefer'] = 'return=minimal';
             else if (method === 'PATCH') headers['Prefer'] = 'return=representation';
+            
             try {
                 const res = await fetch(url, { method, headers, body: payload ? JSON.stringify(payload) : null }); 
-                if (!res.ok) { const errText = await res.text(); console.error(`[DB ERROR] ${res.status}:`, errText); throw new Error(`${res.status} ${errText}`); }
+                if (!res.ok) { 
+                    const errText = await res.text(); 
+                    console.error(`[DB ERROR] ${res.status}:`, errText); 
+                    throw new Error(`${res.status} ${errText}`); 
+                }
                 if (method === 'DELETE') return true;
-                const data = await res.json(); return single && Array.isArray(data) ? data[0] : data;
-            } catch (error) { console.error(`[DB ERROR] ${method} ${table}:`, error); throw error; }
+                const data = await res.json(); 
+                return single && Array.isArray(data) ? data[0] : data;
+            } catch (error) {
+                console.error(`[DB ERROR] ${method} ${table}:`, error);
+                throw error;
+            }
         }
 
         const tg = window.Telegram?.WebApp; if (tg) { tg.ready?.(); tg.expand?.(); }
@@ -556,11 +589,22 @@
             ['lobbyScreen', 'statsScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
             const target = document.getElementById(name + 'Screen'); if(target) target.classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach((b, i) => b?.classList?.toggle('active', ['lobby', 'stats', 'skins', 'leaderboard'][i] === name));
-            if (name === 'lobby') { currentRoom = null; isGameFinished = false; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } lobbyRefreshInterval = setInterval(loadRooms, 3000); loadRooms(); updateStats(); } 
-            else if (name === 'stats') { if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } loadStats(); }
-            else if (name === 'skins') { if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } renderSkins(); }
-            else if (name === 'leaderboard') { if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } loadLeaderboard(); }
-            else { if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } }
+            if (name === 'lobby') { 
+                currentRoom = null; isGameFinished = false;
+                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+                lobbyRefreshInterval = setInterval(loadRooms, 3000);
+                loadRooms(); updateStats(); 
+            } else if (name === 'stats') {
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+                loadStats();
+            } else if (name === 'leaderboard') {
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+                loadLeaderboard();
+            } else {
+                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
+            }
+            if (name === 'skins') renderSkins();
         }
 
         function forceExitToLobby() { isGameFinished = true; currentRoom = null; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (window._timerInterval) clearInterval(window._timerInterval); window._timerRunning = false; document.getElementById('revealOverlay')?.classList.add('hidden'); document.getElementById('confettiContainer')?.classList.add('hidden'); showScreen('lobby'); }
@@ -608,6 +652,7 @@
         }
 
         function formatCountdown(ms) { if (ms <= 0) return "00:00"; const totalSeconds = Math.floor(ms / 1000); const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60; return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`; }
+        
         setInterval(() => { 
             const now = Date.now(); 
             document.querySelectorAll('.room-timer').forEach(el => { 
@@ -632,7 +677,12 @@
                 const pubRooms = Array.isArray(pub) ? pub : [];
                 renderRooms('myRoomsList', myRooms, true); 
                 renderRooms('roomsList', pubRooms, false); 
-            } catch(e) { console.error('Load rooms error:', e); const err = `<div style="color:var(--error);padding:15px;text-align:center;">⚠️ Ошибка загрузки</div>`; document.getElementById('myRoomsList').innerHTML = err; document.getElementById('roomsList').innerHTML = err; } 
+            } catch(e) { 
+                console.error('Load rooms error:', e); 
+                const err = `<div style="color:var(--error);padding:15px;text-align:center;">⚠️ Ошибка загрузки</div>`;
+                document.getElementById('myRoomsList').innerHTML = err;
+                document.getElementById('roomsList').innerHTML = err;
+            } 
         }
 
         function renderRooms(id, rooms, isMy) { 
@@ -676,9 +726,17 @@
             try { 
                 await db('rooms', 'DELETE', null, `?id=eq.${roomId}`); 
                 delete window.roomExpiry[roomId]; 
-                if (currentRoom?.id === roomId) { currentRoom = null; isGameFinished = true; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (window._timerInterval) { clearInterval(window._timerInterval); } window._timerRunning = false; } 
+                if (currentRoom?.id === roomId) { 
+                    currentRoom = null; isGameFinished = true; 
+                    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } 
+                    if (window._timerInterval) { clearInterval(window._timerInterval); } 
+                    window._timerRunning = false; 
+                } 
                 loadRooms(); 
-            } catch(e) { console.warn('Cancel room warning:', e); loadRooms(); }
+            } catch(e) { 
+                console.warn('Cancel room warning:', e); 
+                loadRooms(); 
+            }
         }
         async function joinRoom(roomId, btnElement) { 
             if(!btnElement) return; btnElement.disabled = true; btnElement.textContent = '⏳'; 
@@ -703,8 +761,13 @@
                 const creatorId = roomData.creator_tg_id;
                 const opponentId = roomData.opponent_tg_id;
                 const isCreator = String(creatorId) === String(MY_ID);
-                if (isCreator) { renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?'); if (opponentId) renderAvatar('opponentAvatar', null, roomData.opponent_username || '?'); }
-                else { renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username || '?'); if (creatorId) renderAvatar('playerAvatar', null, roomData.creator_username || '?'); }
+                if (isCreator) {
+                    renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?');
+                    if (opponentId) renderAvatar('opponentAvatar', null, roomData.opponent_username || '?');
+                } else {
+                    renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username || '?');
+                    if (creatorId) renderAvatar('playerAvatar', null, roomData.creator_username || '?');
+                }
                 if (!creatorId || !opponentId) {
                     document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
                     document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span>✅ 0</span><br><span>❌ 0</span>';
@@ -750,12 +813,17 @@
             const msgEl = document.getElementById('statusMessage'), timerText = document.getElementById('timerText'), timerBarContainer = document.getElementById('timerBarContainer'), timerBar = document.getElementById('timerBar'); 
             if(!msgEl || !timerText || !timerBarContainer || !timerBar) return; 
             const isCreator = String(room.creator_tg_id) === String(MY_ID), myCol = isCreator ? 'creator_choice' : 'opponent_choice'; 
-            if (room[myCol] && room[myCol !== 'creator_choice' ? 'creator_choice' : 'opponent_choice']) { msgEl.textContent = t('summarizing'); timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; window._timerRunning = false; if (window._timerInterval) clearInterval(window._timerInterval); return; } 
+            if (room[myCol] && room[myCol !== 'creator_choice' ? 'creator_choice' : 'opponent_choice']) { 
+                msgEl.textContent = t('summarizing'); timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; window._timerRunning = false; if (window._timerInterval) clearInterval(window._timerInterval); return; 
+            } 
             timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; timerBar.style.width = '100%'; timerBar.classList.remove('urgent'); 
             if (room.status === 'waiting') msgEl.textContent = t('waitingForOpponent'); 
             else if (room.status === 'playing') { 
                 if (room[myCol]) { msgEl.textContent = t('yourMoveRecorded'); window._timerRunning = false; } 
-                else { msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`; timerText.classList.add('active'); timerBarContainer.style.display = 'block'; if (!window._timerRunning) { window._timerRunning = true; window._timerStart = Date.now(); startTimer(window._timerStart); } } 
+                else { 
+                    msgEl.innerHTML = `<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`; timerText.classList.add('active'); timerBarContainer.style.display = 'block'; 
+                    if (!window._timerRunning) { window._timerRunning = true; window._timerStart = Date.now(); startTimer(window._timerStart); } 
+                } 
             } else { msgEl.textContent = t('gameOver'); window._timerRunning = false; } 
         }
         
@@ -795,7 +863,9 @@
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`); 
                     const room = res[0]; if (!room) return; currentRoom = room; updateGameStatus(room); 
                     renderPlayerStats(); 
-                    if (room.creator_choice && room.opponent_choice && room.status !== 'finished') { isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return; } 
+                    if (room.creator_choice && room.opponent_choice && room.status !== 'finished') { 
+                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return; 
+                    } 
                     if (room.status === 'finished') { isGameFinished = true; clearInterval(pollInterval); pollInterval = null; showGameResult(room); return; } 
                 } catch(e) { console.warn('Poll error:', e); } 
             }, 2000); 
@@ -818,10 +888,26 @@
             if (!currentRoom) return;
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
-            const historyData = { player_id: MY_ID, opponent_name: opponentName || 'unknown', stake: currentRoom.stake, player_move: playerMove, result: resultStr, played_at: new Date().toISOString() };
+            
+            const historyData = {
+                player_id: MY_ID,
+                opponent_name: opponentName || 'unknown',
+                stake: currentRoom.stake,
+                player_move: playerMove,
+                result: resultStr,
+                played_at: new Date().toISOString()
+            };
+            
             console.log('📝 Сохранение истории игры:', historyData);
-            try { const result = await db('game_history', 'POST', [historyData]); console.log('✅ История сохранена успешно:', result); return result; } 
-            catch (e) { console.error('❌ Ошибка сохранения истории:', e); return null; }
+            
+            try {
+                const result = await db('game_history', 'POST', [historyData]);
+                console.log('✅ История сохранена успешно:', result);
+                return result;
+            } catch (e) {
+                console.error('❌ Ошибка сохранения истории:', e);
+                return null;
+            }
         }
         
         async function showRevealAnimation(room) { 
@@ -843,10 +929,18 @@
             const isWin = msg.includes('Победа') || msg.includes('Victory'), isDraw = msg.includes('Ничья') || msg.includes('Draw'); 
             resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`; 
             if (isWin) createConfetti(); 
-            let resultForHistory = 'draw'; if (result.winnerId) { resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose'; }
+            
+            let resultForHistory = 'draw';
+            if (result.winnerId) {
+                resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
+            }
             await saveGameHistory(resultForHistory, myMove);
+            
             let countdown = 3; const countdownEl = document.getElementById('revealCountdown'); countdownEl.textContent = countdown; 
-            const countdownInterval = setInterval(() => { countdown--; if (countdown > 0) countdownEl.textContent = countdown; else { clearInterval(countdownInterval); overlay.classList.add('hidden'); confetti.classList.add('hidden'); updateStats(); forceExitToLobby(); } }, 1000); 
+            const countdownInterval = setInterval(() => { 
+                countdown--; if (countdown > 0) countdownEl.textContent = countdown; 
+                else { clearInterval(countdownInterval); overlay.classList.add('hidden'); confetti.classList.add('hidden'); updateStats(); forceExitToLobby(); } 
+            }, 1000); 
             await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`); 
             const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id; 
             if (result.winnerId) db('users', 'GET', null, `?telegram_id=eq.${result.winnerId}&select=wins`, false).then(d => db('users', 'PATCH', { wins: (d[0]?.wins || 0) + 1 }, `?telegram_id=eq.${result.winnerId}`)).catch(console.warn); 
@@ -946,11 +1040,14 @@
 
         async function loadStats() {
             if (!MY_ID || MY_ID === 999999) return;
+            
             const tableBody = document.getElementById('gamesTableBody');
             tableBody.innerHTML = '<div class="loader" style="padding: 20px;"><div class="spinner"></div></div>';
+            
             try {
                 const games = await db('game_history', 'GET', null, `?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`, false);
                 const gamesList = Array.isArray(games) ? games : [];
+                
                 if (gamesList.length === 0) {
                     tableBody.innerHTML = `<div class="games-empty"><div class="empty-icon">🎮</div><div>${t('noGames')}</div></div>`;
                     document.getElementById('statsWinRate').textContent = '0%';
@@ -958,38 +1055,88 @@
                     document.getElementById('statsTotalWon').textContent = '0';
                     return;
                 }
-                let wins = 0, losses = 0, draws = 0, totalWon = 0;
+                
+                let wins = 0, losses = 0, draws = 0;
+                let totalWon = 0;
                 const moveCounts = { rock: 0, scissors: 0, paper: 0 };
+                
                 gamesList.forEach(game => {
                     if (game.result === 'win') { wins++; totalWon += (game.stake || 0) * 0.95; }
                     else if (game.result === 'lose') losses++;
                     else draws++;
-                    if (game.player_move && moveCounts[game.player_move] !== undefined) { moveCounts[game.player_move]++; }
+                    
+                    if (game.player_move && moveCounts[game.player_move] !== undefined) {
+                        moveCounts[game.player_move]++;
+                    }
                 });
+                
                 const totalGames = wins + losses + draws;
                 const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+                
                 const maxMoves = Object.entries(moveCounts).sort((a, b) => b[1] - a[1]);
                 const favMove = maxMoves[0] && maxMoves[0][1] > 0 ? maxMoves[0][0] : null;
                 const moveEmojis = { rock: t('rockEmoji'), scissors: t('scissorsEmoji'), paper: t('paperEmoji') };
                 const moveNames = { rock: t('rock'), scissors: t('scissors'), paper: t('paper') };
+                
                 document.getElementById('statsWinRate').textContent = winRate + '%';
                 document.getElementById('statsFavMove').textContent = favMove ? `${moveEmojis[favMove]} ${moveNames[favMove]}` : '-';
                 document.getElementById('statsTotalWon').textContent = totalWon.toFixed(2);
+                
                 let rowsHtml = '';
                 gamesList.slice(0, 20).forEach(game => {
                     const opponentName = game.opponent_name || '???';
                     const resultClass = game.result === 'win' ? 'win' : game.result === 'lose' ? 'lose' : 'draw';
                     const resultText = game.result === 'win' ? t('winText') : game.result === 'lose' ? t('loseText') : t('drawText');
                     const moveEmoji = game.player_move ? (moveEmojis[game.player_move] || '') : '';
-                    rowsHtml += `<div class="game-row"><span class="game-opponent">${escapeHtml(opponentName)}</span><span class="game-stake">${game.stake || 0} TON</span><span class="game-result ${resultClass}">${resultText}</span><span class="game-move">${moveEmoji}</span></div>`;
+                    
+                    rowsHtml += `
+                        <div class="game-row">
+                            <span class="game-opponent">${escapeHtml(opponentName)}</span>
+                            <span class="game-stake">${game.stake || 0} TON</span>
+                            <span class="game-result ${resultClass}">${resultText}</span>
+                            <span class="game-move">${moveEmoji}</span>
+                        </div>
+                    `;
                 });
+                
                 tableBody.innerHTML = rowsHtml;
-            } catch(e) { console.error('Load stats error:', e); tableBody.innerHTML = `<div class="games-empty"><div class="empty-icon">⚠️</div><div>Ошибка загрузки</div></div>`; }
+                
+            } catch(e) {
+                console.error('Load stats error:', e);
+                tableBody.innerHTML = `<div class="games-empty"><div class="empty-icon">⚠️</div><div>Ошибка загрузки</div></div>`;
+            }
         }
         
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
-        function filterRooms() { const query = document.getElementById('searchInput').value.toLowerCase(); const list = document.getElementById('roomsList'); const items = list.querySelectorAll('.room-card'); items.forEach(el => { const creatorText = el.querySelector('.room-creator')?.textContent.toLowerCase() || ''; el.style.display = creatorText.includes(query) ? 'flex' : 'none'; }); }
-        window.addEventListener('load', () => { const savedSkin = localStorage.getItem('echidna_selected_skin'); if (savedSkin && SKINS.find(s => s.id === savedSkin)) currentSkin = savedSkin; if (window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } loadRooms(); });
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function filterRooms() { 
+            const query = document.getElementById('searchInput').value.toLowerCase(); 
+            const list = document.getElementById('roomsList'); 
+            const items = list.querySelectorAll('.room-card'); 
+            items.forEach(el => { 
+                const creatorText = el.querySelector('.room-creator')?.textContent.toLowerCase() || ''; 
+                el.style.display = creatorText.includes(query) ? 'flex' : 'none'; 
+            }); 
+        }
+        
+        window.addEventListener('load', () => { 
+            const savedSkin = localStorage.getItem('echidna_selected_skin'); 
+            if (savedSkin && SKINS.find(s => s.id === savedSkin)) currentSkin = savedSkin; 
+            if (window.Telegram?.WebApp) { 
+                Telegram.WebApp.expand(); 
+                Telegram.WebApp.setHeaderColor('#0a0a1a'); 
+                Telegram.WebApp.setBackgroundColor('#0a0a1a'); 
+            } 
+            loadRooms();
+        });
     </script>
 </body>
 </html>
