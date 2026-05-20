@@ -168,6 +168,7 @@
         .stat-card { background: var(--card); border-radius: 16px; padding: 14px 10px; text-align: center; border: 1px solid var(--border); }
         .stat-card .stat-icon { font-size: 28px; margin-bottom: 6px; }
         .stat-card .stat-value { font-size: 18px; font-weight: 700; color: var(--primary); word-break: break-word; }
+        .stat-card .stat-value.negative { color: var(--error); }
         .stat-card .stat-label { font-size: 10px; color: var(--sec); text-transform: uppercase; margin-top: 4px; }
         .games-table { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
         .games-table-header { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; background: rgba(99,102,241,0.1); font-size: 11px; color: var(--sec); text-transform: uppercase; font-weight: 600; }
@@ -241,7 +242,7 @@
                 <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value" id="statsWinRate">0%</div><div class="stat-label" data-i18n="winRate">Побед</div></div>
                 <div class="stat-card"><div class="stat-icon">✊</div><div class="stat-value" id="statsFavMove">-</div><div class="stat-label" data-i18n="favMove">Любимый ход</div></div>
                 <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value" id="statsTotalWonTon">0 TON</div><div class="stat-label">Выиграно TON</div></div>
-                <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value stars-value" id="statsTotalWonStars">0 ⭐</div><div class="stat-label">Выиграно Звёзд</div></div>
+                <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value" id="statsTotalWonStars">0 ⭐</div><div class="stat-label">Выиграно Звёзд</div></div>
             </div>
             <div class="section-title" data-i18n="recentGames">🎮 Последние игры</div>
             <div class="games-table"><div class="games-table-header"><span data-i18n="opponent">Соперник</span><span data-i18n="stake">Ставка</span><span data-i18n="result">Результат</span><span data-i18n="move">Ход</span></div><div id="gamesTableBody"><div class="loader" style="padding:20px;"><div class="spinner"></div></div></div></div>
@@ -318,11 +319,11 @@
                 revealTitle: 'Раскрытие ходов', statsTitle: '📊 Статистика', statsSubtitle: 'Твоя игровая история', winRate: 'Побед', favMove: 'Любимый ход', recentGames: '🎮 Последние игры', opponent: 'Соперник', result: 'Результат', move: 'Ход',
                 noGames: 'Пока нет игр', winText: 'Победа', loseText: 'Поражение', drawText: 'Ничья', rockEmoji: '🪨', scissorsEmoji: '✂️', paperEmoji: '📄', top20Note: '🎉 Вы в ТОП-20! Место: ',
                 minStars: 'Мин: 15 ⭐', maxStars: 'Макс: 15 000 ⭐', enterStarsValid: 'Введи от 15 до 15 000',
-                skinDefaultName: 'Обычная', skinDefaultDesc: 'Стартовая ехидна.', skinDefaultFeatures: ['Базовый скин', 'Для новичков', 'Классический дизайн'],
-                skinIceName: 'Ледяная', skinIceDesc: 'Холодный расчёт.', skinIceFeatures: ['Ледяные иглы', 'Стратегический бонус', 'Морозный эффект'],
-                skinFireName: 'Огненная', skinFireDesc: 'Огненный темперамент.', skinFireFeatures: ['Агрессивный стиль', 'Быстрая реакция', 'Огненные частицы'],
-                skinShadowName: 'Теневая', skinShadowDesc: 'Сила тени.', skinShadowFeatures: ['Мистика', 'Непредсказуемость', 'Теневой след'],
-                skinGoldenName: 'Золотая', skinGoldenDesc: 'Легендарная ехидна.', skinGoldenFeatures: ['Корона чемпиона', '1000+ побед', 'Золотое свечение']
+                skinDefaultName: 'Обычная', skinDefaultDesc: 'Стартовая ехидна.', skinDefaultFeatures: ['Базовый скин','Для новичков','Классический дизайн'],
+                skinIceName: 'Ледяная', skinIceDesc: 'Холодный расчёт.', skinIceFeatures: ['Ледяные иглы','Стратегический бонус','Морозный эффект'],
+                skinFireName: 'Огненная', skinFireDesc: 'Огненный темперамент.', skinFireFeatures: ['Агрессивный стиль','Быстрая реакция','Огненные частицы'],
+                skinShadowName: 'Теневая', skinShadowDesc: 'Сила тени.', skinShadowFeatures: ['Мистика','Непредсказуемость','Теневой след'],
+                skinGoldenName: 'Золотая', skinGoldenDesc: 'Легендарная ехидна.', skinGoldenFeatures: ['Корона чемпиона','1000+ побед','Золотое свечение']
             },
             en: { 
                 splashTitle: 'Echidna Naklz', rulesTitle: '📜 Game Rules', rulesList: '<li>Create a room or join an existing one</li><li>Choose a stake from 0.1 to 99 TON or from 15 to 15,000 stars</li><li>Choose one of three moves: Rock, Scissors or Paper</li><li>Rock beats Scissors, Scissors cuts Paper, Paper covers Rock</li><li>Winner takes the pot (minus 5% commission)</li>', 
@@ -341,11 +342,11 @@
                 revealTitle: 'Move Reveal', statsTitle: '📊 Statistics', statsSubtitle: 'Your game history', winRate: 'Win Rate', favMove: 'Favorite Move', recentGames: '🎮 Recent Games', opponent: 'Opponent', result: 'Result', move: 'Move',
                 noGames: 'No games yet', winText: 'Win', loseText: 'Lose', drawText: 'Draw', rockEmoji: '🪨', scissorsEmoji: '✂️', paperEmoji: '📄', top20Note: '🎉 You are in TOP-20! Place: ',
                 minStars: 'Min: 15 ⭐', maxStars: 'Max: 15,000 ⭐', enterStarsValid: 'Enter from 15 to 15,000',
-                skinDefaultName: 'Default', skinDefaultDesc: 'Starting echidna.', skinDefaultFeatures: ['Basic skin', 'For beginners', 'Classic design'],
-                skinIceName: 'Ice', skinIceDesc: 'Cold calculation.', skinIceFeatures: ['Ice spikes', 'Strategic bonus', 'Frost effect'],
-                skinFireName: 'Fire', skinFireDesc: 'Fiery temperament.', skinFireFeatures: ['Aggressive style', 'Quick reaction', 'Fire particles'],
-                skinShadowName: 'Shadow', skinShadowDesc: 'Power of shadow.', skinShadowFeatures: ['Mysticism', 'Unpredictability', 'Shadow trail'],
-                skinGoldenName: 'Golden', skinGoldenDesc: 'Legendary echidna.', skinGoldenFeatures: ['Champion crown', '1000+ wins', 'Golden glow']
+                skinDefaultName: 'Default', skinDefaultDesc: 'Starting echidna.', skinDefaultFeatures: ['Basic skin','For beginners','Classic design'],
+                skinIceName: 'Ice', skinIceDesc: 'Cold calculation.', skinIceFeatures: ['Ice spikes','Strategic bonus','Frost effect'],
+                skinFireName: 'Fire', skinFireDesc: 'Fiery temperament.', skinFireFeatures: ['Aggressive style','Quick reaction','Fire particles'],
+                skinShadowName: 'Shadow', skinShadowDesc: 'Power of shadow.', skinShadowFeatures: ['Mysticism','Unpredictability','Shadow trail'],
+                skinGoldenName: 'Golden', skinGoldenDesc: 'Legendary echidna.', skinGoldenFeatures: ['Champion crown','1000+ wins','Golden glow']
             }
         };
 
@@ -388,10 +389,7 @@
         const TON_TO_STARS_PRESETS = { '0.1': 15, '0.5': 75, '1': 150, '2': 300, '5': 750, '10': 1500 };
         const STARS_TO_TON_PRESETS = { '15': 0.1, '75': 0.5, '150': 1, '300': 2, '750': 5, '1500': 10 };
 
-        // ✅ ФУНКЦИИ КОДИРОВАНИЯ/ДЕКОДИРОВАНИЯ ДАННЫХ О ВАЛЮТЕ В room_password
         function encodeCurrencyData(currency, starsAmount, userPassword) {
-            // Формат: CURRENCY:STARS:REAL_PASSWORD
-            // Если starsAmount нет, пишем 0
             const stars = starsAmount || 0;
             const pwd = userPassword || '';
             return `CUR_${currency}_${stars}_${pwd}`;
@@ -402,7 +400,6 @@
                 return { currency: 'ton', stars_amount: null, realPassword: roomPassword || '' };
             }
             const parts = roomPassword.split('_');
-            // CUR_ton_0_  или CUR_stars_500_1234
             if (parts.length >= 4) {
                 return {
                     currency: parts[1] || 'ton',
@@ -413,10 +410,7 @@
             return { currency: 'ton', stars_amount: null, realPassword: roomPassword || '' };
         }
         
-        function getRealPassword(roomPassword) {
-            const decoded = decodeCurrencyData(roomPassword);
-            return decoded.realPassword;
-        }
+        function getRealPassword(roomPassword) { return decodeCurrencyData(roomPassword).realPassword; }
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
@@ -520,7 +514,6 @@
         async function confirmStake() { 
             const inputVal = document.getElementById('stakeInput').value; 
             let finalStake = selectedStake, inputStars = null;
-            
             if (inputVal) { 
                 const parsed = parseFloat(inputVal); 
                 if (currentCurrency === 'stars') {
@@ -532,357 +525,240 @@
                     if (parsed < 0.1 || parsed > 99 || isNaN(parsed)) { document.getElementById('stakeError').textContent = t('enterValid'); return; } 
                     finalStake = Math.round(parsed * 100) / 100; 
                 }
-            } else {
-                if (currentCurrency === 'stars') {
-                    const selectedBtn = document.querySelector('.stake-preset-btn.selected');
-                    if (selectedBtn) inputStars = parseInt(selectedBtn.dataset.stars);
-                }
-            }
-            
+            } else { if (currentCurrency === 'stars') { const sb = document.querySelector('.stake-preset-btn.selected'); if (sb) inputStars = parseInt(sb.dataset.stars); } }
             const rawPassword = document.getElementById('roomPassword').value.trim();
             if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; return; }
-            
-            // ✅ КОДИРУЕМ ВАЛЮТУ В room_password
             const encodedPassword = encodeCurrencyData(currentCurrency, inputStars, rawPassword);
-            
             document.getElementById('stakeModal')?.classList.add('hidden'); 
-            
             try { 
                 await ensureUserExists(MY_ID, user.username); 
-                const room = await db('rooms', 'POST', [{ 
-                    creator_tg_id: MY_ID, creator_username: user.username, 
-                    stake: finalStake, status: 'waiting', 
-                    room_password: encodedPassword || null
-                }], '', true);
-                
-                currentRoom = room; 
-                if (currentRoom) {
-                    currentRoom._currency = currentCurrency;
-                    currentRoom._stars_amount = inputStars;
-                }
-                showGameScreen(); startPolling(); loadRooms(); 
+                const room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: encodedPassword || null }], '', true);
+                currentRoom = room; showGameScreen(); startPolling(); loadRooms(); 
             } catch(e) { alert(t('createError') + e.message); } 
         }
 
-        function formatCountdown(ms) { if (ms <= 0) return "00:00"; const totalSeconds = Math.floor(ms / 1000); const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60; return `${m<10?'0':''}${m}:${s<10?'0':''}${s}`; }
-        
-        setInterval(() => { 
-            const now = Date.now(); 
-            document.querySelectorAll('.room-timer').forEach(el => { 
-                const roomId = el.dataset.roomId;
-                if (roomId && window.roomExpiry[roomId]) { 
-                    const remaining = window.roomExpiry[roomId] - now; 
-                    el.textContent = formatCountdown(remaining); 
-                    if (remaining <= 60000) el.classList.add('urgent'); else el.classList.remove('urgent'); 
-                    if (remaining <= 0) { el.textContent = "⌛ Истекло"; el.style.color = "var(--error)"; } 
-                } 
-            }); 
-        }, 1000);
+        function formatCountdown(ms) { if (ms <= 0) return "00:00"; const ts = Math.floor(ms/1000); const m = Math.floor(ts/60); const s = ts%60; return `${m<10?'0':''}${m}:${s<10?'0':''}${s}`; }
+        setInterval(() => { const now=Date.now(); document.querySelectorAll('.room-timer').forEach(el=>{ const rid=el.dataset.roomId; if(rid&&window.roomExpiry[rid]){ const r=window.roomExpiry[rid]-now; el.textContent=formatCountdown(r); if(r<=60000)el.classList.add('urgent');else el.classList.remove('urgent'); if(r<=0){el.textContent='⌛ Истекло';el.style.color='var(--error)';} } }); },1000);
 
-        // ✅ ПОЛУЧЕНИЕ ДАННЫХ О ВАЛЮТЕ ИЗ КОМНАТЫ (из room_password)
-        function getRoomCurrencyData(room) {
-            if (!room) return { currency: 'ton', stars_amount: null };
-            const decoded = decodeCurrencyData(room.room_password);
-            return { currency: decoded.currency, stars_amount: decoded.stars_amount };
-        }
-
-        function formatStakeDisplay(room) {
-            const stake = room.stake || 0;
-            const { currency, stars_amount } = getRoomCurrencyData(room);
-            
-            if (currency === 'stars') {
-                if (stars_amount) return `⭐ ${stars_amount}`;
-                const presetStars = TON_TO_STARS_PRESETS[stake.toString()];
-                if (presetStars) return `⭐ ${presetStars}`;
-                return `⭐ ${Math.round(stake * 150)}`;
-            } else {
-                return `${stake} TON`;
-            }
-        }
-
-        function getStarsAmount(room) {
-            const { stars_amount } = getRoomCurrencyData(room);
-            if (stars_amount) return stars_amount;
-            const presetStars = TON_TO_STARS_PRESETS[String(room.stake || 0)];
-            if (presetStars) return presetStars;
-            return Math.round((room.stake || 0) * 150);
-        }
-
-        function getRoomCurrency(room) {
-            return getRoomCurrencyData(room).currency;
-        }
+        function getRoomCurrencyData(room) { if(!room) return {currency:'ton',stars_amount:null}; const d=decodeCurrencyData(room.room_password); return {currency:d.currency,stars_amount:d.stars_amount}; }
+        function formatStakeDisplay(room) { const stake=room.stake||0; const {currency,stars_amount}=getRoomCurrencyData(room); if(currency==='stars'){if(stars_amount)return `⭐ ${stars_amount}`; const ps=TON_TO_STARS_PRESETS[stake.toString()]; if(ps)return `⭐ ${ps}`; return `⭐ ${Math.round(stake*150)}`; } return `${stake} TON`; }
+        function getStarsAmount(room) { const {stars_amount}=getRoomCurrencyData(room); if(stars_amount)return stars_amount; const ps=TON_TO_STARS_PRESETS[String(room.stake||0)]; if(ps)return ps; return Math.round((room.stake||0)*150); }
+        function getRoomCurrency(room) { return getRoomCurrencyData(room).currency; }
 
         async function loadRooms() { 
             if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ ${t('userNotFound')}</div>`; return; } 
             try { 
-                const my = await db('rooms', 'GET', null, `?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`); 
-                const allRooms = await db('rooms', 'GET', null, `?status=neq.finished&order=created_at.desc&limit=50`); 
-                const pub = (allRooms || []).filter(r => Number(r.creator_tg_id) !== MY_ID);
-                renderRooms('myRoomsList', Array.isArray(my) ? my : [], true); 
-                renderRooms('roomsList', Array.isArray(pub) ? pub : [], false); 
-            } catch(e) { 
-                console.error('Load rooms error:', e); 
-                document.getElementById('myRoomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ Ошибка загрузки</div>`;
-                document.getElementById('roomsList').innerHTML = `<div style="color:var(--error);padding:15px;">⚠️ Ошибка загрузки</div>`;
-            } 
+                const my = await db('rooms','GET',null,`?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`); 
+                const all = await db('rooms','GET',null,`?status=neq.finished&order=created_at.desc&limit=50`); 
+                renderRooms('myRoomsList',Array.isArray(my)?my:[],true); 
+                renderRooms('roomsList',(Array.isArray(all)?all:[]).filter(r=>Number(r.creator_tg_id)!==MY_ID),false); 
+            } catch(e) { document.getElementById('myRoomsList').innerHTML=document.getElementById('roomsList').innerHTML=`<div style="color:var(--error);padding:15px;">⚠️ Ошибка загрузки</div>`; } 
         }
 
         function renderRooms(id, rooms, isMy) { 
-            const c = document.getElementById(id); if(!c) return; c.innerHTML = ''; 
-            if (!rooms || rooms.length === 0) { c.innerHTML = `<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`; return; } 
-            rooms.forEach((r, index) => { 
-                try { 
-                    const trulyMine = Number(r.creator_tg_id) === MY_ID;
-                    const isOpponent = Number(r.opponent_tg_id) === MY_ID;
-                    const isFinished = r.status === 'finished', isPlaying = r.status === 'playing', isWaiting = r.status === 'waiting';
-                    const el = document.createElement('div'); 
-                    el.className = `room-card ${trulyMine ? 'my-room' : ''} ${isPlaying ? 'playing' : ''}`; 
-                    if (trulyMine || isOpponent) { el.onclick = () => resumeRoom(r.id); el.style.cursor = 'pointer'; }
-                    let badgeHtml = '', btnHtml = '', timerHtml = '';
-                    const realPassword = getRealPassword(r.room_password);
-                    const hasPassword = realPassword && realPassword.length > 0;
-                    let lockIcon = hasPassword ? '<span class="lock-icon">🔒</span>' : '';
-                    if (isWaiting) {
-                        badgeHtml = `<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`; 
-                        if (!window.roomExpiry[r.id]) { window.roomExpiry[r.id] = Date.now() + (5 * 60 * 1000); } 
-                        const remaining = window.roomExpiry[r.id] - Date.now(); 
-                        timerHtml = `<span class="room-timer ${remaining<=60000?'urgent':''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`; 
-                    }
-                    
-                    const stakeDisplay = formatStakeDisplay(r);
-                    
-                    if (trulyMine) {
-                        if (isPlaying) btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); resumeRoom('${r.id}')">${t('return')}</button>`;
-                        const cancelBtn = !isFinished ? `<button class="room-btn cancel" onclick="event.stopPropagation(); cancelRoom('${r.id}')">✕</button>` : '';
-                        el.innerHTML = `<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${stakeDisplay} ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang==='ru'?'Твоя комната':'Your room'}</div></div><div class="room-actions">${btnHtml}${cancelBtn}</div>`; 
-                    } else {
-                        btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); joinRoom('${r.id}', this)">${t('join')}</button>`;
-                        el.innerHTML = `<div class="room-icon">${r.creator_username?r.creator_username.charAt(0).toUpperCase():'?'}${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${stakeDisplay} ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><div class="room-actions">${btnHtml}</div>`; 
-                    } 
-                    c.appendChild(el); 
-                } catch (err) { console.error(`[ERROR] Render room ${index+1}:`, err); } 
-            }); 
+            const c=document.getElementById(id);if(!c)return;c.innerHTML=''; 
+            if(!rooms||rooms.length===0){c.innerHTML=`<div style="text-align:center;color:var(--sec);padding:20px;">${t('noRooms')}</div>`;return;} 
+            rooms.forEach((r,i)=>{ 
+                try{ 
+                    const trulyMine=Number(r.creator_tg_id)===MY_ID, isOpp=Number(r.opponent_tg_id)===MY_ID, isFin=r.status==='finished', isPlay=r.status==='playing', isWait=r.status==='waiting';
+                    const el=document.createElement('div'); el.className=`room-card ${trulyMine?'my-room':''} ${isPlay?'playing':''}`; 
+                    if(trulyMine||isOpp){el.onclick=()=>resumeRoom(r.id);el.style.cursor='pointer';}
+                    let badgeHtml='',btnHtml='',timerHtml=''; const rp=getRealPassword(r.room_password); const hasPwd=rp&&rp.length>0; let lockIcon=hasPwd?'<span class="lock-icon">🔒</span>':'';
+                    if(isWait){badgeHtml=`<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">${t('waiting')}</span>`; if(!window.roomExpiry[r.id])window.roomExpiry[r.id]=Date.now()+5*60*1000; const rem=window.roomExpiry[r.id]-Date.now(); timerHtml=`<span class="room-timer ${rem<=60000?'urgent':''}" data-room-id="${r.id}">${formatCountdown(rem)}</span>`;}
+                    const sd=formatStakeDisplay(r);
+                    if(trulyMine){if(isPlay)btnHtml=`<button class="room-btn join" onclick="event.stopPropagation();resumeRoom('${r.id}')">${t('return')}</button>`; const cb=!isFin?`<button class="room-btn cancel" onclick="event.stopPropagation();cancelRoom('${r.id}')">✕</button>`:''; el.innerHTML=`<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${sd} ${badgeHtml}${timerHtml}</div><div class="room-creator">${currentLang==='ru'?'Твоя комната':'Your room'}</div></div><div class="room-actions">${btnHtml}${cb}</div>`;} 
+                    else {btnHtml=`<button class="room-btn join" onclick="event.stopPropagation();joinRoom('${r.id}',this)">${t('join')}</button>`; el.innerHTML=`<div class="room-icon">${r.creator_username?r.creator_username.charAt(0).toUpperCase():'?'}${lockIcon}</div><div class="room-info"><div class="room-stake">💰 ${sd} ${badgeHtml}${timerHtml}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><div class="room-actions">${btnHtml}</div>`;}
+                    c.appendChild(el);
+                }catch(err){console.error(`[ERROR] Render room ${i+1}:`,err);}
+            });
         }
 
-        async function resumeRoom(roomId) { 
-            try { 
-                const room = await db('rooms', 'GET', null, `?id=eq.${roomId}`, true); 
-                if (!room) { alert('Room not found'); loadRooms(); return; } 
-                currentRoom = room; 
-                if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } 
-                showGameScreen(); startPolling(); 
-            } catch(e) { alert(t('cancelError') + e.message); } 
-        }
-        
-        async function cancelRoom(roomId) { 
-            if (!roomId) return; 
-            try { await db('rooms', 'DELETE', null, `?id=eq.${roomId}`); delete window.roomExpiry[roomId]; if (currentRoom?.id===roomId) { currentRoom=null; isGameFinished=true; if(pollInterval){clearInterval(pollInterval);pollInterval=null;} if(window._timerInterval)clearInterval(window._timerInterval); window._timerRunning=false; } loadRooms(); } 
-            catch(e) { console.warn('Cancel room warning:', e); loadRooms(); } 
-        }
-        
-        async function joinRoom(roomId, btnElement) { 
-            if(!btnElement) return; btnElement.disabled = true; btnElement.textContent = '⏳'; 
-            try { 
-                const roomData = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
-                if (!roomData || !roomData.length) throw new Error(t('roomLocked'));
-                const room = roomData[0];
-                if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
-                const realPassword = getRealPassword(room.room_password);
-                if (realPassword) { const pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:'); if (pwd !== realPassword) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = t('join'); return; } } 
-                await ensureUserExists(MY_ID, user.username); 
-                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true); 
-                if (!res) throw new Error(t('joinError')); 
-                currentRoom = res; showGameScreen(); startPolling(); loadRooms(); 
-            } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
-        }
+        async function resumeRoom(roomId) { try { const room=await db('rooms','GET',null,`?id=eq.${roomId}`,true); if(!room){alert('Room not found');loadRooms();return;} currentRoom=room; if(currentRoom.status==='finished'){showGameScreen();showGameResult(currentRoom);return;} showGameScreen();startPolling(); } catch(e){alert(t('cancelError')+e.message);} }
+        async function cancelRoom(roomId) { if(!roomId)return; try{await db('rooms','DELETE',null,`?id=eq.${roomId}`);delete window.roomExpiry[roomId];if(currentRoom?.id===roomId){currentRoom=null;isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(window._timerInterval)clearInterval(window._timerInterval);window._timerRunning=false;}loadRooms();}catch(e){console.warn('Cancel room warning:',e);loadRooms();} }
+        async function joinRoom(roomId, btnElement) { if(!btnElement)return; btnElement.disabled=true;btnElement.textContent='⏳'; try{ const rd=await db('rooms','GET',null,`?id=eq.${roomId}`,false); if(!rd||!rd.length)throw new Error(t('roomLocked')); const room=rd[0]; if(Number(room.creator_tg_id)===MY_ID||Number(room.opponent_tg_id)===MY_ID){resumeRoom(roomId);return;} const rp=getRealPassword(room.room_password); if(rp){const pwd=prompt('🔒 Комната защищена паролем.\nВведите пароль:');if(pwd!==rp){alert('Неверный пароль!');btnElement.disabled=false;btnElement.textContent=t('join');return;}} await ensureUserExists(MY_ID,user.username); const res=await db('rooms','PATCH',{opponent_tg_id:MY_ID,opponent_username:user.username,status:'playing'},`?id=eq.${roomId}&status=eq.waiting`,true); if(!res)throw new Error(t('joinError')); currentRoom=res;showGameScreen();startPolling();loadRooms(); }catch(e){alert(t('joinError')+e.message);if(btnElement){btnElement.disabled=false;btnElement.textContent=t('join');}} }
 
         async function renderPlayerStats() {
-            if (!currentRoom || !currentRoom.id) return;
-            try {
-                const roomData = await db('rooms', 'GET', null, `?id=eq.${currentRoom.id}`, true);
-                if (!roomData) return;
-                const creatorId = roomData.creator_tg_id, opponentId = roomData.opponent_tg_id;
-                const isCreator = String(creatorId) === String(MY_ID);
-                if (isCreator) { renderAvatar('playerAvatar', MY_PHOTO_URL, user.username||'?'); if(opponentId) renderAvatar('opponentAvatar', null, roomData.opponent_username||'?'); }
-                else { renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username||'?'); if(creatorId) renderAvatar('playerAvatar', null, roomData.creator_username||'?'); }
-                if (!creatorId || !opponentId) { document.getElementById(isCreator?'opponentStats':'playerStats').innerHTML='<span style="color:var(--sec)">⏳ Ожидание...</span>'; document.getElementById(isCreator?'playerStats':'opponentStats').innerHTML='<span>✅ 0</span><br><span>❌ 0</span>'; return; }
-                const now = Date.now(); if (now - window._lastStatsUpdate < 2000) return; window._lastStatsUpdate = now;
-                const results = await Promise.allSettled([ db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(creatorId)}`,false), db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(opponentId)}`,false) ]);
-                const cData = (results[0].status==='fulfilled'&&results[0].value?.[0])?results[0].value[0]:{wins:0,losses:0};
-                const oData = (results[1].status==='fulfilled'&&results[1].value?.[0])?results[1].value[0]:{wins:0,losses:0};
-                document.getElementById(isCreator?'playerStats':'opponentStats').innerHTML = `<span style="color:var(--success)">✅ ${cData.wins||0}</span><br><span style="color:var(--error)">❌ ${cData.losses||0}</span>`;
-                document.getElementById(isCreator?'opponentStats':'playerStats').innerHTML = `<span style="color:var(--success)">✅ ${oData.wins||0}</span><br><span style="color:var(--error)">❌ ${oData.losses||0}</span>`;
-            } catch (e) { console.warn('Stats load error:', e); }
+            if(!currentRoom||!currentRoom.id)return;
+            try{const rd=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`,true);if(!rd)return;const cid=rd.creator_tg_id,oid=rd.opponent_tg_id;const isCr=String(cid)===String(MY_ID);
+            if(isCr){renderAvatar('playerAvatar',MY_PHOTO_URL,user.username||'?');if(oid)renderAvatar('opponentAvatar',null,rd.opponent_username||'?');}
+            else{renderAvatar('opponentAvatar',MY_PHOTO_URL,user.username||'?');if(cid)renderAvatar('playerAvatar',null,rd.creator_username||'?');}
+            if(!cid||!oid){document.getElementById(isCr?'opponentStats':'playerStats').innerHTML='<span style="color:var(--sec)">⏳ Ожидание...</span>';document.getElementById(isCr?'playerStats':'opponentStats').innerHTML='<span>✅ 0</span><br><span>❌ 0</span>';return;}
+            const now=Date.now();if(now-window._lastStatsUpdate<2000)return;window._lastStatsUpdate=now;
+            const res=await Promise.allSettled([db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(cid)}`,false),db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(oid)}`,false)]);
+            const cD=(res[0].status==='fulfilled'&&res[0].value?.[0])?res[0].value[0]:{wins:0,losses:0};
+            const oD=(res[1].status==='fulfilled'&&res[1].value?.[0])?res[1].value[0]:{wins:0,losses:0};
+            document.getElementById(isCr?'playerStats':'opponentStats').innerHTML=`<span style="color:var(--success)">✅ ${cD.wins||0}</span><br><span style="color:var(--error)">❌ ${cD.losses||0}</span>`;
+            document.getElementById(isCr?'opponentStats':'playerStats').innerHTML=`<span style="color:var(--success)">✅ ${oD.wins||0}</span><br><span style="color:var(--error)">❌ ${oD.losses||0}</span>`;
+            }catch(e){console.warn('Stats load error:',e);}
         }
         
         function showGameScreen() { 
             ['lobbyScreen','statsScreen','skinsScreen','leaderboardScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden')); 
             document.getElementById('gameScreen')?.classList.remove('hidden'); 
-            if (!currentRoom) { document.getElementById('statusMessage').textContent = t('roomNotFound'); return; } 
-            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID); 
-            const myCol = isCreator ? 'creator_choice' : 'opponent_choice'; 
-            const choices = document.querySelectorAll('.choice-btn'); 
-            if (currentRoom[myCol] && currentRoom[myCol==='creator_choice'?'opponent_choice':'creator_choice']) { choices.forEach(b=>b.disabled=true); document.getElementById('statusMessage').textContent=t('summarizing'); } 
-            else if (currentRoom[myCol]) { choices.forEach(b=>b.disabled=true); document.getElementById('statusMessage').textContent=t('yourMoveRecorded'); } 
-            else { choices.forEach(b=>b.disabled=false); document.getElementById('statusMessage').innerHTML='<div class="spinner"></div>'; } 
-            isGameFinished = false; window._timerRunning = false; 
-            
-            document.getElementById('stakeAmount').textContent = formatStakeDisplay(currentRoom);
-            
-            const currency = getRoomCurrency(currentRoom);
-            if (currency === 'stars') {
-                const starsAmount = getStarsAmount(currentRoom);
-                document.getElementById('winAmount').textContent = `⭐ ${Math.round(starsAmount * 2 * 0.95)}`;
-            } else {
-                document.getElementById('winAmount').textContent = ((currentRoom.stake||0) * 2 * 0.95).toFixed(2) + ' TON';
-            }
-            renderPlayerStats(); updateGameStatus(currentRoom); 
+            if(!currentRoom){document.getElementById('statusMessage').textContent=t('roomNotFound');return;} 
+            const isCr=String(currentRoom.creator_tg_id)===String(MY_ID),myCol=isCr?'creator_choice':'opponent_choice'; 
+            const choices=document.querySelectorAll('.choice-btn'); 
+            if(currentRoom[myCol]&&currentRoom[myCol==='creator_choice'?'opponent_choice':'creator_choice']){choices.forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent=t('summarizing');} 
+            else if(currentRoom[myCol]){choices.forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent=t('yourMoveRecorded');} 
+            else{choices.forEach(b=>b.disabled=false);document.getElementById('statusMessage').innerHTML='<div class="spinner"></div>';} 
+            isGameFinished=false;window._timerRunning=false; 
+            document.getElementById('stakeAmount').textContent=formatStakeDisplay(currentRoom);
+            const cur=getRoomCurrency(currentRoom);
+            if(cur==='stars'){document.getElementById('winAmount').textContent=`⭐ ${Math.round(getStarsAmount(currentRoom)*2*0.95)}`;}
+            else{document.getElementById('winAmount').textContent=((currentRoom.stake||0)*2*0.95).toFixed(2)+' TON';}
+            renderPlayerStats();updateGameStatus(currentRoom); 
         }
         
         function updateGameStatus(room) { 
-            if (!room || isGameFinished) return; 
-            const msgEl = document.getElementById('statusMessage'), timerText = document.getElementById('timerText'), timerBarContainer = document.getElementById('timerBarContainer'), timerBar = document.getElementById('timerBar'); 
-            const isCreator = String(room.creator_tg_id) === String(MY_ID), myCol = isCreator ? 'creator_choice' : 'opponent_choice'; 
-            if (room[myCol] && room[myCol==='creator_choice'?'opponent_choice':'creator_choice']) { msgEl.textContent=t('summarizing'); timerText.classList.remove('active'); timerBarContainer.style.display='none'; window._timerRunning=false; if(window._timerInterval)clearInterval(window._timerInterval); return; } 
-            timerText.classList.remove('active'); timerBarContainer.style.display='none'; timerBar.style.width='100%'; timerBar.classList.remove('urgent'); 
-            if (room.status==='waiting') msgEl.textContent=t('waitingForOpponent'); 
-            else if (room.status==='playing') { if(room[myCol]){msgEl.textContent=t('yourMoveRecorded');window._timerRunning=false;} else { msgEl.innerHTML=`<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`; timerText.classList.add('active'); timerBarContainer.style.display='block'; if(!window._timerRunning){window._timerRunning=true;window._timerStart=Date.now();startTimer(window._timerStart);} } } 
-            else { msgEl.textContent=t('gameOver'); window._timerRunning=false; } 
+            if(!room||isGameFinished)return; const me=document.getElementById('statusMessage'),tt=document.getElementById('timerText'),tc=document.getElementById('timerBarContainer'),tb=document.getElementById('timerBar'); 
+            const isCr=String(room.creator_tg_id)===String(MY_ID),myCol=isCr?'creator_choice':'opponent_choice'; 
+            if(room[myCol]&&room[myCol==='creator_choice'?'opponent_choice':'creator_choice']){me.textContent=t('summarizing');tt.classList.remove('active');tc.style.display='none';window._timerRunning=false;if(window._timerInterval)clearInterval(window._timerInterval);return;} 
+            tt.classList.remove('active');tc.style.display='none';tb.style.width='100%';tb.classList.remove('urgent'); 
+            if(room.status==='waiting')me.textContent=t('waitingForOpponent'); 
+            else if(room.status==='playing'){if(room[myCol]){me.textContent=t('yourMoveRecorded');window._timerRunning=false;}else{me.innerHTML=`<span style="color:var(--error)">⚠️ ${t('yourTurn')}</span>`;tt.classList.add('active');tc.style.display='block';if(!window._timerRunning){window._timerRunning=true;window._timerStart=Date.now();startTimer(window._timerStart);}}} 
+            else{me.textContent=t('gameOver');window._timerRunning=false;} 
         }
         
-        function startTimer(startTime) { if(window._timerInterval)clearInterval(window._timerInterval); const timeLimit=30000, timerBar=document.getElementById('timerBar'), timerText=document.getElementById('timerText'); window._timerInterval=setInterval(()=>{ if(!window._timerRunning)return clearInterval(window._timerInterval); const elapsed=Date.now()-startTime, remaining=Math.max(0,timeLimit-elapsed); timerBar.style.width=(remaining/timeLimit)*100+'%'; timerText.textContent=Math.ceil(remaining/1000)+'s'; if(remaining<10000)timerBar.classList.add('urgent'); if(remaining<=0){clearInterval(window._timerInterval);window._timerRunning=false;handleTimeout();} },1000); }
-        
-        async function handleTimeout() { if(!currentRoom||isGameFinished)return; const myCol=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice'; if(!currentRoom[myCol]){isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}await db('rooms','PATCH',{status:'finished'},`?id=eq.${currentRoom.id}`);const oppId=String(currentRoom.creator_tg_id)===String(MY_ID)?currentRoom.opponent_tg_id:currentRoom.creator_tg_id;db('users','GET',null,`?telegram_id=eq.${oppId}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${oppId}`)).catch(console.warn);db('users','PATCH',{losses:(currentWins||0)+1},`?telegram_id=eq.${MY_ID}`).catch(console.warn);document.getElementById('statusMessage').innerHTML=`<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;updateStats();setTimeout(()=>forceExitToLobby(),3000);} }
-        
-        function startPolling() { if(pollInterval)clearInterval(pollInterval); if(!currentRoom)return; isGameFinished=false; let opponentJoined=false; pollInterval=setInterval(async()=>{ if(!currentRoom||isGameFinished)return; try{const res=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);const room=res[0];if(!room)return;if(room.opponent_tg_id&&!opponentJoined){playSound('join');opponentJoined=true;}currentRoom=room;updateGameStatus(room);renderPlayerStats();if(room.creator_choice&&room.opponent_choice&&room.status!=='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;await showRevealAnimation(room);return;}if(room.status==='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;showGameResult(room);return;}}catch(e){console.warn('Poll error:',e);} },2000); }
-        
-        async function makeMove(choice) { if(!currentRoom){alert(t('roomNotFound'));return;} if(!currentRoom.opponent_tg_id){alert(t('gameNotActive'));return;} const col=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice'; if(currentRoom[col])return; document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true); document.getElementById('statusMessage').textContent=t('yourMoveRecorded'); window._timerRunning=false; if(window._timerInterval)clearInterval(window._timerInterval); document.getElementById('timerText')?.classList.remove('active'); document.getElementById('timerBarContainer').style.display='none'; try{await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);currentRoom[col]=choice;}catch(e){alert(t('moveError')+e.message);document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);} }
+        function startTimer(st){if(window._timerInterval)clearInterval(window._timerInterval);const tl=30000,tb=document.getElementById('timerBar'),tt=document.getElementById('timerText');window._timerInterval=setInterval(()=>{if(!window._timerRunning)return clearInterval(window._timerInterval);const el=Date.now()-st,rem=Math.max(0,tl-el);tb.style.width=(rem/tl)*100+'%';tt.textContent=Math.ceil(rem/1000)+'s';if(rem<10000)tb.classList.add('urgent');if(rem<=0){clearInterval(window._timerInterval);window._timerRunning=false;handleTimeout();}},1000);}
+        async function handleTimeout(){if(!currentRoom||isGameFinished)return;const myCol=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(!currentRoom[myCol]){isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}await db('rooms','PATCH',{status:'finished'},`?id=eq.${currentRoom.id}`);const oid=String(currentRoom.creator_tg_id)===String(MY_ID)?currentRoom.opponent_tg_id:currentRoom.creator_tg_id;db('users','GET',null,`?telegram_id=eq.${oid}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${oid}`)).catch(console.warn);db('users','PATCH',{losses:(currentWins||0)+1},`?telegram_id=eq.${MY_ID}`).catch(console.warn);document.getElementById('statusMessage').innerHTML=`<div style="color:var(--error);font-size:18px;">${t('timeoutLose')}</div>`;updateStats();setTimeout(()=>forceExitToLobby(),3000);}}
+        function startPolling(){if(pollInterval)clearInterval(pollInterval);if(!currentRoom)return;isGameFinished=false;let oj=false;pollInterval=setInterval(async()=>{if(!currentRoom||isGameFinished)return;try{const res=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);const room=res[0];if(!room)return;if(room.opponent_tg_id&&!oj){playSound('join');oj=true;}currentRoom=room;updateGameStatus(room);renderPlayerStats();if(room.creator_choice&&room.opponent_choice&&room.status!=='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;await showRevealAnimation(room);return;}if(room.status==='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;showGameResult(room);return;}}catch(e){console.warn('Poll error:',e);}},2000);}
+        async function makeMove(choice){if(!currentRoom){alert(t('roomNotFound'));return;}if(!currentRoom.opponent_tg_id){alert(t('gameNotActive'));return;}const col=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(currentRoom[col])return;document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent=t('yourMoveRecorded');window._timerRunning=false;if(window._timerInterval)clearInterval(window._timerInterval);document.getElementById('timerText')?.classList.remove('active');document.getElementById('timerBarContainer').style.display='none';try{await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);currentRoom[col]=choice;}catch(e){alert(t('moveError')+e.message);document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);}}
 
         async function saveGameHistory(resultStr, playerMove) {
-            if (!currentRoom) return;
-            const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
-            const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
-            const currency = getRoomCurrency(currentRoom);
-            const starsAmount = currency === 'stars' ? getStarsAmount(currentRoom) : null;
-            
-            // ✅ КОДИРУЕМ ВАЛЮТУ В ПОЛЕ STAKE (используем отрицательное значение для звёзд)
-            const encodedStake = currency === 'stars' ? -(starsAmount || Math.round((currentRoom.stake||0)*150)) : currentRoom.stake;
-            
-            const historyData = { player_id: MY_ID, opponent_name: opponentName||'unknown', stake: encodedStake, player_move: playerMove, result: resultStr, played_at: new Date().toISOString() };
-            try { await db('game_history', 'POST', [historyData]); } catch (e) { console.error('❌ Ошибка сохранения истории:', e); }
+            if(!currentRoom)return;
+            const isCr=String(currentRoom.creator_tg_id)===String(MY_ID);
+            const oppName=isCr?currentRoom.opponent_username:currentRoom.creator_username;
+            const cur=getRoomCurrency(currentRoom);
+            const sa=cur==='stars'?getStarsAmount(currentRoom):null;
+            // ✅ Отрицательный stake для проигрыша, положительный для выигрыша
+            let encodedStake;
+            if(resultStr==='win'){
+                encodedStake=cur==='stars'?-(sa||Math.round((currentRoom.stake||0)*150)):currentRoom.stake;
+            }else if(resultStr==='lose'){
+                encodedStake=cur==='stars'?-(sa||Math.round((currentRoom.stake||0)*150)):-(currentRoom.stake||0);
+            }else{
+                encodedStake=0; // ничья
+            }
+            const hd={player_id:MY_ID,opponent_name:oppName||'unknown',stake:encodedStake,player_move:playerMove,result:resultStr,played_at:new Date().toISOString()};
+            try{await db('game_history','POST',[hd]);}catch(e){console.error('❌ Ошибка сохранения истории:',e);}
         }
         
         async function showRevealAnimation(room) { 
-            const overlay = document.getElementById('revealOverlay'), confetti = document.getElementById('confettiContainer'); 
-            const isCreator = String(room.creator_tg_id) === String(MY_ID); 
-            const myMove = isCreator ? room.creator_choice : room.opponent_choice; 
-            const oppMove = isCreator ? room.opponent_choice : room.creator_choice; 
-            document.getElementById('revealPlayer1Label').textContent = currentLang==='ru'?'Вы':'You'; 
-            document.getElementById('revealPlayer2Label').textContent = currentLang==='ru'?'Соперник':'Opponent'; 
-            document.getElementById('card1Img').src = moveImages[myMove]; document.getElementById('card1Name').textContent = t(myMove); 
-            document.getElementById('card2Img').src = moveImages[oppMove]; document.getElementById('card2Name').textContent = t(oppMove); 
-            overlay.classList.remove('hidden'); confetti.classList.add('hidden'); confetti.innerHTML = ''; 
-            document.getElementById('card1').classList.remove('flipped'); document.getElementById('card2').classList.remove('flipped'); 
-            const resultEl = document.getElementById('revealResult'); resultEl.className = 'reveal-result'; resultEl.textContent = ''; 
-            document.getElementById('revealCountdown').textContent = ''; 
-            const emotionDiv = document.getElementById('revealEmotion'), emotionImg = document.getElementById('emotionImg');
-            emotionDiv.classList.add('hidden'); emotionImg.src = '';
-            await sleep(500); document.getElementById('card1').classList.add('flipped'); playSound('flip');
-            await sleep(1000); document.getElementById('card2').classList.add('flipped'); playSound('flip');
+            const overlay=document.getElementById('revealOverlay'),confetti=document.getElementById('confettiContainer'); 
+            const isCr=String(room.creator_tg_id)===String(MY_ID); 
+            const myMove=isCr?room.creator_choice:room.opponent_choice,oppMove=isCr?room.opponent_choice:room.creator_choice; 
+            document.getElementById('revealPlayer1Label').textContent=currentLang==='ru'?'Вы':'You'; 
+            document.getElementById('revealPlayer2Label').textContent=currentLang==='ru'?'Соперник':'Opponent'; 
+            document.getElementById('card1Img').src=moveImages[myMove];document.getElementById('card1Name').textContent=t(myMove); 
+            document.getElementById('card2Img').src=moveImages[oppMove];document.getElementById('card2Name').textContent=t(oppMove); 
+            overlay.classList.remove('hidden');confetti.classList.add('hidden');confetti.innerHTML=''; 
+            document.getElementById('card1').classList.remove('flipped');document.getElementById('card2').classList.remove('flipped'); 
+            const resultEl=document.getElementById('revealResult');resultEl.className='reveal-result';resultEl.textContent=''; 
+            document.getElementById('revealCountdown').textContent=''; 
+            const emDiv=document.getElementById('revealEmotion'),emImg=document.getElementById('emotionImg');emDiv.classList.add('hidden');emImg.src='';
+            await sleep(500);document.getElementById('card1').classList.add('flipped');playSound('flip');
+            await sleep(1000);document.getElementById('card2').classList.add('flipped');playSound('flip');
             await sleep(800); 
-            const result = calculateWinner(room), msg = result.msg; 
-            const isWin = msg.includes('Победа')||msg.includes('Victory'), isDraw = msg.includes('Ничья')||msg.includes('Draw'); 
-            resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin?'victory':isDraw?'draw':'defeat'}`; 
-            emotionDiv.classList.remove('hidden');
-            if (isWin) { emotionImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png'; playSound('win'); createConfetti(); } 
-            else if (!isDraw) { emotionImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png'; playSound('lose'); } 
-            else { emotionDiv.classList.add('hidden'); }
-            let resultForHistory = 'draw'; if (result.winnerId) { resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose'; }
-            await saveGameHistory(resultForHistory, myMove);
-            let countdown = 3; const countdownEl = document.getElementById('revealCountdown'); countdownEl.textContent = countdown; 
-            const ci = setInterval(() => { countdown--; if (countdown > 0) countdownEl.textContent = countdown; else { clearInterval(ci); overlay.classList.add('hidden'); confetti.classList.add('hidden'); updateStats(); forceExitToLobby(); } }, 1000); 
-            await db('rooms', 'PATCH', { status: 'finished' }, `?id=eq.${room.id}`); 
-            const loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id; 
-            if (result.winnerId) db('users','GET',null,`?telegram_id=eq.${result.winnerId}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${result.winnerId}`)).catch(console.warn); 
-            if (loserId) db('users','GET',null,`?telegram_id=eq.${loserId}&select=losses`,false).then(d=>db('users','PATCH',{losses:(d[0]?.losses||0)+1},`?telegram_id=eq.${loserId}`)).catch(console.warn); 
+            const result=calculateWinner(room),msg=result.msg; 
+            const isWin=msg.includes('Победа')||msg.includes('Victory'),isDraw=msg.includes('Ничья')||msg.includes('Draw'); 
+            resultEl.textContent=msg;resultEl.className=`reveal-result show ${isWin?'victory':isDraw?'draw':'defeat'}`; 
+            emDiv.classList.remove('hidden');
+            if(isWin){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';playSound('win');createConfetti();} 
+            else if(!isDraw){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';playSound('lose');} 
+            else{emDiv.classList.add('hidden');}
+            let rfh='draw';if(result.winnerId){rfh=(result.winnerId===MY_ID)?'win':'lose';}
+            await saveGameHistory(rfh,myMove);
+            let cd=3;const cdEl=document.getElementById('revealCountdown');cdEl.textContent=cd; 
+            const ci=setInterval(()=>{cd--;if(cd>0)cdEl.textContent=cd;else{clearInterval(ci);overlay.classList.add('hidden');confetti.classList.add('hidden');updateStats();forceExitToLobby();}},1000); 
+            await db('rooms','PATCH',{status:'finished'},`?id=eq.${room.id}`); 
+            const loserId=String(result.winnerId)===String(room.creator_tg_id)?room.opponent_tg_id:room.creator_tg_id; 
+            if(result.winnerId)db('users','GET',null,`?telegram_id=eq.${result.winnerId}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${result.winnerId}`)).catch(console.warn); 
+            if(loserId)db('users','GET',null,`?telegram_id=eq.${loserId}&select=losses`,false).then(d=>db('users','PATCH',{losses:(d[0]?.losses||0)+1},`?telegram_id=eq.${loserId}`)).catch(console.warn); 
         }
         
-        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-        function createConfetti() { const container = document.getElementById('confettiContainer'); container.classList.remove('hidden'); container.innerHTML = ''; const colors = ['#6366f1','#10b981','#fbbf24','#ef4444','#8b5cf6','#f59e0b']; for(let i=0;i<50;i++){const c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.backgroundColor=colors[Math.floor(Math.random()*colors.length)];c.style.animationDelay=Math.random()*2+'s';c.style.animationDuration=(2+Math.random()*2)+'s';c.style.width=(5+Math.random()*10)+'px';c.style.height=(5+Math.random()*10)+'px';c.style.borderRadius=Math.random()>0.5?'50%':'0';container.appendChild(c);} }
-        function showGameResult(room) { const msg = calculateWinner(room).msg; document.getElementById('statusMessage').innerHTML = `<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">${msg}</div>`; updateStats(); setTimeout(()=>forceExitToLobby(),3000); }
-        function calculateWinner(room) { const { creator_choice: c1, opponent_choice: c2, creator_tg_id: id1, opponent_tg_id: id2 } = room; if(!c1&&!c2)return{msg:t('draw'),winnerId:null}; if(!c1)return{msg:(MY_ID===id1)?t('defeat'):t('victory'),winnerId:id2}; if(!c2)return{msg:(MY_ID===id2)?t('defeat'):t('victory'),winnerId:id1}; if(c1===c2)return{msg:t('draw'),winnerId:null}; const beats={rock:'scissors',scissors:'paper',paper:'rock'}; const creatorWins=beats[c1]===c2; return{msg:(creatorWins?(MY_ID===id1):(MY_ID===id2))?t('victory'):t('defeat'),winnerId:creatorWins?id1:id2}; }
-        function renderSkins() { const c=document.getElementById('skinsList');if(!c)return;c.innerHTML='';SKINS.forEach(skin=>{const unlocked=currentWins>=skin.wins,active=currentSkin===skin.id;const el=document.createElement('div');el.className=`room-card ${active?'my-room':''}`;el.onclick=()=>openSkinModal(skin,currentWins);el.innerHTML=`<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinName(skin)}</div><div class="room-creator">${skin.wins} ${t('wins')}</div></div><button class="room-btn ${active?'cancel':'join'}" ${!unlocked?'disabled':''} onclick="event.stopPropagation();${unlocked&&!active?`equipSkin('${skin.id}')`:''}">${active?t('checkmark'):unlocked?t('equip'):t('locked')}</button>`;c.appendChild(el);}); }
-        function openSkinModal(skin,userWins){const modal=document.getElementById('skinModal');if(!modal)return;document.getElementById('modalImg').src=skin.img;document.getElementById('modalTitle').textContent=getSkinName(skin);document.getElementById('modalLevel').textContent=t('requires')+skin.wins+' '+t('wins');document.getElementById('modalDesc').textContent=getSkinDesc(skin);const fl=document.getElementById('modalFeatures');fl.innerHTML='';getSkinFeatures(skin).forEach(f=>{const li=document.createElement('li');li.textContent=f;fl.appendChild(li);});const rd=document.getElementById('modalReq');const unlocked=userWins>=skin.wins;rd.textContent=unlocked?t('unlocked'):t('needMore')+(skin.wins-userWins)+' '+t('wins');rd.className='skin-modal-req'+(unlocked?'':' locked');modal.classList.remove('hidden');}
+        function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+        function createConfetti(){const c=document.getElementById('confettiContainer');c.classList.remove('hidden');c.innerHTML='';const cols=['#6366f1','#10b981','#fbbf24','#ef4444','#8b5cf6','#f59e0b'];for(let i=0;i<50;i++){const cf=document.createElement('div');cf.className='confetti';cf.style.left=Math.random()*100+'%';cf.style.backgroundColor=cols[Math.floor(Math.random()*cols.length)];cf.style.animationDelay=Math.random()*2+'s';cf.style.animationDuration=(2+Math.random()*2)+'s';cf.style.width=(5+Math.random()*10)+'px';cf.style.height=(5+Math.random()*10)+'px';cf.style.borderRadius=Math.random()>0.5?'50%':'0';c.appendChild(cf);}}
+        function showGameResult(room){const msg=calculateWinner(room).msg;document.getElementById('statusMessage').innerHTML=`<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">${msg}</div>`;updateStats();setTimeout(()=>forceExitToLobby(),3000);}
+        function calculateWinner(room){const{c1=room.creator_choice,c2=room.opponent_choice,id1=room.creator_tg_id,id2=room.opponent_tg_id}=room;if(!c1&&!c2)return{msg:t('draw'),winnerId:null};if(!c1)return{msg:(MY_ID===id1)?t('defeat'):t('victory'),winnerId:id2};if(!c2)return{msg:(MY_ID===id2)?t('defeat'):t('victory'),winnerId:id1};if(c1===c2)return{msg:t('draw'),winnerId:null};const beats={rock:'scissors',scissors:'paper',paper:'rock'};const cw=beats[c1]===c2;return{msg:(cw?(MY_ID===id1):(MY_ID===id2))?t('victory'):t('defeat'),winnerId:cw?id1:id2};}
+        function renderSkins(){const c=document.getElementById('skinsList');if(!c)return;c.innerHTML='';SKINS.forEach(skin=>{const u=currentWins>=skin.wins,a=currentSkin===skin.id;const el=document.createElement('div');el.className=`room-card ${a?'my-room':''}`;el.onclick=()=>openSkinModal(skin,currentWins);el.innerHTML=`<div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinName(skin)}</div><div class="room-creator">${skin.wins} ${t('wins')}</div></div><button class="room-btn ${a?'cancel':'join'}" ${!u?'disabled':''} onclick="event.stopPropagation();${u&&!a?`equipSkin('${skin.id}')`:''}">${a?t('checkmark'):u?t('equip'):t('locked')}</button>`;c.appendChild(el);});}
+        function openSkinModal(skin,uw){const m=document.getElementById('skinModal');if(!m)return;document.getElementById('modalImg').src=skin.img;document.getElementById('modalTitle').textContent=getSkinName(skin);document.getElementById('modalLevel').textContent=t('requires')+skin.wins+' '+t('wins');document.getElementById('modalDesc').textContent=getSkinDesc(skin);const fl=document.getElementById('modalFeatures');fl.innerHTML='';getSkinFeatures(skin).forEach(f=>{const li=document.createElement('li');li.textContent=f;fl.appendChild(li);});const rd=document.getElementById('modalReq');const u=uw>=skin.wins;rd.textContent=u?t('unlocked'):t('needMore')+(skin.wins-uw)+' '+t('wins');rd.className='skin-modal-req'+(u?'':' locked');m.classList.remove('hidden');}
         function closeSkinModal(e){if(!e||e.target.id==='skinModal'||e.target.className==='skin-modal-close')document.getElementById('skinModal')?.classList.add('hidden');}
-        function equipSkin(id){currentSkin=id;try{localStorage.setItem('echidna_selected_skin',id);}catch(e){}const skin=SKINS.find(s=>s.id===id);if(skin){const logo=document.getElementById('mainLogoImg'),badge=document.getElementById('statSkinBadge'),level=document.getElementById('statLevel');if(logo)logo.src=skin.img;if(badge)badge.textContent=getSkinName(skin);if(level)level.textContent=SKINS.findIndex(s=>s.id===skin.id)+1;}renderSkins();updateStats();}
+        function equipSkin(id){currentSkin=id;try{localStorage.setItem('echidna_selected_skin',id);}catch(e){}const skin=SKINS.find(s=>s.id===id);if(skin){const l=document.getElementById('mainLogoImg'),b=document.getElementById('statSkinBadge'),lv=document.getElementById('statLevel');if(l)l.src=skin.img;if(b)b.textContent=getSkinName(skin);if(lv)lv.textContent=SKINS.findIndex(s=>s.id===skin.id)+1;}renderSkins();updateStats();}
         
         async function loadLeaderboard() { 
-            const c = document.getElementById('leaderboardList'); if(!c) return; 
-            try { 
-                const topUsers = await db('users','GET',null,'?select=username,wins,losses,telegram_id&order=wins.desc.nullslast&limit=20'); 
-                c.innerHTML = ''; 
-                topUsers.forEach((u,i)=>{ const wins=u.wins||0; const skin=SKINS[wins>=1000?4:wins>=500?3:wins>=100?2:wins>=50?1:0]; const name=u.username||`User_${String(u.telegram_id).slice(-4)}`; const isMe=Number(u.telegram_id)===MY_ID; const el=document.createElement('div');el.className=`room-card ${isMe?'my-room':''}`;el.innerHTML=`<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${name}</div><div class="lb-stats"><span>✅ ${wins}</span><span>❌ ${u.losses||0}</span></div></div>`;c.appendChild(el); }); 
-                const myData = await db('users','GET',null,`?telegram_id=eq.${MY_ID}&select=wins,losses`,false); let myWins=0,myLosses=0; if(myData&&myData.length>0){myWins=myData[0].wins||0;myLosses=myData[0].losses||0;} currentWins=myWins; 
-                const betterPlayers = await db('users','GET',null,`?wins=gt.${myWins}&select=telegram_id`); const myRank=betterPlayers.length+1; 
-                if(myRank>20){const mySkin=SKINS[myWins>=1000?4:myWins>=500?3:myWins>=100?2:myWins>=50?1:0];const myName=user.username||`User_${String(MY_ID).slice(-4)}`;const el=document.createElement('div');el.className='room-card my-room';el.style.border='1px dashed var(--gold)';el.style.background='rgba(251,191,36,0.05)';el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--gold);">${myRank}</div><div class="room-icon"><img src="${mySkin.img}" alt=""></div><div class="room-info"><div class="room-stake">@${myName} <span style="color:var(--success);font-size:10px;font-weight:bold;">(${currentLang==='ru'?'Вы':'You'})</span></div><div class="lb-stats"><span>✅ ${myWins}</span><span>❌ ${myLosses}</span></div></div>`;c.appendChild(el);} 
-                else{const note=document.createElement('div');note.style.cssText='text-align:center;padding:12px;color:var(--success);font-weight:600;background:var(--card);border-radius:12px;margin-top:8px;';note.innerHTML=`${t('top20Note')}<span style="color:var(--gold);">#${myRank}</span>`;c.appendChild(note);} 
-            } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
+            const c=document.getElementById('leaderboardList');if(!c)return; 
+            try{const tu=await db('users','GET',null,'?select=username,wins,losses,telegram_id&order=wins.desc.nullslast&limit=20');c.innerHTML=''; 
+            tu.forEach((u,i)=>{const w=u.wins||0;const sk=SKINS[w>=1000?4:w>=500?3:w>=100?2:w>=50?1:0];const n=u.username||`User_${String(u.telegram_id).slice(-4)}`;const im=Number(u.telegram_id)===MY_ID;const el=document.createElement('div');el.className=`room-card ${im?'my-room':''}`;el.innerHTML=`<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${sk.img}" alt=""></div><div class="room-info"><div class="room-stake">@${n}</div><div class="lb-stats"><span>✅ ${w}</span><span>❌ ${u.losses||0}</span></div></div>`;c.appendChild(el);}); 
+            const md=await db('users','GET',null,`?telegram_id=eq.${MY_ID}&select=wins,losses`,false);let mw=0,ml=0;if(md&&md.length>0){mw=md[0].wins||0;ml=md[0].losses||0;}currentWins=mw; 
+            const bp=await db('users','GET',null,`?wins=gt.${mw}&select=telegram_id`);const mr=bp.length+1; 
+            if(mr>20){const ms=SKINS[mw>=1000?4:mw>=500?3:mw>=100?2:mw>=50?1:0];const mn=user.username||`User_${String(MY_ID).slice(-4)}`;const el=document.createElement('div');el.className='room-card my-room';el.style.border='1px dashed var(--gold)';el.style.background='rgba(251,191,36,0.05)';el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--gold);">${mr}</div><div class="room-icon"><img src="${ms.img}" alt=""></div><div class="room-info"><div class="room-stake">@${mn} <span style="color:var(--success);font-size:10px;font-weight:bold;">(${currentLang==='ru'?'Вы':'You'})</span></div><div class="lb-stats"><span>✅ ${mw}</span><span>❌ ${ml}</span></div></div>`;c.appendChild(el);} 
+            else{const note=document.createElement('div');note.style.cssText='text-align:center;padding:12px;color:var(--success);font-weight:600;background:var(--card);border-radius:12px;margin-top:8px;';note.innerHTML=`${t('top20Note')}<span style="color:var(--gold);">#${mr}</span>`;c.appendChild(note);} 
+            }catch(e){c.innerHTML=`<div style="color:red;padding:15px;">${e.message}</div>`;} 
         }
 
         async function loadStats() {
-            if (!MY_ID || MY_ID === 999999) return;
-            const tableBody = document.getElementById('gamesTableBody');
-            tableBody.innerHTML = '<div class="loader" style="padding:20px;"><div class="spinner"></div></div>';
-            try {
-                const games = await db('game_history', 'GET', null, `?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`, false);
-                const gamesList = Array.isArray(games) ? games : [];
-                if (gamesList.length === 0) {
-                    tableBody.innerHTML = `<div class="games-empty"><div class="empty-icon">🎮</div><div>${t('noGames')}</div></div>`;
-                    document.getElementById('statsWinRate').textContent = '0%'; document.getElementById('statsFavMove').textContent = '-';
-                    document.getElementById('statsTotalWonTon').textContent = '0 TON'; document.getElementById('statsTotalWonStars').textContent = '0 ⭐';
-                    return;
-                }
-                let wins=0,losses=0,draws=0,totalWonTon=0,totalWonStars=0;
-                const moveCounts={rock:0,scissors:0,paper:0};
-                gamesList.forEach(game=>{
-                    if(game.result==='win'){wins++;
-                        // ✅ Отрицательный stake = звёзды
-                        if(game.stake<0){totalWonStars+=Math.round(Math.abs(game.stake)*0.95);}
-                        else{totalWonTon+=(game.stake||0)*0.95;}
-                    }else if(game.result==='lose')losses++;else draws++;
-                    if(game.player_move&&moveCounts[game.player_move]!==undefined)moveCounts[game.player_move]++;
+            if(!MY_ID||MY_ID===999999)return;
+            const tb=document.getElementById('gamesTableBody');tb.innerHTML='<div class="loader" style="padding:20px;"><div class="spinner"></div></div>';
+            try{
+                const games=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`,false);
+                const gl=Array.isArray(games)?games:[];
+                if(gl.length===0){tb.innerHTML=`<div class="games-empty"><div class="empty-icon">🎮</div><div>${t('noGames')}</div></div>`;document.getElementById('statsWinRate').textContent='0%';document.getElementById('statsFavMove').textContent='-';document.getElementById('statsTotalWonTon').textContent='0 TON';document.getElementById('statsTotalWonStars').textContent='0 ⭐';return;}
+                let wins=0,losses=0,draws=0,totalTon=0,totalStars=0;
+                const mc={rock:0,scissors:0,paper:0};
+                gl.forEach(game=>{
+                    // ✅ stake < 0 = звёзды, stake > 0 = TON, stake = 0 = ничья
+                    const isStars=game.stake<0;
+                    const absVal=Math.abs(game.stake||0);
+                    if(game.result==='win'){
+                        wins++;
+                        if(isStars)totalStars+=Math.round(absVal*0.95);
+                        else totalTon+=absVal*0.95;
+                    }else if(game.result==='lose'){
+                        losses++;
+                        // ✅ ВЫЧИТАЕМ ПРОИГРАННОЕ
+                        if(isStars)totalStars-=absVal;
+                        else totalTon-=absVal;
+                    }else{draws++;}
+                    if(game.player_move&&mc[game.player_move]!==undefined)mc[game.player_move]++;
                 });
-                const totalGames=wins+losses+draws;
-                document.getElementById('statsWinRate').textContent=(totalGames>0?Math.round((wins/totalGames)*100):0)+'%';
-                const maxMoves=Object.entries(moveCounts).sort((a,b)=>b[1]-a[1]);
-                const favMove=maxMoves[0]&&maxMoves[0][1]>0?maxMoves[0][0]:null;
-                const moveEmojis={rock:t('rockEmoji'),scissors:t('scissorsEmoji'),paper:t('paperEmoji')};
-                const moveNames={rock:t('rock'),scissors:t('scissors'),paper:t('paper')};
-                document.getElementById('statsFavMove').textContent=favMove?`${moveEmojis[favMove]} ${moveNames[favMove]}`:'-';
-                document.getElementById('statsTotalWonTon').textContent=totalWonTon.toFixed(2)+' TON';
-                document.getElementById('statsTotalWonStars').textContent=totalWonStars+' ⭐';
+                const tg=wins+losses+draws;
+                const wr=tg>0?Math.round((wins/tg)*100):0;
+                const mm=Object.entries(mc).sort((a,b)=>b[1]-a[1]);
+                const fm=mm[0]&&mm[0][1]>0?mm[0][0]:null;
+                const me={rock:t('rockEmoji'),scissors:t('scissorsEmoji'),paper:t('paperEmoji')};
+                const mn={rock:t('rock'),scissors:t('scissors'),paper:t('paper')};
+                document.getElementById('statsWinRate').textContent=wr+'%';
+                document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-';
                 
-                let rowsHtml='';
-                gamesList.slice(0,20).forEach(game=>{
-                    const opponentName=game.opponent_name||'???';
-                    const resultClass=game.result==='win'?'win':game.result==='lose'?'lose':'draw';
-                    const resultText=game.result==='win'?t('winText'):game.result==='lose'?t('loseText'):t('drawText');
-                    const moveEmoji=game.player_move?(moveEmojis[game.player_move]||''):'';
-                    // ✅ Отрицательный stake = звёзды
-                    const stakeDisplay=game.stake<0?`⭐ ${Math.abs(game.stake)}`:`${game.stake||0} TON`;
-                    rowsHtml+=`<div class="game-row"><span class="game-opponent">${escapeHtml(opponentName)}</span><span class="game-stake">${stakeDisplay}</span><span class="game-result ${resultClass}">${resultText}</span><span class="game-move">${moveEmoji}</span></div>`;
+                // ✅ ОТОБРАЖЕНИЕ С МИНУСОМ
+                const tonEl=document.getElementById('statsTotalWonTon');
+                const starsEl=document.getElementById('statsTotalWonStars');
+                tonEl.textContent=totalTon.toFixed(2)+' TON';
+                starsEl.textContent=totalStars+' ⭐';
+                if(totalTon<0)tonEl.classList.add('negative');else tonEl.classList.remove('negative');
+                if(totalStars<0)starsEl.classList.add('negative');else starsEl.classList.remove('negative');
+                
+                let rh='';
+                gl.slice(0,20).forEach(game=>{
+                    const on=game.opponent_name||'???';
+                    const rc=game.result==='win'?'win':game.result==='lose'?'lose':'draw';
+                    const rt=game.result==='win'?t('winText'):game.result==='lose'?t('loseText'):t('drawText');
+                    const mve=game.player_move?(me[game.player_move]||''):'';
+                    const isStars=game.stake<0;
+                    const absVal=Math.abs(game.stake||0);
+                    const sd=game.stake===0?'0':(isStars?`⭐ ${absVal}`:`${absVal} TON`);
+                    rh+=`<div class="game-row"><span class="game-opponent">${escapeHtml(on)}</span><span class="game-stake">${sd}</span><span class="game-result ${rc}">${rt}</span><span class="game-move">${mve}</span></div>`;
                 });
-                tableBody.innerHTML=rowsHtml;
-            } catch(e) { console.error('Load stats error:', e); tableBody.innerHTML=`<div class="games-empty"><div class="empty-icon">⚠️</div><div>Ошибка загрузки</div></div>`; }
+                tb.innerHTML=rh;
+            }catch(e){console.error('Load stats error:',e);tb.innerHTML=`<div class="games-empty"><div class="empty-icon">⚠️</div><div>Ошибка загрузки</div></div>`;}
         }
         
-        function escapeHtml(str) { if(!str)return''; return str.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
-        function filterRooms() { const q=document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('#roomsList .room-card').forEach(el=>{el.style.display=(el.querySelector('.room-creator')?.textContent.toLowerCase()||'').includes(q)?'flex':'none';}); }
+        function escapeHtml(str){if(!str)return'';return str.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);}
+        function filterRooms(){const q=document.getElementById('searchInput').value.toLowerCase();document.querySelectorAll('#roomsList .room-card').forEach(el=>{el.style.display=(el.querySelector('.room-creator')?.textContent.toLowerCase()||'').includes(q)?'flex':'none';});}
         
-        window.addEventListener('load', () => { 
-            const savedSkin = localStorage.getItem('echidna_selected_skin'); 
-            if (savedSkin && SKINS.find(s => s.id === savedSkin)) currentSkin = savedSkin; 
-            if (window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } 
+        window.addEventListener('load',()=>{ 
+            const ss=localStorage.getItem('echidna_selected_skin');if(ss&&SKINS.find(s=>s.id===ss))currentSkin=ss; 
+            if(window.Telegram?.WebApp){Telegram.WebApp.expand();Telegram.WebApp.setHeaderColor('#0a0a1a');Telegram.WebApp.setBackgroundColor('#0a0a1a');} 
             loadRooms();
         });
     </script>
