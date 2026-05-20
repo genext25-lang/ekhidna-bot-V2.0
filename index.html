@@ -286,7 +286,6 @@
             margin-right: 2px;
         }
         
-        /* ✅ СТИЛИ ДЛЯ ВЫРАВНИВАНИЯ */
         .stake-modal-content .stake-input,
         .stake-modal-content .stake-confirm-btn,
         .stake-modal-content .currency-switcher,
@@ -367,12 +366,12 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">💰</div>
-                    <div class="stat-value" id="statsTotalWonTon">0</div>
+                    <div class="stat-value" id="statsTotalWonTon">0 TON</div>
                     <div class="stat-label">Выиграно TON</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">⭐</div>
-                    <div class="stat-value stars-value" id="statsTotalWonStars">0</div>
+                    <div class="stat-value stars-value" id="statsTotalWonStars">0 ⭐</div>
                     <div class="stat-label">Выиграно Звёзд</div>
                 </div>
             </div>
@@ -630,27 +629,15 @@
         let currentWins = 0; window.roomExpiry = {};
         window._lastStatsUpdate = 0;
         
-        // ✅ ПЕРЕМЕННЫЕ ДЛЯ ВАЛЮТ (РАЗДЕЛЬНЫЙ УЧЁТ)
-        let currentCurrency = 'ton'; // 'ton' или 'stars'
+        // ✅ ПЕРЕМЕННЫЕ ДЛЯ ВАЛЮТ
+        let currentCurrency = 'ton';
         
-        // ✅ КОНВЕРТАЦИЯ TON → ЗВЕЗДЫ (только для пресетов)
-        const TON_TO_STARS_PRESETS = {
-            '0.1': 15,
-            '0.5': 75,
-            '1': 150,
-            '2': 300,
-            '5': 750,
-            '10': 1500
-        };
+        // ✅ КОНВЕРТАЦИЯ (только для пресетов)
+        const TON_TO_STARS_PRESETS = { '0.1': 15, '0.5': 75, '1': 150, '2': 300, '5': 750, '10': 1500 };
+        const STARS_TO_TON_PRESETS = { '15': 0.1, '75': 0.5, '150': 1, '300': 2, '750': 5, '1500': 10 };
         
-        const STARS_TO_TON_PRESETS = {
-            '15': 0.1,
-            '75': 0.5,
-            '150': 1,
-            '300': 2,
-            '750': 5,
-            '1500': 10
-        };
+        // ✅ ХРАНИЛИЩЕ ДЛЯ ДАННЫХ О ВАЛЮТЕ КОМНАТ (в памяти)
+        window.roomCurrencyData = {};
 
         // ✅ ЗВУКОВЫЕ ЭФФЕКТЫ
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -694,7 +681,6 @@
         
         async function updateStats(){try{if(!MY_ID||MY_ID===999999)return;const data=await db('users','GET',null,`?select=wins,losses&telegram_id=eq.${MY_ID}`,false);const wins=data[0]?.wins||0,losses=data[0]?.losses||0;currentWins=wins;document.getElementById('statWins').textContent=wins;document.getElementById('statGames').textContent=wins+losses;const skin=SKINS.find(s=>s.id===currentSkin)||SKINS[0];document.getElementById('statLevel').textContent=SKINS.findIndex(s=>s.id===skin.id)+1;document.getElementById('statSkinBadge').textContent=getSkinName(skin);document.getElementById('mainLogoImg').src=skin.img;}catch(e){console.error(e);}}
 
-        // ✅ ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ВАЛЮТ
         function switchCurrency(currency, btn) {
             currentCurrency = currency;
             document.querySelectorAll('.currency-option').forEach(b => b.classList.remove('active'));
@@ -768,7 +754,7 @@
         async function confirmStake() { 
             const inputVal = document.getElementById('stakeInput').value; 
             let finalStake = selectedStake; 
-            let inputStars = null; // ✅ ЗАПОМИНАЕМ ВВЕДЁННЫЕ ЗВЁЗДЫ
+            let inputStars = null;
             
             if (inputVal) { 
                 const parsed = parseFloat(inputVal); 
@@ -783,7 +769,6 @@
                     finalStake = Math.round(parsed * 100) / 100; 
                 }
             } else {
-                // ✅ ЕСЛИ ВЫБРАН ПРЕСЕТ ЗВЁЗД
                 if (currentCurrency === 'stars') {
                     const selectedBtn = document.querySelector('.stake-preset-btn.selected');
                     if (selectedBtn) inputStars = parseInt(selectedBtn.dataset.stars);
@@ -797,18 +782,30 @@
             
             try { 
                 await ensureUserExists(MY_ID, user.username); 
-                // ✅ СОХРАНЯЕМ ВАЛЮТУ И ЗВЁЗДЫ В КОМНАТЕ
-                const roomData = { 
+                // ✅ Сохраняем только stake в БД, валюту храним в room_password или в памяти
+                const room = await db('rooms', 'POST', [{ 
                     creator_tg_id: MY_ID, 
                     creator_username: user.username, 
                     stake: finalStake, 
                     status: 'waiting', 
-                    room_password: pwd || null,
-                    currency: currentCurrency, // 'ton' или 'stars'
-                    stars_amount: inputStars // количество звёзд (если выбраны звёзды)
-                };
-                const room = await db('rooms', 'POST', [roomData], '', true); 
-                currentRoom = room; showGameScreen(); startPolling(); loadRooms(); 
+                    room_password: pwd || null
+                }], '', true);
+                
+                // ✅ Сохраняем данные о валюте в памяти
+                if (room && room.id) {
+                    window.roomCurrencyData[room.id] = {
+                        currency: currentCurrency,
+                        stars_amount: inputStars
+                    };
+                }
+                
+                currentRoom = room; 
+                // ✅ Добавляем данные о валюте в currentRoom
+                if (currentRoom) {
+                    currentRoom._currency = currentCurrency;
+                    currentRoom._stars_amount = inputStars;
+                }
+                showGameScreen(); startPolling(); loadRooms(); 
             } catch(e) { alert(t('createError') + e.message); } 
         }
 
@@ -827,23 +824,38 @@
             }); 
         }, 1000);
 
-        // ✅ ФУНКЦИЯ ФОРМАТИРОВАНИЯ СТАВКИ (РАЗДЕЛЬНО)
+        // ✅ ФУНКЦИЯ ФОРМАТИРОВАНИЯ СТАВКИ
         function formatStakeDisplay(room) {
             const stake = room.stake || 0;
-            const currency = room.currency || 'ton';
-            const starsAmount = room.stars_amount;
+            // ✅ Получаем валюту из памяти
+            const currencyData = window.roomCurrencyData[room.id];
+            const currency = (currencyData && currencyData.currency) || room._currency || 'ton';
+            const starsAmount = (currencyData && currencyData.stars_amount) || room._stars_amount;
             
             if (currency === 'stars') {
-                // ✅ ТОЛЬКО ЗВЁЗДЫ
                 if (starsAmount) return `⭐ ${starsAmount}`;
-                // Если звёзды не сохранены, конвертируем
                 const presetStars = TON_TO_STARS_PRESETS[stake.toString()];
                 if (presetStars) return `⭐ ${presetStars}`;
                 return `⭐ ${Math.round(stake * 150)}`;
             } else {
-                // ✅ ТОЛЬКО TON
                 return `${stake} TON`;
             }
+        }
+
+        // ✅ ПОЛУЧЕНИЕ КОЛИЧЕСТВА ЗВЁЗД
+        function getStarsAmount(room) {
+            const currencyData = window.roomCurrencyData[room.id];
+            const starsAmount = (currencyData && currencyData.stars_amount) || room._stars_amount;
+            if (starsAmount) return starsAmount;
+            const presetStars = TON_TO_STARS_PRESETS[String(room.stake || 0)];
+            if (presetStars) return presetStars;
+            return Math.round((room.stake || 0) * 150);
+        }
+
+        // ✅ ПОЛУЧЕНИЕ ВАЛЮТЫ КОМНАТЫ
+        function getRoomCurrency(room) {
+            const currencyData = window.roomCurrencyData[room.id];
+            return (currencyData && currencyData.currency) || room._currency || 'ton';
         }
 
         async function loadRooms() { 
@@ -854,6 +866,15 @@
                 const pub = (allRooms || []).filter(r => Number(r.creator_tg_id) !== MY_ID);
                 const myRooms = Array.isArray(my) ? my : [];
                 const pubRooms = Array.isArray(pub) ? pub : [];
+                
+                // ✅ Восстанавливаем данные о валюте для своих комнат
+                myRooms.forEach(r => {
+                    if (window.roomCurrencyData[r.id]) {
+                        r._currency = window.roomCurrencyData[r.id].currency;
+                        r._stars_amount = window.roomCurrencyData[r.id].stars_amount;
+                    }
+                });
+                
                 renderRooms('myRoomsList', myRooms, true); 
                 renderRooms('roomsList', pubRooms, false); 
             } catch(e) { 
@@ -887,7 +908,6 @@
                         timerHtml = `<span class="room-timer ${remaining <= 60000 ? 'urgent' : ''}" data-room-id="${r.id}">${formatCountdown(remaining)}</span>`; 
                     }
                     
-                    // ✅ ФОРМАТИРОВАННАЯ СТАВКА
                     const stakeDisplay = formatStakeDisplay(r);
                     
                     if (trulyMine) {
@@ -903,9 +923,56 @@
             }); 
         }
 
-        async function resumeRoom(roomId) { try { const room = await db('rooms', 'GET', null, `?id=eq.${roomId}`, true); if (!room) { alert('Room not found'); loadRooms(); return; } currentRoom = room; if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } showGameScreen(); startPolling(); } catch(e) { alert(t('cancelError') + e.message); } }
-        async function cancelRoom(roomId) { if (!roomId) return; try { await db('rooms', 'DELETE', null, `?id=eq.${roomId}`); delete window.roomExpiry[roomId]; if (currentRoom?.id === roomId) { currentRoom = null; isGameFinished = true; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (window._timerInterval) { clearInterval(window._timerInterval); } window._timerRunning = false; } loadRooms(); } catch(e) { console.warn('Cancel room warning:', e); loadRooms(); } }
-        async function joinRoom(roomId, btnElement) { if(!btnElement) return; btnElement.disabled = true; btnElement.textContent = '⏳'; try { const roomData = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false); if (!roomData || !roomData.length) throw new Error(t('roomLocked')); const room = roomData[0]; if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; } if (room.room_password) { const pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:'); if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = t('join'); return; } } await ensureUserExists(MY_ID, user.username); const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true); if (!res) throw new Error(t('joinError')); currentRoom = res; showGameScreen(); startPolling(); loadRooms(); } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } }
+        async function resumeRoom(roomId) { 
+            try { 
+                const room = await db('rooms', 'GET', null, `?id=eq.${roomId}`, true); 
+                if (!room) { alert('Room not found'); loadRooms(); return; } 
+                // ✅ Восстанавливаем данные о валюте
+                if (window.roomCurrencyData[roomId]) {
+                    room._currency = window.roomCurrencyData[roomId].currency;
+                    room._stars_amount = window.roomCurrencyData[roomId].stars_amount;
+                }
+                currentRoom = room; 
+                if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; } 
+                showGameScreen(); startPolling(); 
+            } catch(e) { alert(t('cancelError') + e.message); } 
+        }
+        
+        async function cancelRoom(roomId) { 
+            if (!roomId) return; 
+            try { 
+                await db('rooms', 'DELETE', null, `?id=eq.${roomId}`); 
+                delete window.roomExpiry[roomId]; 
+                delete window.roomCurrencyData[roomId]; // ✅ Очищаем данные о валюте
+                if (currentRoom?.id === roomId) { 
+                    currentRoom = null; isGameFinished = true; 
+                    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } 
+                    if (window._timerInterval) { clearInterval(window._timerInterval); } 
+                    window._timerRunning = false; 
+                } 
+                loadRooms(); 
+            } catch(e) { console.warn('Cancel room warning:', e); loadRooms(); } 
+        }
+        
+        async function joinRoom(roomId, btnElement) { 
+            if(!btnElement) return; btnElement.disabled = true; btnElement.textContent = '⏳'; 
+            try { 
+                const roomData = await db('rooms', 'GET', null, `?id=eq.${roomId}`, false);
+                if (!roomData || !roomData.length) throw new Error(t('roomLocked'));
+                const room = roomData[0];
+                if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
+                if (room.room_password) { const pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:'); if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = t('join'); return; } } 
+                await ensureUserExists(MY_ID, user.username); 
+                const res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, `?id=eq.${roomId}&status=eq.waiting`, true); 
+                if (!res) throw new Error(t('joinError')); 
+                // ✅ Восстанавливаем данные о валюте
+                if (window.roomCurrencyData[roomId]) {
+                    res._currency = window.roomCurrencyData[roomId].currency;
+                    res._stars_amount = window.roomCurrencyData[roomId].stars_amount;
+                }
+                currentRoom = res; showGameScreen(); startPolling(); loadRooms(); 
+            } catch(e) { alert(t('joinError') + e.message); if(btnElement) { btnElement.disabled = false; btnElement.textContent = t('join'); } } 
+        }
 
         async function renderPlayerStats() {
             if (!currentRoom || !currentRoom.id) return;
@@ -941,19 +1008,17 @@
             else { choices.forEach(b => b.disabled = false); document.getElementById('statusMessage').innerHTML = '<div class="spinner"></div>'; } 
             isGameFinished = false; window._timerRunning = false; 
             
-            // ✅ ОТОБРАЖЕНИЕ СТАВКИ В ИГРЕ
             const stakeDisplay = formatStakeDisplay(currentRoom);
             document.getElementById('stakeAmount').textContent = stakeDisplay;
             
-            // Выигрыш
-            const stake = parseFloat(currentRoom.stake || 0);
-            const winAmount = (stake * 2 * 0.95).toFixed(2);
-            if (currentRoom.currency === 'stars') {
-                const starsAmount = currentRoom.stars_amount || Math.round(stake * 150);
+            const currency = getRoomCurrency(currentRoom);
+            if (currency === 'stars') {
+                const starsAmount = getStarsAmount(currentRoom);
                 const winStars = Math.round(starsAmount * 2 * 0.95);
                 document.getElementById('winAmount').textContent = `⭐ ${winStars}`;
             } else {
-                document.getElementById('winAmount').textContent = winAmount + ' TON';
+                const stake = parseFloat(currentRoom.stake || 0);
+                document.getElementById('winAmount').textContent = (stake * 2 * 0.95).toFixed(2) + ' TON';
             }
             
             renderPlayerStats(); updateGameStatus(currentRoom); 
@@ -983,18 +1048,29 @@
             if (!currentRoom) return;
             const isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             const opponentName = isCreator ? currentRoom.opponent_username : currentRoom.creator_username;
-            // ✅ СОХРАНЯЕМ ВАЛЮТУ В ИСТОРИИ
+            const currency = getRoomCurrency(currentRoom);
+            const starsAmount = currency === 'stars' ? getStarsAmount(currentRoom) : null;
+            
+            // ✅ Сохраняем историю с валютой в памяти
             const historyData = { 
                 player_id: MY_ID, 
                 opponent_name: opponentName || 'unknown', 
                 stake: currentRoom.stake, 
                 player_move: playerMove, 
                 result: resultStr, 
-                played_at: new Date().toISOString(),
-                currency: currentRoom.currency || 'ton',
-                stars_amount: currentRoom.stars_amount || null
+                played_at: new Date().toISOString()
             };
-            try { await db('game_history', 'POST', [historyData]); } catch (e) { console.error('❌ Ошибка сохранения истории:', e); }
+            
+            try { 
+                const result = await db('game_history', 'POST', [historyData]);
+                // ✅ Сохраняем валюту в памяти для этой записи
+                if (result && result[0]) {
+                    window.roomCurrencyData['history_' + result[0].id] = {
+                        currency: currency,
+                        stars_amount: starsAmount
+                    };
+                }
+            } catch (e) { console.error('❌ Ошибка сохранения истории:', e); }
         }
         
         async function showRevealAnimation(room) { 
@@ -1075,21 +1151,21 @@
                 }
                 
                 let wins = 0, losses = 0, draws = 0;
-                // ✅ РАЗДЕЛЬНЫЙ УЧЁТ TON И ЗВЁЗД
                 let totalWonTon = 0;
                 let totalWonStars = 0;
                 const moveCounts = { rock: 0, scissors: 0, paper: 0 };
                 
                 gamesList.forEach(game => {
                     if (game.result === 'win') { 
-                        wins++; 
-                        const gameCurrency = game.currency || 'ton';
-                        if (gameCurrency === 'stars') {
-                            // ✅ ВЫИГРЫШ В ЗВЁЗДАХ
-                            const starsAmount = game.stars_amount || Math.round((game.stake || 0) * 150);
+                        wins++;
+                        // ✅ Определяем валюту из памяти
+                        const currencyData = window.roomCurrencyData['history_' + game.id];
+                        const currency = (currencyData && currencyData.currency) || 'ton';
+                        
+                        if (currency === 'stars') {
+                            const starsAmount = (currencyData && currencyData.stars_amount) || Math.round((game.stake || 0) * 150);
                             totalWonStars += Math.round(starsAmount * 0.95);
                         } else {
-                            // ✅ ВЫИГРЫШ В TON
                             totalWonTon += (game.stake || 0) * 0.95;
                         }
                     }
@@ -1111,7 +1187,6 @@
                 
                 document.getElementById('statsWinRate').textContent = winRate + '%';
                 document.getElementById('statsFavMove').textContent = favMove ? `${moveEmojis[favMove]} ${moveNames[favMove]}` : '-';
-                // ✅ РАЗДЕЛЬНОЕ ОТОБРАЖЕНИЕ
                 document.getElementById('statsTotalWonTon').textContent = totalWonTon.toFixed(2) + ' TON';
                 document.getElementById('statsTotalWonStars').textContent = totalWonStars + ' ⭐';
                 
@@ -1122,11 +1197,13 @@
                     const resultText = game.result === 'win' ? t('winText') : game.result === 'lose' ? t('loseText') : t('drawText');
                     const moveEmoji = game.player_move ? (moveEmojis[game.player_move] || '') : '';
                     
-                    // ✅ ФОРМАТИРОВАНИЕ СТАВКИ В ИСТОРИИ
+                    // ✅ Определяем валюту
+                    const currencyData = window.roomCurrencyData['history_' + game.id];
+                    const currency = (currencyData && currencyData.currency) || 'ton';
+                    
                     let stakeDisplay;
-                    const gameCurrency = game.currency || 'ton';
-                    if (gameCurrency === 'stars') {
-                        const starsAmount = game.stars_amount || Math.round((game.stake || 0) * 150);
+                    if (currency === 'stars') {
+                        const starsAmount = (currencyData && currencyData.stars_amount) || Math.round((game.stake || 0) * 150);
                         stakeDisplay = `⭐ ${starsAmount}`;
                     } else {
                         stakeDisplay = `${game.stake || 0} TON`;
