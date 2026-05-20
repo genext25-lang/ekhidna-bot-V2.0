@@ -396,7 +396,8 @@
     </div>
     <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)">
         <div class="stake-modal-content" onclick="event.stopPropagation()">
-            <button class="skin-modal-close" onclick="closeSkinModal()">✕</button>
+            <!-- ✅ ИСПРАВЛЕННАЯ КНОПКА ЗАКРЫТИЯ -->
+            <button class="skin-modal-close" onclick="document.getElementById('stakeModal').classList.add('hidden'); event.stopPropagation();">✕</button>
             <div class="stake-modal-title" data-i18n="selectStake">💎 Выбери ставку</div>
             <div class="stake-presets" id="stakePresets">
                 <button class="stake-preset-btn selected" data-stake="0.1" onclick="selectStake(0.1, this)">0.1 TON</button>
@@ -599,6 +600,55 @@
         let selectedStake = 0.1, currentRoom = null, pollInterval = null, lobbyRefreshInterval = null, currentSkin = 'default', isGameFinished = false;
         let currentWins = 0; window.roomExpiry = {};
         window._lastStatsUpdate = 0;
+
+        // ✅ ЗВУКОВЫЕ ЭФФЕКТЫ (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'join') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'flip') {
+                const bufferSize = audioCtx.sampleRate * 0.12;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass'; filter.frequency.value = 2500; filter.Q.value = 0.8;
+                noise.connect(filter); filter.connect(gain);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                noise.start(now);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                osc.frequency.setValueAtTime(783.99, now + 0.2);
+                osc.frequency.setValueAtTime(1046.5, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(280, now);
+                osc.frequency.linearRampToValueAtTime(140, now + 0.4);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            }
+        }
 
         async function db(table, method, payload = null, filters = '', single = false) { 
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`; 
@@ -903,11 +953,20 @@
         
         function startPolling() { 
             if (pollInterval) clearInterval(pollInterval); if (!currentRoom) return; isGameFinished = false; 
+            let opponentJoined = false; // 🔊 Трекер для звука подключения
             pollInterval = setInterval(async () => { 
                 if (!currentRoom || isGameFinished) return; 
                 try { 
                     const res = await db('rooms','GET', null, `?id=eq.${currentRoom.id}`); 
-                    const room = res[0]; if (!room) return; currentRoom = room; updateGameStatus(room); 
+                    const room = res[0]; if (!room) return; 
+                    
+                    // 🔊 Звук при подключении игрока
+                    if (room.opponent_tg_id && !opponentJoined) {
+                        playSound('join');
+                        opponentJoined = true;
+                    }
+                    
+                    currentRoom = room; updateGameStatus(room); 
                     renderPlayerStats(); 
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') { 
                         isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return; 
@@ -970,27 +1029,31 @@
             const resultEl = document.getElementById('revealResult'); resultEl.className = 'reveal-result'; resultEl.textContent = ''; 
             document.getElementById('revealCountdown').textContent = ''; 
             
-            // ✅ СБРАСЫВАЕМ СТАРУЮ ЭМОЦИЮ ПРИ ОТКРЫТИИ (чтобы не мигало)
             const emotionDiv = document.getElementById('revealEmotion');
             const emotionImg = document.getElementById('emotionImg');
             emotionDiv.classList.add('hidden');
             emotionImg.src = '';
             
-            await sleep(500); document.getElementById('card1').classList.add('flipped'); await sleep(1000); 
-            document.getElementById('card2').classList.add('flipped'); await sleep(800); 
+            await sleep(500); document.getElementById('card1').classList.add('flipped'); 
+            playSound('flip'); // 🔊 Шелест карты 1
+            await sleep(1000); 
+            document.getElementById('card2').classList.add('flipped'); 
+            playSound('flip'); // 🔊 Шелест карты 2
+            await sleep(800); 
             
             const result = calculateWinner(room), msg = result.msg; 
             const isWin = msg.includes('Победа') || msg.includes('Victory'), isDraw = msg.includes('Ничья') || msg.includes('Draw'); 
             resultEl.textContent = msg; resultEl.className = `reveal-result show ${isWin ? 'victory' : isDraw ? 'draw' : 'defeat'}`; 
             
-            // ✅ ПОКАЗЫВАЕМ ЭМОЦИЮ ЕХИДНЫ ПОСЛЕ РАСКРЫТИЯ КАРТ
             emotionDiv.classList.remove('hidden');
             
             if (isWin) {
                 emotionImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';
+                playSound('win'); // 🔊 Звук победы
                 createConfetti();
             } else if (!isDraw) {
                 emotionImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';
+                playSound('lose'); // 🔊 Звук поражения
             } else {
                 emotionDiv.classList.add('hidden');
             }
