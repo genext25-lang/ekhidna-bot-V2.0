@@ -630,14 +630,13 @@
             const oppName=isCr?currentRoom.opponent_username:currentRoom.creator_username;
             const cur=getRoomCurrency(currentRoom);
             const sa=cur==='stars'?getStarsAmount(currentRoom):null;
-            // ✅ Отрицательный stake для проигрыша, положительный для выигрыша
             let encodedStake;
             if(resultStr==='win'){
                 encodedStake=cur==='stars'?-(sa||Math.round((currentRoom.stake||0)*150)):currentRoom.stake;
             }else if(resultStr==='lose'){
                 encodedStake=cur==='stars'?-(sa||Math.round((currentRoom.stake||0)*150)):-(currentRoom.stake||0);
             }else{
-                encodedStake=0; // ничья
+                encodedStake=0;
             }
             const hd={player_id:MY_ID,opponent_name:oppName||'unknown',stake:encodedStake,player_move:playerMove,result:resultStr,played_at:new Date().toISOString()};
             try{await db('game_history','POST',[hd]);}catch(e){console.error('❌ Ошибка сохранения истории:',e);}
@@ -663,9 +662,32 @@
             const isWin=msg.includes('Победа')||msg.includes('Victory'),isDraw=msg.includes('Ничья')||msg.includes('Draw'); 
             resultEl.textContent=msg;resultEl.className=`reveal-result show ${isWin?'victory':isDraw?'draw':'defeat'}`; 
             emDiv.classList.remove('hidden');
-            if(isWin){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';playSound('win');createConfetti();} 
-            else if(!isDraw){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';playSound('lose');} 
-            else{emDiv.classList.add('hidden');}
+            
+            // ✅ ОПРЕДЕЛЯЕМ ВАЛЮТУ ИГРЫ ДЛЯ ВЫБОРА КАРТИНКИ
+            const currency = getRoomCurrency(room);
+            
+            if(isWin){
+                // ✅ ВЫИГРЫШ: разная картинка для TON и звёзд
+                if(currency === 'stars'){
+                    emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-stars-win.png';
+                } else {
+                    emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';
+                }
+                playSound('win');createConfetti();
+            } 
+            else if(!isDraw){
+                // ✅ ПРОИГРЫШ: разная картинка для TON и звёзд
+                if(currency === 'stars'){
+                    emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-stars-lose.png';
+                } else {
+                    emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';
+                }
+                playSound('lose');
+            } 
+            else{
+                emDiv.classList.add('hidden');
+            }
+            
             let rfh='draw';if(result.winnerId){rfh=(result.winnerId===MY_ID)?'win':'lose';}
             await saveGameHistory(rfh,myMove);
             let cd=3;const cdEl=document.getElementById('revealCountdown');cdEl.textContent=cd; 
@@ -706,7 +728,6 @@
                 let wins=0,losses=0,draws=0,totalTon=0,totalStars=0;
                 const mc={rock:0,scissors:0,paper:0};
                 gl.forEach(game=>{
-                    // ✅ stake < 0 = звёзды, stake > 0 = TON, stake = 0 = ничья
                     const isStars=game.stake<0;
                     const absVal=Math.abs(game.stake||0);
                     if(game.result==='win'){
@@ -715,7 +736,6 @@
                         else totalTon+=absVal*0.95;
                     }else if(game.result==='lose'){
                         losses++;
-                        // ✅ ВЫЧИТАЕМ ПРОИГРАННОЕ
                         if(isStars)totalStars-=absVal;
                         else totalTon-=absVal;
                     }else{draws++;}
@@ -730,7 +750,6 @@
                 document.getElementById('statsWinRate').textContent=wr+'%';
                 document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-';
                 
-                // ✅ ОТОБРАЖЕНИЕ С МИНУСОМ
                 const tonEl=document.getElementById('statsTotalWonTon');
                 const starsEl=document.getElementById('statsTotalWonStars');
                 tonEl.textContent=totalTon.toFixed(2)+' TON';
