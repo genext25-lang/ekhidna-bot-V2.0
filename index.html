@@ -480,6 +480,31 @@
         let currentWins = 0; window.roomExpiry = {};
         window._lastStatsUpdate = 0;
 
+        // ✅ ФУНКЦИЯ ФОРМАТИРОВАНИЯ БОЛЬШИХ ЧИСЕЛ
+        function formatCompactNumber(num) {
+            if (num === null || num === undefined) return '0';
+            
+            const absNum = Math.abs(num);
+            const sign = num < 0 ? '-' : '';
+            
+            if (absNum >= 1000000000000) {
+                // Триллионы (T)
+                return sign + (absNum / 1000000000000).toFixed(1).replace(/\.0$/, '') + 'T';
+            } else if (absNum >= 1000000000) {
+                // Миллиарды (B)
+                return sign + (absNum / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+            } else if (absNum >= 1000000) {
+                // Миллионы (M)
+                return sign + (absNum / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            } else if (absNum >= 1000) {
+                // Тысячи (K)
+                return sign + (absNum / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            } else {
+                // Меньше 1000 - показываем как есть
+                return sign + Math.round(absNum).toString();
+            }
+        }
+
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -518,7 +543,7 @@
         function forceExitToLobby(){isGameFinished=true;currentRoom=null;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(window._timerInterval)clearInterval(window._timerInterval);window._timerRunning=false;document.getElementById('revealOverlay')?.classList.add('hidden');document.getElementById('confettiContainer')?.classList.add('hidden');updateBalanceDisplay();showScreen('lobby');}
         async function updateStats(){try{if(!MY_ID||MY_ID===999999)return;const data=await db('users','GET',null,`?select=wins,losses&telegram_id=eq.${MY_ID}`,false);const wins=data[0]?.wins||0,losses=data[0]?.losses||0;currentWins=wins;document.getElementById('statWins').textContent=wins;document.getElementById('statGames').textContent=wins+losses;const skin=SKINS.find(s=>s.id===currentSkin)||SKINS[0];document.getElementById('statLevel').textContent=SKINS.findIndex(s=>s.id===skin.id)+1;document.getElementById('statSkinBadge').textContent=getSkinName(skin);document.getElementById('mainLogoImg').src=skin.img;}catch(e){console.error(e);}}
 
-        // ✅ ФУНКЦИЯ ОБНОВЛЕНИЯ БАЛАНСА С ОКРУГЛЕНИЕМ ДО ЦЕЛЫХ
+        // ✅ ФУНКЦИЯ ОБНОВЛЕНИЯ БАЛАНСА С ОКРУГЛЕНИЕМ И ФОРМАТИРОВАНИЕМ
         async function updateBalanceDisplay() {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
@@ -535,12 +560,12 @@
                     }
                 });
                 
-                // ✅ Округляем до целых
                 balance = Math.round(balance);
                 
                 const balanceEl = document.getElementById('balanceSpike');
                 if (balanceEl) {
-                    balanceEl.textContent = balance;
+                    // ✅ Форматируем большие числа
+                    balanceEl.textContent = formatCompactNumber(balance);
                     if (balance < 0) {
                         balanceEl.style.color = 'var(--error)';
                     } else if (balance > 0) {
@@ -554,7 +579,6 @@
             }
         }
 
-        // ✅ ФУНКЦИЯ ПОПОЛНЕНИЯ БАЛАНСА (заглушка)
         function addSpike() {
             alert(currentLang === 'ru' 
                 ? '🦔 Пополнение баланса Spike будет доступно в следующем обновлении!' 
@@ -793,7 +817,8 @@
                 document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-';
                 
                 const spikeEl=document.getElementById('statsTotalSpike');
-                spikeEl.textContent=Math.round(totalSpike)+' Spike';
+                // ✅ Форматируем большие числа в статистике
+                spikeEl.textContent=formatCompactNumber(Math.round(totalSpike))+' Spike';
                 if(totalSpike<0)spikeEl.classList.add('negative');else spikeEl.classList.remove('negative');
                 
                 let rh='';
@@ -803,7 +828,8 @@
                     const rt=game.result==='win'?t('winText'):game.result==='lose'?t('loseText'):t('drawText');
                     const mve=game.player_move?(me[game.player_move]||''):'';
                     const absVal=Math.abs(game.stake||0);
-                    const sd=game.stake===0?'0':`${absVal} Spike`;
+                    // ✅ Форматируем ставки в истории
+                    const sd=game.stake===0?'0':formatCompactNumber(absVal)+' Spike';
                     rh+=`<div class="game-row"><span class="game-opponent">${escapeHtml(on)}</span><span class="game-stake">${sd}</span><span class="game-result ${rc}">${rt}</span><span class="game-move">${mve}</span></div>`;
                 });
                 tb.innerHTML=rh;
