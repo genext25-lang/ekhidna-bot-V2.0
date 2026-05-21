@@ -17,142 +17,41 @@
         @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         .header h1 { font-size: 22px; margin-bottom: 5px; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); }
-        
-        /* ✅ ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ КАРТОЧЕК */
-        .daily-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 10px; 
-            margin: 16px 0; 
-            padding: 0 4px; 
-            width: 100%;
-        }
-        .daily-card { 
-            aspect-ratio: 1; 
-            perspective: 1000px; 
-            cursor: pointer; 
-            min-height: 100px;
-        }
-        .daily-card-inner { 
-            width: 100%; 
-            height: 100%; 
-            position: relative; 
-            transform-style: preserve-3d; 
-            transition: transform 0.6s; 
-        }
+        .daily-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; padding: 0 4px; }
+        .daily-card { aspect-ratio: 1; perspective: 1000px; cursor: pointer; }
+        .daily-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
         .daily-card-inner.flipped { transform: rotateY(180deg); }
-        .daily-card-front, .daily-card-back { 
-            position: absolute; 
-            width: 100%; 
-            height: 100%; 
-            backface-visibility: hidden; 
-            border-radius: 14px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            border: 2px solid var(--border); 
-            font-weight: 700; 
-            padding: 8px; 
-            box-sizing: border-box;
-        }
-        .daily-card-front { 
-            background: var(--card); 
-            color: var(--sec); 
-            font-size: 18px; 
-        }
-        .daily-card-front.locked { 
-            opacity: 0.4; 
-            cursor: not-allowed; 
-            background: rgba(10,10,26,0.5); 
-            border-style: dashed; 
-        }
-        .daily-card-front.today { 
-            border-color: var(--gold); 
-            box-shadow: 0 0 16px rgba(251,191,36,0.5); 
-            animation: cardPulse 1.5s ease-in-out infinite; 
-            cursor: pointer; 
-            background: rgba(251,191,36,0.1);
-        }
-        .daily-card-front.collected { 
-            border-color: var(--success); 
-            opacity: 0.9; 
-            cursor: default; 
-            background: rgba(16,185,129,0.1);
-        }
-        @keyframes cardPulse { 
-            0%, 100% { box-shadow: 0 0 16px rgba(251,191,36,0.5); } 
-            50% { box-shadow: 0 0 28px rgba(251,191,36,0.8); } 
-        }
-        .daily-card-front .day-number { 
-            font-size: 24px; 
-            font-weight: 800; 
-            margin-bottom: 4px; 
-            color: var(--text);
-        }
+        .daily-card-front, .daily-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); font-weight: 700; padding: 8px; box-sizing: border-box; }
+        .daily-card-front { background: var(--card); color: var(--sec); font-size: 18px; }
+        .daily-card-front.locked { opacity: 0.4; cursor: not-allowed; background: rgba(10,10,26,0.5); border-style: dashed; }
+        .daily-card-front.today { border-color: var(--gold); box-shadow: 0 0 16px rgba(251,191,36,0.5); animation: cardPulse 1.5s ease-in-out infinite; cursor: pointer; background: rgba(251,191,36,0.1); }
+        .daily-card-front.collected { border-color: var(--success); opacity: 0.9; cursor: default; background: rgba(16,185,129,0.1); }
+        @keyframes cardPulse { 0%, 100% { box-shadow: 0 0 16px rgba(251,191,36,0.5); } 50% { box-shadow: 0 0 28px rgba(251,191,36,0.8); } }
+        .daily-card-front .day-number { font-size: 24px; font-weight: 800; margin-bottom: 4px; color: var(--text); }
         .daily-card-front.today .day-number { color: var(--gold); }
         .daily-card-front.collected .day-number { color: var(--success); }
-        .daily-card-front .day-label { 
-            font-size: 9px; 
-            text-transform: uppercase; 
-            color: var(--sec); 
-        }
-        .daily-card-back { 
-            background: linear-gradient(135deg, #1a1a2e, #2a2a3e); 
-            transform: rotateY(180deg); 
-            border-color: var(--gold); 
-            gap: 4px; 
-        }
-        .daily-card-back .card-image { 
-            width: 40px; 
-            height: 40px; 
-            object-fit: contain; 
-            border-radius: 8px; 
-        }
-        .daily-card-back .card-reward { 
-            font-size: 14px; 
-            font-weight: 800; 
-            color: var(--gold); 
-            display: flex; 
-            align-items: center; 
-            gap: 4px; 
-        }
-        .daily-card-back .card-reward img { 
-            width: 18px; 
-            height: 18px; 
-            object-fit: contain; 
-        }
-        .daily-card-back .card-collected { 
-            font-size: 10px; 
-            color: var(--success); 
-            margin-top: 2px; 
-        }
-        .daily-streak-info { 
-            text-align: center; 
-            margin-bottom: 8px; 
-            font-size: 14px; 
-            color: var(--sec); 
-        }
-        .daily-streak-info span { 
-            color: var(--gold); 
-            font-weight: 700; 
-        }
-
+        .daily-card-front .day-label { font-size: 9px; text-transform: uppercase; color: var(--sec); }
+        .daily-card-back { background: linear-gradient(135deg, #1a1a2e, #2a2a3e); transform: rotateY(180deg); border-color: var(--gold); gap: 4px; }
+        .daily-card-back .card-image { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; }
+        .daily-card-back .card-reward { font-size: 14px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 4px; }
+        .daily-card-back .card-reward img { width: 18px; height: 18px; object-fit: contain; }
+        .daily-card-back .card-collected { font-size: 10px; color: var(--success); margin-top: 2px; }
+        .daily-streak-info { text-align: center; margin-bottom: 8px; font-size: 14px; color: var(--sec); }
+        .daily-streak-info span { color: var(--gold); font-weight: 700; }
         .balance-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; background: var(--card); border-radius: 16px; padding: 12px 16px; border: 1px solid var(--border); }
         .balance-icon { width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .balance-icon img { width: 100%; height: 100%; object-fit: contain; }
         .balance-info { flex: 1; min-width: 0; }
-        .balance-amount { font-size: 24px; font-weight: 700; color: var(--gold); line-height: 1.2; }
-        .balance-label { font-size: 10px; color: var(--sec); text-transform: uppercase; }
+        .balance-amount { font-size: 24px; font-weight: 700; color: var(--gold); }
+        .balance-label { font-size: 10px; color: var(--sec); }
         .player-stats { display: flex; gap: 8px; margin-bottom: 16px; background: var(--card); border-radius: 16px; padding: 12px; border: 1px solid var(--border); }
         .stat-box { flex: 1; text-align: center; }
         .stat-val { font-size: 20px; font-weight: 700; color: var(--primary); }
-        .stat-lbl { font-size: 10px; color: var(--sec); text-transform: uppercase; }
+        .stat-lbl { font-size: 10px; color: var(--sec); }
         .skin-badge { display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 4px; }
         .btn { width: 100%; padding: 14px; margin: 6px 0; border: none; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; transition: all 0.2s; box-sizing: border-box; }
         .btn:active { transform: scale(0.97); }
         .btn-create-room { padding: 20px; font-size: 18px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(135deg, #10b981, #059669); margin-bottom: 12px; }
-        .btn-sec { background: var(--card); border: 1px solid var(--border); color: var(--sec); }
         .section-title { font-size: 13px; color: var(--sec); margin: 18px 0 8px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
         .room-card:active { transform: scale(0.98); background: #1f1f35; }
@@ -199,7 +98,7 @@
         .loader { text-align: center; padding: 30px; color: var(--sec); min-height: 60px; }
         .spinner { border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--card); border-top: 2px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 10000; padding: 0 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.3); width: 100%; max-width: 100%; margin: 0; transition: opacity 0.3s, pointer-events 0.3s; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--card); border-top: 2px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 10000; padding: 0 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.3); width: 100%; max-width: 100%; margin: 0; }
         .bottom-nav.disabled { opacity: 0.4; pointer-events: none; }
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--sec); font-size: 10px; cursor: pointer; padding: 5px 0; }
         .nav-btn.active { color: var(--primary); }
@@ -209,85 +108,73 @@
         .lang-btn.active { background: var(--primary); color: #fff; }
         .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; box-sizing: border-box; transition: opacity 0.5s, visibility 0.5s; }
         .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; display: none !important; }
-        .splash-content { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 420px; flex-shrink: 0; }
+        .splash-content { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 420px; }
         .splash-title { margin-bottom: 16px; font-size: 32px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; }
         .splash-banner { width: 100%; max-width: 420px; margin: 0; border-radius: 16px; overflow: hidden; }
-        .splash-banner img { width: 100%; height: auto; display: block; object-fit: cover; }
+        .splash-banner img { width: 100%; height: auto; display: block; }
         .splash-rules { margin-top: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; box-sizing: border-box; }
         .splash-rules h3 { color: var(--gold); margin-bottom: 12px; font-size: 16px; text-align: center; }
         .splash-rules ul { list-style: none; padding: 0; margin: 0; }
-        .splash-rules ul li { position: relative; padding-left: 24px; margin-bottom: 8px; color: var(--sec); font-size: 14px; line-height: 1.5; }
-        .splash-rules ul li::before { content: '•'; position: absolute; left: 6px; color: var(--gold); font-size: 24px; line-height: 0.8; }
-        .splash-btn { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; transition: all 0.2s; margin-top: 16px; }
-        .splash-btn:active { transform: scale(0.97); }
-        .skin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
-        .skin-modal.hidden { display: none; }
-        .skin-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 400px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
+        .splash-rules ul li { position: relative; padding-left: 24px; margin-bottom: 8px; color: var(--sec); font-size: 14px; }
+        .splash-rules ul li::before { content: '•'; position: absolute; left: 6px; color: var(--gold); font-size: 24px; }
+        .splash-btn { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; margin-top: 16px; }
+        .skin-modal, .stake-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .skin-modal.hidden, .stake-modal.hidden { display: none; }
+        .skin-modal-content, .stake-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 400px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .skin-modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: var(--error); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .skin-modal-img { width: 220px; height: 220px; margin: 0 auto 16px; border-radius: 20px; overflow: hidden; }
         .skin-modal-img img { width: 100%; height: 100%; object-fit: cover; }
         .skin-modal-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 8px; }
         .skin-modal-price { text-align: center; font-size: 14px; color: var(--gold); margin-bottom: 16px; font-weight: 600; }
-        .skin-modal-btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .skin-modal-btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; }
         .skin-modal-btn.buy { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
         .skin-modal-btn.equip { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
         .skin-modal-btn.equipped { background: var(--card); border: 2px solid var(--success); color: var(--success); cursor: default; }
-        .stake-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
-        .stake-modal.hidden { display: none; }
-        .stake-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 360px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
-        .stake-modal-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 16px; }
         .stake-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-        .stake-preset-btn { padding: 12px 6px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; }
-        .stake-preset-btn:active { transform: scale(0.95); }
+        .stake-preset-btn { padding: 12px 6px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; }
         .stake-preset-btn.selected { border-color: var(--gold); background: rgba(251,191,36,0.15); color: var(--gold); }
-        .stake-input-group { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 12px; width: 100%; }
         .stake-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-size: 16px; text-align: center; outline: none; box-sizing: border-box; }
-        .stake-input:focus { border-color: var(--primary); }
         .stake-error { font-size: 12px; color: var(--error); text-align: center; min-height: 16px; }
         .stake-confirm-btn { background: linear-gradient(135deg, #10b981, #059669); width: 100%; }
-        .lb-stats { font-size: 11px; color: var(--sec); display: flex; gap: 8px; margin-top: 4px; }
-        .room-timer { font-family: monospace; font-size: 11px; color: var(--gold); font-weight: bold; margin-left: 4px; background: rgba(251, 191, 36, 0.1); padding: 1px 4px; border-radius: 4px; }
+        .room-timer { font-family: monospace; font-size: 11px; color: var(--gold); font-weight: bold; margin-left: 4px; background: rgba(251,191,36,0.1); padding: 1px 4px; border-radius: 4px; }
         .room-timer.urgent { color: var(--error); animation: timerPulse 1s infinite; }
         @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .reveal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 26, 0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+        .reveal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,10,26,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .reveal-overlay.hidden { display: none; }
         .reveal-title { font-size: 18px; color: var(--sec); margin-bottom: 30px; }
         .reveal-players { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
         .reveal-player { display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .reveal-player-label { font-size: 14px; color: var(--sec); font-weight: 600; }
         .reveal-card { width: 110px; height: 130px; perspective: 1000px; }
-        .reveal-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; transform: rotateY(0deg); }
+        .reveal-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
         .reveal-card-inner.flipped { transform: rotateY(180deg); }
         .reveal-card-front, .reveal-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); }
         .reveal-card-front { background: var(--card); }
         .reveal-card-back { background: linear-gradient(135deg, var(--primary), #8b5cf6); transform: rotateY(180deg); border-color: var(--primary); }
         .reveal-card-back img { width: 90px; height: 90px; object-fit: contain; }
-        .reveal-card-back .move-name { font-size: 14px; color: #fff; margin-top: 8px; font-weight: 800; text-transform: uppercase; }
-        .reveal-vs { font-size: 24px; font-weight: 700; color: var(--error); animation: pulse 1s infinite; }
-        .reveal-result { font-size: 28px; font-weight: 700; opacity: 0; transform: scale(0.8); transition: all 0.5s ease-out; text-align: center; padding: 0 20px; }
+        .reveal-card-back .move-name { font-size: 14px; color: #fff; margin-top: 8px; font-weight: 800; }
+        .reveal-vs { font-size: 24px; font-weight: 700; color: var(--error); }
+        .reveal-result { font-size: 28px; font-weight: 700; opacity: 0; transform: scale(0.8); transition: all 0.5s; text-align: center; padding: 0 20px; }
         .reveal-result.show { opacity: 1; transform: scale(1); }
         .reveal-result.victory { color: var(--success); }
         .reveal-result.defeat { color: var(--error); }
         .reveal-result.draw { color: var(--gold); }
-        .reveal-countdown { font-size: 14px; color: var(--sec); margin-top: 20px; }
         .reveal-emotion { width: 256px; height: 256px; margin: 20px auto; border-radius: 20px; overflow: hidden; animation: emotionPop 0.5s ease-out; }
-        .reveal-emotion img { width: 100%; height: 100%; object-fit: contain; }
         @keyframes emotionPop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
         .confetti-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 2001; overflow: hidden; }
         .confetti { position: absolute; width: 10px; height: 10px; animation: confettiFall 3s ease-out forwards; }
         @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; box-sizing: border-box; }
+        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; }
         .stats-header { text-align: center; margin-bottom: 20px; }
         .stats-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
         .stat-card { background: var(--card); border-radius: 16px; padding: 14px 10px; text-align: center; border: 1px solid var(--border); }
         .stat-card .stat-icon { font-size: 28px; margin-bottom: 6px; }
         .stat-card .stat-value { font-size: 18px; font-weight: 700; color: var(--primary); }
         .stat-card .stat-value.negative { color: var(--error); }
-        .stat-card .stat-label { font-size: 10px; color: var(--sec); text-transform: uppercase; margin-top: 4px; }
+        .stat-card .stat-label { font-size: 10px; color: var(--sec); }
         .games-table { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
-        .games-table-header { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; background: rgba(99,102,241,0.1); font-size: 11px; color: var(--sec); text-transform: uppercase; font-weight: 600; }
+        .games-table-header { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; background: rgba(99,102,241,0.1); font-size: 11px; color: var(--sec); font-weight: 600; }
         .game-row { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr; padding: 12px 14px; border-top: 1px solid var(--border); font-size: 12px; align-items: center; }
         .game-opponent { color: var(--text); font-weight: 600; }
         .game-stake { color: var(--gold); }
@@ -296,7 +183,6 @@
         .game-result.lose { color: var(--error); }
         .game-result.draw { color: var(--gold); }
         .game-move { font-size: 18px; }
-        .games-empty { text-align: center; padding: 30px; color: var(--sec); }
         .thinking-echidna-wrapper { display: flex; align-items: center; justify-content: center; margin: 0 10px; }
         .thinking-echidna { width: 85px; height: 85px; border: 2px solid var(--border); border-radius: 20px; background: var(--card); display: flex; align-items: center; justify-content: center; overflow: hidden; animation: bounce 2s ease-in-out infinite; }
         .thinking-echidna img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
@@ -398,8 +284,7 @@
         <div id="leaderboardScreen" class="hidden"><div class="header"><h2>🏆 Рейтинг</h2></div><div id="leaderboardList"><div class="loader"><div class="spinner"></div></div></div></div>
     </div>
 
-    <!-- Модальные окна -->
-    <div id="skinModal" class="skin-modal hidden" onclick="closeSkinModal(event)"><div class="skin-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeSkinModal()">✕</button><div class="skin-modal-img"><img src="" id="modalImg" alt=""></div><div class="skin-modal-title" id="modalTitle"></div><div class="skin-modal-price" id="modalPrice"></div><div class="skin-modal-btn" id="modalBtn" onclick="handleSkinAction()">Купить</div></div></div>
+    <div id="skinModal" class="skin-modal hidden" onclick="closeSkinModal(event)"><div class="skin-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeSkinModal()">✕</button><div class="skin-modal-img"><img src="" id="modalImg" alt=""></div><div class="skin-modal-title" id="modalTitle"></div><div class="skin-modal-price" id="modalPrice"></div><button class="skin-modal-btn" id="modalBtn" onclick="handleSkinAction()">Купить</button></div></div>
     <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)"><div class="stake-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeStakeModal()">✕</button><div class="stake-modal-title">🦔 Выбери ставку Spike</div><div class="stake-presets" id="stakePresets"><button class="stake-preset-btn selected" data-stake="10" onclick="selectStakePreset(10, this)">10 Spike</button><button class="stake-preset-btn" data-stake="50" onclick="selectStakePreset(50, this)">50 Spike</button><button class="stake-preset-btn" data-stake="100" onclick="selectStakePreset(100, this)">100 Spike</button><button class="stake-preset-btn" data-stake="200" onclick="selectStakePreset(200, this)">200 Spike</button><button class="stake-preset-btn" data-stake="500" onclick="selectStakePreset(500, this)">500 Spike</button><button class="stake-preset-btn" data-stake="1000" onclick="selectStakePreset(1000, this)">1000 Spike</button></div><div class="stake-input-group"><span>Или введи:</span><input type="number" class="stake-input" id="stakeInput" placeholder="10 - 1000" min="10" max="1000" step="10" oninput="onStakeInput()"></div><div class="stake-error" id="stakeError"></div><div style="margin-top:12px;"><label style="font-size:12px;color:var(--sec);display:block;margin-bottom:4px;">🔒 Пароль (1-4 цифры):</label><input type="password" id="roomPassword" class="stake-input" placeholder="Например: 1234" maxlength="4" style="text-align:center;"></div><button class="btn stake-confirm-btn" onclick="confirmStake()" style="margin-top:12px;">Создать комнату</button></div></div>
     <div id="revealOverlay" class="reveal-overlay hidden"><div class="reveal-title">Раскрытие ходов</div><div id="revealEmotion" class="reveal-emotion hidden"><img src="" alt="Emotion" id="emotionImg"></div><div class="reveal-players"><div class="reveal-player"><div class="reveal-player-label" id="revealPlayer1Label">Вы</div><div class="reveal-card"><div class="reveal-card-inner" id="card1"><div class="reveal-card-front"><div class="card-icon">❓</div></div><div class="reveal-card-back"><img id="card1Img" src="" alt=""><div class="move-name" id="card1Name"></div></div></div></div></div><div class="reveal-vs">VS</div><div class="reveal-player"><div class="reveal-player-label" id="revealPlayer2Label">Соперник</div><div class="reveal-card"><div class="reveal-card-inner" id="card2"><div class="reveal-card-front"><div class="card-icon">❓</div></div><div class="reveal-card-back"><img id="card2Img" src="" alt=""><div class="move-name" id="card2Name"></div></div></div></div></div></div><div class="reveal-result" id="revealResult"></div><div class="reveal-countdown" id="revealCountdown"></div></div>
     <div id="confettiContainer" class="confetti-container hidden"></div>
@@ -414,8 +299,7 @@
 
     <script>
         const moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
-        let currentLang = 'ru';
-        function setLanguage(lang) { currentLang = lang; document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase() === lang)); }
+        function setLanguage(lang) { document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase() === lang)); }
         function startGame() { document.getElementById('splashScreen')?.classList.add('hidden'); if(window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } showScreen('lobby'); }
 
         const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
@@ -423,18 +307,9 @@
         
         function getCurrentUser() { 
             if(window.Telegram?.WebApp?.initDataUnsafe?.user) return window.Telegram.WebApp.initDataUnsafe.user; 
-            try { 
-                const p = new URLSearchParams(window.location.search.substring(1) + '&' + window.location.hash.substring(1)); 
-                const td = p.get('tgWebAppData'); 
-                if(td) { 
-                    const dp = new URLSearchParams(decodeURIComponent(td)); 
-                    const uj = dp.get('user'); 
-                    if(uj) return JSON.parse(decodeURIComponent(uj)); 
-                } 
-            } catch(e) {} 
+            try { const p = new URLSearchParams(window.location.search.substring(1)+'&'+window.location.hash.substring(1)); const td = p.get('tgWebAppData'); if(td) { const dp = new URLSearchParams(decodeURIComponent(td)); const uj = dp.get('user'); if(uj) return JSON.parse(decodeURIComponent(uj)); } } catch(e) {} 
             return { id: Math.floor(Math.random()*1000000), username: 'Guest' }; 
         }
-        
         const user = getCurrentUser();
         const MY_ID = Number(user.id);
         const MY_PHOTO_URL = user.photo_url || null;
@@ -450,10 +325,8 @@
             { id:'rich', price:2000000, img:'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-rich.png' },
             { id:'collector', price:3000000, img:'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-collector.png' }
         ];
-        
         const skinNames = { default:'Обычная', socks:'В носках', sporty:'Спортсмен', sneakers:'Кроссовки', cap:'Бейсболка', cool:'Крутой', rich:'Богач', collector:'Коллекционер' };
         let ownedSkins = ['default'], currentSkin = 'default', currentModalSkin = null;
-        
         function getSkinNameById(id) { return skinNames[id] || id; }
         function getSkinPrice(id) { const s = SKINS.find(s => s.id === id); return s ? s.price : 0; }
         function getSkinImg(id) { const s = SKINS.find(s => s.id === id); return s ? s.img : ''; }
@@ -469,234 +342,141 @@
         function disableBottomNav() { document.getElementById('bottomNav')?.classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav')?.classList.remove('disabled'); }
 
-        // ✅ ИСПРАВЛЕННЫЕ ФУНКЦИИ ДЛЯ КАРТОЧЕК
-        function getDailyData() { 
-            try { 
-                const s = localStorage.getItem('echidna_daily_data_v2'); 
-                if(s) return JSON.parse(s); 
-            } catch(e) {} 
-            return { streak: 0, lastClaimDate: null, collectedCards: [] }; 
-        }
-        
-        function saveDailyData(data) { 
-            try { 
-                localStorage.setItem('echidna_daily_data_v2', JSON.stringify(data)); 
-                return true;
-            } catch(e) { 
-                console.error('Failed to save daily data:', e);
-                return false;
-            } 
-        }
-        
-        function getTodayDate() { 
-            const d = new Date();
-            return d.getFullYear() + '-' + 
-                   String(d.getMonth() + 1).padStart(2, '0') + '-' + 
-                   String(d.getDate()).padStart(2, '0'); 
-        }
-        
-        function getDailyReward(day) { return (day + 1) * 100; }
+        // DAILY TASKS
+        function getDailyData() { try { const s = localStorage.getItem('echidna_daily_v1'); if(s) return JSON.parse(s); } catch(e) {} return { streak:0, lastClaimDate:null, collectedCards:[] }; }
+        function saveDailyData(data) { try { localStorage.setItem('echidna_daily_v1', JSON.stringify(data)); } catch(e) {} }
+        function getTodayDate() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+        function getDailyReward(day) { return (day+1)*100; }
 
         function claimDailyCard(cardIndex) {
             const today = getTodayDate();
             let data = getDailyData();
-            
-            if(data.collectedCards && data.collectedCards.includes(cardIndex)) return;
-            
-            const yesterday = new Date(); 
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.getFullYear() + '-' + 
-                   String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
-                   String(yesterday.getDate()).padStart(2, '0');
-            
-            let currentStreak = data.streak || 0;
-            if(data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr) { 
-                currentStreak = 0; 
-                data.collectedCards = []; 
-            }
-            
-            if(cardIndex !== currentStreak) { 
-                if(cardIndex < currentStreak) return; 
-                alert('Открывайте карточки по порядку!'); 
-                return; 
-            }
-            
+            if(data.collectedCards.includes(cardIndex)) return;
+            const y = new Date(); y.setDate(y.getDate()-1);
+            const ys = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+            let cs = data.streak;
+            if(data.lastClaimDate !== today && data.lastClaimDate !== ys) { cs=0; data.collectedCards=[]; }
+            if(cardIndex !== cs) { if(cardIndex<cs) return; alert('Открывайте карточки по порядку!'); return; }
             const reward = getDailyReward(cardIndex);
             currentBalance += reward;
-            data.streak = currentStreak + 1;
+            data.streak = cs+1;
             data.lastClaimDate = today;
-            if(!data.collectedCards) data.collectedCards = [];
             data.collectedCards.push(cardIndex);
-            
             saveDailyData(data);
             updateBalanceDisplay();
             renderDailyCards();
-            alert('✅ +' + reward + ' Spike!');
         }
 
         function renderDailyCards() {
             const grid = document.getElementById('dailyCardsGrid');
             const streakNum = document.getElementById('dailyStreakNum');
-            
-            console.log('renderDailyCards: grid=', !!grid, 'streakNum=', !!streakNum);
-            
-            if(!grid) {
-                console.error('dailyCardsGrid not found!');
-                return;
-            }
-            if(!streakNum) {
-                console.error('dailyStreakNum not found!');
-                return;
-            }
-            
+            if(!grid || !streakNum) return;
             const data = getDailyData();
-            console.log('Daily data:', JSON.stringify(data));
-            
             const today = getTodayDate();
-            const yesterday = new Date(); 
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.getFullYear() + '-' + 
-                   String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
-                   String(yesterday.getDate()).padStart(2, '0');
-            
-            let currentStreak = data.streak || 0;
-            let collectedCards = data.collectedCards || [];
-            
-            // Проверка на сброс стрика
-            if(data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr) { 
-                currentStreak = 0; 
-                collectedCards = []; 
-                data.streak = 0;
-                data.collectedCards = [];
-                saveDailyData(data);
-            }
-            
-            streakNum.textContent = Math.min(currentStreak + 1, 9);
-            
-            // Очищаем грид
+            const y = new Date(); y.setDate(y.getDate()-1);
+            const ys = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+            let cs = data.streak;
+            if(data.lastClaimDate !== today && data.lastClaimDate !== ys) { cs=0; data.collectedCards=[]; data.streak=0; saveDailyData(data); }
+            streakNum.textContent = Math.min(cs+1,9);
             grid.innerHTML = '';
-            
-            console.log('Rendering cards, streak:', currentStreak, 'collected:', collectedCards);
-            
-            // Создаем 9 карточек
-            for(let i = 0; i < 9; i++) {
+            for(let i=0;i<9;i++) {
                 const reward = getDailyReward(i);
-                const isCollected = collectedCards.includes(i);
-                const isToday = (i === currentStreak && data.lastClaimDate !== today);
-                const isLocked = i > currentStreak;
-                
-                // Создаем карточку
-                const wrapper = document.createElement('div');
-                wrapper.className = 'daily-card';
-                wrapper.setAttribute('data-index', String(i));
-                wrapper.style.cssText = 'display: block; visibility: visible;'; // Принудительно показываем
-                
-                const inner = document.createElement('div');
-                inner.className = 'daily-card-inner';
+                const isCollected = data.collectedCards.includes(i);
+                const isToday = i===cs;
+                const isLocked = i>cs;
+                const wrapper = document.createElement('div'); wrapper.className='daily-card'; wrapper.setAttribute('data-index',i);
+                const inner = document.createElement('div'); inner.className='daily-card-inner';
                 if(isCollected) inner.classList.add('flipped');
-                
-                // Передняя сторона
-                const front = document.createElement('div');
-                front.className = 'daily-card-front';
-                if(isCollected) front.classList.add('collected');
-                else if(isToday) front.classList.add('today');
-                else if(isLocked) front.classList.add('locked');
-                
-                front.innerHTML = 
-                    '<div class="day-number">' + (isCollected ? '✓' : (i + 1)) + '</div>' +
-                    '<div class="day-label">День ' + (i + 1) + '</div>';
-                
-                // Задняя сторона
-                const back = document.createElement('div');
-                back.className = 'daily-card-back';
-                back.innerHTML = 
-                    '<img class="card-image" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display=\'none\'">' +
-                    '<div class="card-reward"><span>' + reward + '</span>' +
-                    '<img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display=\'none\'"></div>' +
-                    '<div class="card-collected">✅ +' + reward + ' Spike!</div>';
-                
-                inner.appendChild(front);
-                inner.appendChild(back);
-                wrapper.appendChild(inner);
-                
-                // Добавляем обработчик клика для сегодняшней карточки
-                if(isToday) {
-                    wrapper.addEventListener('click', function() {
-                        claimDailyCard(i);
-                    });
-                }
-                
+                const front = document.createElement('div'); front.className='daily-card-front';
+                if(isCollected) front.classList.add('collected'); else if(isToday) front.classList.add('today'); else if(isLocked) front.classList.add('locked');
+                front.innerHTML = '<div class="day-number">'+(isCollected?'✓':(i+1))+'</div><div class="day-label">День '+(i+1)+'</div>';
+                const back = document.createElement('div'); back.className='daily-card-back';
+                back.innerHTML = '<div class="card-reward"><span>'+reward+'</span><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" style="width:18px;height:18px;" onerror="this.style.display=\'none\'"></div><div class="card-collected">✅ +'+reward+' Spike!</div>';
+                inner.appendChild(front); inner.appendChild(back); wrapper.appendChild(inner);
+                if(isToday) wrapper.addEventListener('click', function(){ claimDailyCard(i); });
                 grid.appendChild(wrapper);
             }
-            
-            console.log('Cards rendered, count:', grid.children.length);
         }
 
-        // Принудительный рендер карточек при загрузке и показе экрана
-        function forceRenderCards() {
-            console.log('forceRenderCards called');
-            setTimeout(function() {
-                const grid = document.getElementById('dailyCardsGrid');
-                if(grid) {
-                    console.log('Grid found, rendering...');
-                    renderDailyCards();
-                } else {
-                    console.log('Grid not found, retrying...');
-                    setTimeout(forceRenderCards, 500);
-                }
-            }, 200);
+        // AUDIO
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(t) { if(audioCtx.state==='suspended') audioCtx.resume(); const n=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); if(t==='join'){o.type='sine';o.frequency.setValueAtTime(523.25,n);o.frequency.exponentialRampToValueAtTime(1046.5,n+0.1);g.gain.setValueAtTime(0.1,n);g.gain.exponentialRampToValueAtTime(0.001,n+0.3);o.start(n);o.stop(n+0.3);}else if(t==='flip'){const b=audioCtx.createBuffer(1,audioCtx.sampleRate*0.12,audioCtx.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const ns=audioCtx.createBufferSource();ns.buffer=b;const f=audioCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=2500;f.Q.value=0.8;ns.connect(f);f.connect(g);g.gain.setValueAtTime(0.12,n);g.gain.exponentialRampToValueAtTime(0.001,n+0.12);ns.start(n);}else if(t==='win'){o.type='triangle';o.frequency.setValueAtTime(523.25,n);o.frequency.setValueAtTime(659.25,n+0.1);o.frequency.setValueAtTime(783.99,n+0.2);o.frequency.setValueAtTime(1046.5,n+0.3);g.gain.setValueAtTime(0.1,n);g.gain.linearRampToValueAtTime(0.001,n+0.5);o.start(n);o.stop(n+0.5);}else if(t==='lose'){o.type='sawtooth';o.frequency.setValueAtTime(280,n);o.frequency.linearRampToValueAtTime(140,n+0.4);g.gain.setValueAtTime(0.08,n);g.gain.linearRampToValueAtTime(0.001,n+0.4);o.start(n);o.stop(n+0.4);} }
+
+        // DB
+        async function db(table, method, payload=null, filters='', single=false) {
+            const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
+            const headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' };
+            if(method==='POST') headers['Prefer']='return=representation';
+            else if(method==='DELETE') headers['Prefer']='return=minimal';
+            else if(method==='PATCH') headers['Prefer']='return=representation';
+            try { const r = await fetch(url,{method,headers,body:payload?JSON.stringify(payload):null}); if(!r.ok){const e=await r.text();throw new Error(`${r.status} ${e}`);} if(method==='DELETE') return true; const d=await r.json(); return single&&Array.isArray(d)?d[0]:d; } catch(e) { console.error('[DB]',e); throw e; }
         }
 
-        // ... (остальные функции игры остаются без изменений)
-        // ВАЖНО: все функции db, loadRooms, showScreen и т.д. должны быть здесь!
-        
+        const tg = window.Telegram?.WebApp; if(tg){tg.ready?.();tg.expand?.();}
+        async function ensureUserExists(uid,uname){try{const e=await db('users','GET',null,`?telegram_id=eq.${uid}&limit=1`);if(!e||e.length===0) await db('users','POST',[{telegram_id:uid,username:uname||`User_${uid}`,wins:0,losses:0}]);}catch(e){}}
+        function renderAvatar(elId,photoUrl,username){const el=document.getElementById(elId);if(!el)return;el.innerHTML=photoUrl?`<img src="${photoUrl}" alt="${username||'User'}" onerror="this.parentElement.innerHTML='${username?username.charAt(0).toUpperCase():'?'}'">`:(username?username.charAt(0).toUpperCase():'?');}
+
         function showScreen(name) {
-            console.log('showScreen:', name);
-            ['lobbyScreen','statsScreen','gameScreen','skinsScreen','leaderboardScreen','tasksScreen'].forEach(function(id) { 
-                var el = document.getElementById(id); 
-                if(el) el.classList.add('hidden'); 
-            });
-            var target = document.getElementById(name + 'Screen');
-            if(target) target.classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(function(b, i) { 
-                b.classList.toggle('active', ['lobby','tasks','stats','skins','leaderboard'][i] === name); 
-            });
-            if(name === 'lobby') { 
-                currentRoom = null; isGameFinished = false; 
-                if(pollInterval) { clearInterval(pollInterval); pollInterval = null; } 
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } 
-                lobbyRefreshInterval = setInterval(loadRooms, 3000); 
-                loadRooms(); updateStats(); updateBalanceDisplay(); 
-            } else if(name === 'tasks') { 
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } 
-                forceRenderCards();
-            } else if(name === 'stats') { 
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } 
-                loadStats(); 
-            } else if(name === 'leaderboard') { 
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } 
-                loadLeaderboard(); 
-            } else { 
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; } 
-            }
-            if(name === 'skins') renderSkins();
+            ['lobbyScreen','statsScreen','gameScreen','skinsScreen','leaderboardScreen','tasksScreen'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
+            const target=document.getElementById(name+'Screen');if(target)target.classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach((b,i)=>b?.classList?.toggle('active',['lobby','tasks','stats','skins','leaderboard'][i]===name));
+            if(name==='lobby'){currentRoom=null;isGameFinished=false;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(lobbyRefreshInterval){clearInterval(lobbyRefreshInterval);lobbyRefreshInterval=null;}lobbyRefreshInterval=setInterval(loadRooms,3000);loadRooms();updateStats();updateBalanceDisplay();}
+            else if(name==='tasks'){if(lobbyRefreshInterval){clearInterval(lobbyRefreshInterval);lobbyRefreshInterval=null;}setTimeout(renderDailyCards,100);}
+            else if(name==='stats'){if(lobbyRefreshInterval){clearInterval(lobbyRefreshInterval);lobbyRefreshInterval=null;}loadStats();}
+            else if(name==='leaderboard'){if(lobbyRefreshInterval){clearInterval(lobbyRefreshInterval);lobbyRefreshInterval=null;}loadLeaderboard();}
+            else{if(lobbyRefreshInterval){clearInterval(lobbyRefreshInterval);lobbyRefreshInterval=null;}}
+            if(name==='skins')renderSkins();
         }
 
-        // Инициализация при загрузке
-        window.addEventListener('load', function() { 
-            console.log('App loaded');
-            loadOwnedSkins(); 
-            var ss = localStorage.getItem('echidna_selected_skin'); 
-            if(ss && isSkinOwned(ss)) currentSkin = ss; 
-            if(window.Telegram?.WebApp) { 
-                Telegram.WebApp.expand(); 
-                Telegram.WebApp.setHeaderColor('#0a0a1a'); 
-                Telegram.WebApp.setBackgroundColor('#0a0a1a'); 
-            } 
-            loadRooms();
-            // Принудительно рендерим карточки после полной загрузки
-            forceRenderCards();
-        });
+        function forceExitToLobby(){isGameFinished=true;currentRoom=null;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(window._timerInterval)clearInterval(window._timerInterval);window._timerRunning=false;document.getElementById('revealOverlay')?.classList.add('hidden');document.getElementById('confettiContainer')?.classList.add('hidden');updateBalanceDisplay();showScreen('lobby');}
+        async function updateStats(){try{if(!MY_ID||MY_ID===999999)return;const d=await db('users','GET',null,`?select=wins,losses&telegram_id=eq.${MY_ID}`,false);const w=d[0]?.wins||0,l=d[0]?.losses||0;currentWins=w;document.getElementById('statWins').textContent=w;document.getElementById('statGames').textContent=w+l;document.getElementById('statSkinName').textContent=getSkinNameById(currentSkin);document.getElementById('statSkinBadge').textContent='#'+(SKINS.findIndex(s=>s.id===currentSkin)+1);document.getElementById('mainLogoImg').src=getSkinImg(currentSkin);}catch(e){}}
+        async function updateBalanceDisplay(){try{if(!MY_ID||MY_ID===999999)return;const g=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=100`,false);const gl=Array.isArray(g)?g:[];let b=0;gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win')b+=a;else if(g.result==='lose')b-=a;});currentBalance=Math.round(b);const el=document.getElementById('balanceSpike');if(el){el.textContent=formatCompactNumber(currentBalance);el.style.color=currentBalance<0?'var(--error)':currentBalance>0?'var(--success)':'var(--gold)';}}catch(e){}}
+
+        function renderSkins(){const c=document.getElementById('skinsList');if(!c)return;c.innerHTML='';SKINS.forEach((s,i)=>{const owned=isSkinOwned(s.id),eq=currentSkin===s.id,canBuy=!owned&&currentBalance>=s.price;const el=document.createElement('div');el.className=`room-card ${eq?'equipped':''}`;el.onclick=()=>openSkinModal(s);let btn='';if(eq)btn=`<button class="room-btn equipped">Надето</button>`;else if(owned)btn=`<button class="room-btn join" onclick="event.stopPropagation();equipSkin('${s.id}')">Надеть</button>`;else btn=`<button class="room-btn buy" onclick="event.stopPropagation();buySkin('${s.id}')" ${!canBuy?'disabled':''}>${formatCompactNumber(s.price)} Spike</button>`;el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--sec);">#${i+1}</div><div class="room-icon skin-room-icon"><img src="${s.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinNameById(s.id)}</div>${!owned?`<div class="skin-price">💰 ${formatCompactNumber(s.price)} Spike</div>`:`<div class="skin-price" style="color:var(--success);">✅ Куплено</div>`}</div><div class="room-actions">${btn}</div>`;c.appendChild(el);});}
+        function openSkinModal(s){currentModalSkin=s;disableBottomNav();const m=document.getElementById('skinModal');document.getElementById('modalImg').src=s.img;document.getElementById('modalTitle').textContent=getSkinNameById(s.id);const pe=document.getElementById('modalPrice'),be=document.getElementById('modalBtn');if(currentSkin===s.id){pe.textContent='✅ Надето';be.textContent='Надето';be.className='skin-modal-btn equipped';be.disabled=true;}else if(isSkinOwned(s.id)){pe.textContent='✅ Куплено';be.textContent='Надеть';be.className='skin-modal-btn equip';be.disabled=false;}else{pe.textContent='💰 '+formatCompactNumber(s.price)+' Spike';be.textContent=currentBalance>=s.price?'Купить - '+formatCompactNumber(s.price)+' Spike':'Нужно ещё '+formatCompactNumber(s.price-currentBalance)+' Spike';be.className='skin-modal-btn buy';be.disabled=currentBalance<s.price;}m.classList.remove('hidden');}
+        function closeSkinModal(e){if(!e||e.target.id==='skinModal'||e.target.className==='skin-modal-close'){document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}}
+        function handleSkinAction(){if(!currentModalSkin)return;if(currentSkin===currentModalSkin.id)return;if(isSkinOwned(currentModalSkin.id))equipSkin(currentModalSkin.id);else buySkin(currentModalSkin.id);}
+        function buySkin(sid){if(isSkinOwned(sid))return;const p=getSkinPrice(sid);if(currentBalance<p){alert('Недостаточно Spike!');return;}currentBalance-=p;ownedSkins.push(sid);saveOwnedSkins();updateBalanceDisplay();renderSkins();const s=SKINS.find(s=>s.id===sid);if(s)openSkinModal(s);alert(`✅ Скин "${getSkinNameById(sid)}" куплен!`);}
+        function equipSkin(id){if(!isSkinOwned(id))return;currentSkin=id;try{localStorage.setItem('echidna_selected_skin',id);}catch(e){}updateStats();renderSkins();document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}
+
+        function openStakeModal(){if(currentBalance<10){alert('Недостаточно средств!');return;}selectedStake=10;document.getElementById('stakeInput').value='';document.getElementById('stakeError').textContent='';document.getElementById('roomPassword').value='';document.querySelectorAll('.stake-preset-btn').forEach(b=>b.classList.remove('selected'));const db=document.querySelector('.stake-preset-btn[data-stake="10"]');if(db)db.classList.add('selected');const inp=document.getElementById('stakeInput');inp.placeholder='10 - 1000';inp.min=10;inp.max=1000;inp.step=10;disableBottomNav();document.getElementById('stakeModal')?.classList.remove('hidden');}
+        function closeStakeModal(e){if(!e||e.target.id==='stakeModal'||e.target.className==='skin-modal-close'){document.getElementById('stakeModal')?.classList.add('hidden');enableBottomNav();}}
+        function selectStakePreset(v,b){selectedStake=v;document.getElementById('stakeInput').value='';document.getElementById('stakeError').textContent='';document.querySelectorAll('.stake-preset-btn').forEach(x=>x?.classList?.remove('selected'));if(b)b.classList.add('selected');}
+        function onStakeInput(){const v=parseInt(document.getElementById('stakeInput').value);document.getElementById('stakeError').textContent='';document.querySelectorAll('.stake-preset-btn').forEach(b=>b?.classList?.remove('selected'));if(isNaN(v)){selectedStake=10;return;}if(v<10){document.getElementById('stakeError').textContent='Мин: 10 Spike';selectedStake=10;}else if(v>1000){document.getElementById('stakeError').textContent='Макс: 1000 Spike';selectedStake=1000;}else{selectedStake=Math.round(v/10)*10;}}
+        async function confirmStake(){const iv=document.getElementById('stakeInput').value;let fs=selectedStake;if(iv){const p=parseInt(iv);if(p<10||p>1000||isNaN(p)){document.getElementById('stakeError').textContent='Введи от 10 до 1000';return;}fs=Math.round(p/10)*10;}if(currentBalance<fs){document.getElementById('stakeError').textContent='Недостаточно средств!';return;}const rp=document.getElementById('roomPassword').value.trim();if(rp&&!/^\d{1,4}$/.test(rp)){document.getElementById('stakeError').textContent='Пароль: 1-4 цифры';return;}closeStakeModal();try{await ensureUserExists(MY_ID,user.username);const room=await db('rooms','POST',[{creator_tg_id:MY_ID,creator_username:user.username,stake:fs,status:'waiting',room_password:rp||null}],'',true);currentRoom=room;showGameScreen();startPolling();loadRooms();}catch(e){alert('Ошибка: '+e.message);}}
+
+        function formatCountdown(ms){if(ms<=0)return"00:00";const ts=Math.floor(ms/1000),m=Math.floor(ts/60),s=ts%60;return`${m<10?'0':''}${m}:${s<10?'0':''}${s}`;}
+        setInterval(()=>{const now=Date.now();document.querySelectorAll('.room-timer').forEach(el=>{const rid=el.dataset.roomId;if(rid&&window.roomExpiry[rid]){const r=window.roomExpiry[rid]-now;el.textContent=formatCountdown(r);if(r<=60000)el.classList.add('urgent');else el.classList.remove('urgent');if(r<=0){el.textContent='⌛ Истекло';el.style.color='var(--error)';}}});},1000);
+        function formatStakeDisplay(room){return`${room.stake||0} Spike`;}
+        
+        async function loadRooms(){if(!MY_ID||MY_ID===999999){document.getElementById('myRoomsList').innerHTML='<div style="color:var(--error);padding:15px;">⚠️ Пользователь не найден</div>';return;}try{const my=await db('rooms','GET',null,`?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`);const all=await db('rooms','GET',null,`?status=neq.finished&order=created_at.desc&limit=50`);renderRooms('myRoomsList',Array.isArray(my)?my:[],true);renderRooms('roomsList',(Array.isArray(all)?all:[]).filter(r=>Number(r.creator_tg_id)!==MY_ID),false);}catch(e){document.getElementById('myRoomsList').innerHTML=document.getElementById('roomsList').innerHTML='<div style="color:var(--error);padding:15px;">⚠️ Ошибка загрузки</div>';}}
+        function renderRooms(id,rooms,isMy){const c=document.getElementById(id);if(!c)return;c.innerHTML='';if(!rooms||rooms.length===0){c.innerHTML='<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>';return;}rooms.forEach((r,i)=>{try{const tm=Number(r.creator_tg_id)===MY_ID,io=Number(r.opponent_tg_id)===MY_ID,ifn=r.status==='finished',ip=r.status==='playing',iw=r.status==='waiting';const el=document.createElement('div');el.className=`room-card ${tm?'my-room':''} ${ip?'playing':''}`;if(tm||io){el.onclick=()=>resumeRoom(r.id);el.style.cursor='pointer';}let bh='',bth='',th='';const hp=r.room_password&&r.room_password.length>0;let li=hp?'<span class="lock-icon">🔒</span>':'';if(iw){bh='<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">ЖДЁТ</span>';if(!window.roomExpiry[r.id])window.roomExpiry[r.id]=Date.now()+5*60*1000;const rem=window.roomExpiry[r.id]-Date.now();th=`<span class="room-timer ${rem<=60000?'urgent':''}" data-room-id="${r.id}">${formatCountdown(rem)}</span>`;}const sd=formatStakeDisplay(r);if(tm){if(ip)bth=`<button class="room-btn join" onclick="event.stopPropagation();resumeRoom('${r.id}')">🔄 Вернуться</button>`;const cb=!ifn?`<button class="room-btn cancel" onclick="event.stopPropagation();cancelRoom('${r.id}')">✕</button>`:'';el.innerHTML=`<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${li}</div><div class="room-info"><div class="room-stake">💰 ${sd} ${bh}${th}</div><div class="room-creator">Твоя комната</div></div><div class="room-actions">${bth}${cb}</div>`;}else{bth=`<button class="room-btn join" onclick="event.stopPropagation();joinRoom('${r.id}',this)">Войти</button>`;el.innerHTML=`<div class="room-icon">${r.creator_username?r.creator_username.charAt(0).toUpperCase():'?'}${li}</div><div class="room-info"><div class="room-stake">💰 ${sd} ${bh}${th}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><div class="room-actions">${bth}</div>`;}c.appendChild(el);}catch(err){console.error(`[ERROR] Render room ${i+1}:`,err);}});}
+        async function resumeRoom(rid){try{const room=await db('rooms','GET',null,`?id=eq.${rid}`,true);if(!room){alert('Room not found');loadRooms();return;}currentRoom=room;if(currentRoom.status==='finished'){showGameScreen();showGameResult(currentRoom);return;}showGameScreen();startPolling();}catch(e){alert('Ошибка: '+e.message);}}
+        async function cancelRoom(rid){if(!rid)return;try{await db('rooms','DELETE',null,`?id=eq.${rid}`);delete window.roomExpiry[rid];if(currentRoom?.id===rid){currentRoom=null;isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(window._timerInterval)clearInterval(window._timerInterval);window._timerRunning=false;}loadRooms();}catch(e){console.warn('Cancel room warning:',e);loadRooms();}}
+        async function joinRoom(rid,btn){if(!btn)return;btn.disabled=true;btn.textContent='⏳';try{const rd=await db('rooms','GET',null,`?id=eq.${rid}`,false);if(!rd||!rd.length)throw new Error('Комната занята');const room=rd[0];if(Number(room.creator_tg_id)===MY_ID||Number(room.opponent_tg_id)===MY_ID){resumeRoom(rid);return;}if(room.room_password){const pwd=prompt('🔒 Комната защищена паролем.\nВведите пароль:');if(pwd!==room.room_password){alert('Неверный пароль!');btn.disabled=false;btn.textContent='Войти';return;}}await ensureUserExists(MY_ID,user.username);const res=await db('rooms','PATCH',{opponent_tg_id:MY_ID,opponent_username:user.username,status:'playing'},`?id=eq.${rid}&status=eq.waiting`,true);if(!res)throw new Error('Ошибка');currentRoom=res;showGameScreen();startPolling();loadRooms();}catch(e){alert('Ошибка: '+e.message);if(btn){btn.disabled=false;btn.textContent='Войти';}}}
+
+        async function renderPlayerStats(){if(!currentRoom||!currentRoom.id)return;try{const rd=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`,true);if(!rd)return;const cid=rd.creator_tg_id,oid=rd.opponent_tg_id;const isCr=String(cid)===String(MY_ID);if(isCr){renderAvatar('playerAvatar',MY_PHOTO_URL,user.username||'?');if(oid)renderAvatar('opponentAvatar',null,rd.opponent_username||'?');}else{renderAvatar('opponentAvatar',MY_PHOTO_URL,user.username||'?');if(cid)renderAvatar('playerAvatar',null,rd.creator_username||'?');}if(!cid||!oid){document.getElementById(isCr?'opponentStats':'playerStats').innerHTML='<span style="color:var(--sec)">⏳ Ожидание...</span>';document.getElementById(isCr?'playerStats':'opponentStats').innerHTML='<span>✅ 0</span><br><span>❌ 0</span>';return;}const now=Date.now();if(now-window._lastStatsUpdate<2000)return;window._lastStatsUpdate=now;const res=await Promise.allSettled([db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(cid)}`,false),db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(oid)}`,false)]);const cD=(res[0].status==='fulfilled'&&res[0].value?.[0])?res[0].value[0]:{wins:0,losses:0};const oD=(res[1].status==='fulfilled'&&res[1].value?.[0])?res[1].value[0]:{wins:0,losses:0};document.getElementById(isCr?'playerStats':'opponentStats').innerHTML=`<span style="color:var(--success)">✅ ${cD.wins||0}</span><br><span style="color:var(--error)">❌ ${cD.losses||0}</span>`;document.getElementById(isCr?'opponentStats':'playerStats').innerHTML=`<span style="color:var(--success)">✅ ${oD.wins||0}</span><br><span style="color:var(--error)">❌ ${oD.losses||0}</span>`;}catch(e){}}
+        function showGameScreen(){['lobbyScreen','statsScreen','skinsScreen','leaderboardScreen','tasksScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));document.getElementById('gameScreen')?.classList.remove('hidden');if(!currentRoom){document.getElementById('statusMessage').textContent='❌ Комната не найдена';return;}const isCr=String(currentRoom.creator_tg_id)===String(MY_ID),myCol=isCr?'creator_choice':'opponent_choice';const choices=document.querySelectorAll('.choice-btn');if(currentRoom[myCol]&&currentRoom[myCol==='creator_choice'?'opponent_choice':'creator_choice']){choices.forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent='⏳ Итоги...';}else if(currentRoom[myCol]){choices.forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent='✅ Ход записан';}else{choices.forEach(b=>b.disabled=false);document.getElementById('statusMessage').innerHTML='<div class="spinner"></div>';}isGameFinished=false;window._timerRunning=false;const stake=currentRoom.stake||10;document.getElementById('stakeAmount').textContent=stake+' Spike';document.getElementById('winAmount').textContent=(stake*2)+' Spike';renderPlayerStats();updateGameStatus(currentRoom);}
+        function updateGameStatus(room){if(!room||isGameFinished)return;const me=document.getElementById('statusMessage'),tt=document.getElementById('timerText'),tc=document.getElementById('timerBarContainer'),tb=document.getElementById('timerBar');const isCr=String(room.creator_tg_id)===String(MY_ID),myCol=isCr?'creator_choice':'opponent_choice';if(room[myCol]&&room[myCol==='creator_choice'?'opponent_choice':'creator_choice']){me.textContent='⏳ Итоги...';tt.classList.remove('active');tc.style.display='none';window._timerRunning=false;if(window._timerInterval)clearInterval(window._timerInterval);return;}tt.classList.remove('active');tc.style.display='none';tb.style.width='100%';tb.classList.remove('urgent');if(room.status==='waiting')me.textContent='⏳ Ждём соперника...';else if(room.status==='playing'){if(room[myCol]){me.textContent='✅ Ход записан';window._timerRunning=false;}else{me.innerHTML='<span style="color:var(--error)">⚠️ Ваш ход!</span>';tt.classList.add('active');tc.style.display='block';if(!window._timerRunning){window._timerRunning=true;window._timerStart=Date.now();startTimer(window._timerStart);}}}else{me.textContent='🏁 Игра окончена';window._timerRunning=false;}}
+        function startTimer(st){if(window._timerInterval)clearInterval(window._timerInterval);const tl=30000,tb=document.getElementById('timerBar'),tt=document.getElementById('timerText');window._timerInterval=setInterval(()=>{if(!window._timerRunning)return clearInterval(window._timerInterval);const el=Date.now()-st,rem=Math.max(0,tl-el);tb.style.width=(rem/tl)*100+'%';tt.textContent=Math.ceil(rem/1000)+'s';if(rem<10000)tb.classList.add('urgent');if(rem<=0){clearInterval(window._timerInterval);window._timerRunning=false;handleTimeout();}},1000);}
+        async function handleTimeout(){if(!currentRoom||isGameFinished)return;const myCol=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(!currentRoom[myCol]){isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}await db('rooms','PATCH',{status:'finished'},`?id=eq.${currentRoom.id}`);const oid=String(currentRoom.creator_tg_id)===String(MY_ID)?currentRoom.opponent_tg_id:currentRoom.creator_tg_id;db('users','GET',null,`?telegram_id=eq.${oid}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${oid}`)).catch(console.warn);db('users','PATCH',{losses:(currentWins||0)+1},`?telegram_id=eq.${MY_ID}`).catch(console.warn);document.getElementById('statusMessage').innerHTML='<div style="color:var(--error);font-size:18px;">😢 Время вышло!</div>';updateStats();updateBalanceDisplay();setTimeout(()=>forceExitToLobby(),3000);}}
+        function startPolling(){if(pollInterval)clearInterval(pollInterval);if(!currentRoom)return;isGameFinished=false;let oj=false;pollInterval=setInterval(async()=>{if(!currentRoom||isGameFinished)return;try{const res=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);const room=res[0];if(!room)return;if(room.opponent_tg_id&&!oj){playSound('join');oj=true;}currentRoom=room;updateGameStatus(room);renderPlayerStats();if(room.creator_choice&&room.opponent_choice&&room.status!=='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;await showRevealAnimation(room);return;}if(room.status==='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;showGameResult(room);return;}}catch(e){console.warn('Poll error:',e);}},2000);}
+        async function makeMove(choice){if(!currentRoom){alert('❌ Комната не найдена');return;}if(!currentRoom.opponent_tg_id){alert('⚠️ Игра не активна');return;}const col=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(currentRoom[col])return;document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent='✅ Ход записан';window._timerRunning=false;if(window._timerInterval)clearInterval(window._timerInterval);document.getElementById('timerText')?.classList.remove('active');document.getElementById('timerBarContainer').style.display='none';try{await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);currentRoom[col]=choice;}catch(e){alert('Ошибка: '+e.message);document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);}}
+        async function saveGameHistory(rs,pm){if(!currentRoom)return;const isCr=String(currentRoom.creator_tg_id)===String(MY_ID);const on=isCr?currentRoom.opponent_username:currentRoom.creator_username;let es;if(rs==='win')es=currentRoom.stake;else if(rs==='lose')es=-(currentRoom.stake||0);else es=0;const hd={player_id:MY_ID,opponent_name:on||'unknown',stake:es,player_move:pm,result:rs,played_at:new Date().toISOString()};try{await db('game_history','POST',[hd]);}catch(e){}}
+
+        async function showRevealAnimation(room){const overlay=document.getElementById('revealOverlay'),confetti=document.getElementById('confettiContainer');const isCr=String(room.creator_tg_id)===String(MY_ID);const myMove=isCr?room.creator_choice:room.opponent_choice,oppMove=isCr?room.opponent_choice:room.creator_choice;document.getElementById('revealPlayer1Label').textContent='Вы';document.getElementById('revealPlayer2Label').textContent='Соперник';document.getElementById('card1Img').src=moveImages[myMove];document.getElementById('card1Name').textContent=myMove==='rock'?'Камень':myMove==='scissors'?'Ножницы':'Бумага';document.getElementById('card2Img').src=moveImages[oppMove];document.getElementById('card2Name').textContent=oppMove==='rock'?'Камень':oppMove==='scissors'?'Ножницы':'Бумага';overlay.classList.remove('hidden');confetti.classList.add('hidden');confetti.innerHTML='';document.getElementById('card1').classList.remove('flipped');document.getElementById('card2').classList.remove('flipped');const resultEl=document.getElementById('revealResult');resultEl.className='reveal-result';resultEl.textContent='';document.getElementById('revealCountdown').textContent='';const emDiv=document.getElementById('revealEmotion'),emImg=document.getElementById('emotionImg');emDiv.classList.add('hidden');emImg.src='';await sleep(500);document.getElementById('card1').classList.add('flipped');playSound('flip');await sleep(1000);document.getElementById('card2').classList.add('flipped');playSound('flip');await sleep(800);const result=calculateWinner(room),msg=result.msg;const isWin=msg.includes('Победа'),isDraw=msg.includes('Ничья');resultEl.textContent=msg;resultEl.className=`reveal-result show ${isWin?'victory':isDraw?'draw':'defeat'}`;emDiv.classList.remove('hidden');if(isWin){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';playSound('win');createConfetti();}else if(!isDraw){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';playSound('lose');}else{emDiv.classList.add('hidden');}let rfh='draw';if(result.winnerId){rfh=(result.winnerId===MY_ID)?'win':'lose';}await saveGameHistory(rfh,myMove);let cd=3;const cdEl=document.getElementById('revealCountdown');cdEl.textContent=cd;const ci=setInterval(()=>{cd--;if(cd>0)cdEl.textContent=cd;else{clearInterval(ci);overlay.classList.add('hidden');confetti.classList.add('hidden');updateStats();updateBalanceDisplay();forceExitToLobby();}},1000);await db('rooms','PATCH',{status:'finished'},`?id=eq.${room.id}`);const loserId=String(result.winnerId)===String(room.creator_tg_id)?room.opponent_tg_id:room.creator_tg_id;if(result.winnerId)db('users','GET',null,`?telegram_id=eq.${result.winnerId}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${result.winnerId}`)).catch(console.warn);if(loserId)db('users','GET',null,`?telegram_id=eq.${loserId}&select=losses`,false).then(d=>db('users','PATCH',{losses:(d[0]?.losses||0)+1},`?telegram_id=eq.${loserId}`)).catch(console.warn);}
+        function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+        function createConfetti(){const c=document.getElementById('confettiContainer');c.classList.remove('hidden');c.innerHTML='';const cols=['#6366f1','#10b981','#fbbf24','#ef4444','#8b5cf6','#f59e0b'];for(let i=0;i<50;i++){const cf=document.createElement('div');cf.className='confetti';cf.style.left=Math.random()*100+'%';cf.style.backgroundColor=cols[Math.floor(Math.random()*cols.length)];cf.style.animationDelay=Math.random()*2+'s';cf.style.animationDuration=(2+Math.random()*2)+'s';cf.style.width=(5+Math.random()*10)+'px';cf.style.height=(5+Math.random()*10)+'px';cf.style.borderRadius=Math.random()>0.5?'50%':'0';c.appendChild(cf);}}
+        function showGameResult(room){const msg=calculateWinner(room).msg;document.getElementById('statusMessage').innerHTML=`<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">${msg}</div>`;updateStats();updateBalanceDisplay();setTimeout(()=>forceExitToLobby(),3000);}
+        function calculateWinner(room){const{c1=room.creator_choice,c2=room.opponent_choice,id1=room.creator_tg_id,id2=room.opponent_tg_id}=room;if(!c1&&!c2)return{msg:'🤝 Ничья!',winnerId:null};if(!c1)return{msg:(MY_ID===id1)?'😢 Поражение':'🏆 Победа!',winnerId:id2};if(!c2)return{msg:(MY_ID===id2)?'😢 Поражение':'🏆 Победа!',winnerId:id1};if(c1===c2)return{msg:'🤝 Ничья!',winnerId:null};const beats={rock:'scissors',scissors:'paper',paper:'rock'};const cw=beats[c1]===c2;return{msg:(cw?(MY_ID===id1):(MY_ID===id2))?'🏆 Победа!':'😢 Поражение',winnerId:cw?id1:id2};}
+
+        async function loadLeaderboard(){const c=document.getElementById('leaderboardList');if(!c)return;try{const au=await db('users','GET',null,'?select=telegram_id,username,wins,losses&order=wins.desc.nullslast&limit=50');const ul=Array.isArray(au)?au:[];const ld=[];for(const u of ul){const g=await db('game_history','GET',null,`?player_id=eq.${u.telegram_id}&order=played_at.desc&limit=50`,false);const gl=Array.isArray(g)?g:[];let b=0;gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win')b+=a;else if(g.result==='lose')b-=a;});ld.push({telegram_id:u.telegram_id,username:u.username,wins:u.wins||0,balance:Math.round(b)});}ld.sort((a,b)=>b.balance-a.balance);c.innerHTML='';const t20=ld.slice(0,20);t20.forEach((u,i)=>{const sk=SKINS[Math.min(Math.floor(Math.abs(u.balance)/100000),7)]||SKINS[0];const n=u.username||`User_${String(u.telegram_id).slice(-4)}`;const im=Number(u.telegram_id)===MY_ID;const el=document.createElement('div');el.className=`room-card ${im?'my-room':''}`;el.innerHTML=`<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${sk.img}" alt=""></div><div class="room-info"><div class="room-stake">@${n}</div><div class="lb-stats"><span>🦔 ${formatCompactNumber(u.balance)} Spike</span><span>✅ ${u.wins}</span></div></div>`;c.appendChild(el);});const mr=ld.findIndex(u=>Number(u.telegram_id)===MY_ID)+1;const md=ld.find(u=>Number(u.telegram_id)===MY_ID);if(mr>20&&md){const ms=SKINS[Math.min(Math.floor(Math.abs(md.balance)/100000),7)]||SKINS[0];const mn=user.username||`User_${String(MY_ID).slice(-4)}`;const el=document.createElement('div');el.className='room-card my-room';el.style.border='1px dashed var(--gold)';el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--gold);">${mr}</div><div class="room-icon"><img src="${ms.img}" alt=""></div><div class="room-info"><div class="room-stake">@${mn} <span style="color:var(--success);font-size:10px;">(Вы)</span></div><div class="lb-stats"><span>🦔 ${formatCompactNumber(md.balance)} Spike</span><span>✅ ${md.wins}</span></div></div>`;c.appendChild(el);}}catch(e){c.innerHTML=`<div style="color:red;padding:15px;">${e.message}</div>`;}}
+
+        async function loadStats(){if(!MY_ID||MY_ID===999999)return;const tb=document.getElementById('gamesTableBody');tb.innerHTML='<div class="loader" style="padding:20px;"><div class="spinner"></div></div>';try{const g=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`,false);const gl=Array.isArray(g)?g:[];if(gl.length===0){tb.innerHTML='<div class="games-empty"><div>Пока нет игр</div></div>';document.getElementById('statsWinRate').textContent='0%';document.getElementById('statsFavMove').textContent='-';document.getElementById('statsTotalSpike').textContent='0 Spike';return;}let w=0,l=0,d=0,ts=0;const mc={rock:0,scissors:0,paper:0};gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win'){w++;ts+=a;}else if(g.result==='lose'){l++;ts-=a;}else{d++;}if(g.player_move&&mc[g.player_move]!==undefined)mc[g.player_move]++;});const tg=w+l+d;const wr=tg>0?Math.round((w/tg)*100):0;const mm=Object.entries(mc).sort((a,b)=>b[1]-a[1]);const fm=mm[0]&&mm[0][1]>0?mm[0][0]:null;const me={rock:'🪨',scissors:'✂️',paper:'📄'};const mn={rock:'Камень',scissors:'Ножницы',paper:'Бумага'};document.getElementById('statsWinRate').textContent=wr+'%';document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-';const se=document.getElementById('statsTotalSpike');se.textContent=formatCompactNumber(Math.round(ts))+' Spike';if(ts<0)se.classList.add('negative');else se.classList.remove('negative');let rh='';gl.slice(0,20).forEach(g=>{const on=g.opponent_name||'???';const rc=g.result==='win'?'win':g.result==='lose'?'lose':'draw';const rt=g.result==='win'?'Победа':g.result==='lose'?'Поражение':'Ничья';const mve=g.player_move?(me[g.player_move]||''):'';const a=Math.abs(g.stake||0);const sd=g.stake===0?'0':formatCompactNumber(a)+' Spike';rh+=`<div class="game-row"><span class="game-opponent">${escapeHtml(on)}</span><span class="game-stake">${sd}</span><span class="game-result ${rc}">${rt}</span><span class="game-move">${mve}</span></div>`;});tb.innerHTML=rh;}catch(e){tb.innerHTML='<div class="games-empty"><div>Ошибка загрузки</div></div>';}}
+        function escapeHtml(s){if(!s)return'';return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);}
+        function filterRooms(){const q=document.getElementById('searchInput').value.toLowerCase();document.querySelectorAll('#roomsList .room-card').forEach(el=>{el.style.display=(el.querySelector('.room-creator')?.textContent.toLowerCase()||'').includes(q)?'flex':'none';});}
+
+        window.addEventListener('load',()=>{loadOwnedSkins();const ss=localStorage.getItem('echidna_selected_skin');if(ss&&isSkinOwned(ss))currentSkin=ss;if(window.Telegram?.WebApp){Telegram.WebApp.expand();Telegram.WebApp.setHeaderColor('#0a0a1a');Telegram.WebApp.setBackgroundColor('#0a0a1a');}loadRooms();});
     </script>
 </body>
 </html>
