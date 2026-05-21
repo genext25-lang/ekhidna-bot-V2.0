@@ -514,6 +514,7 @@
 
         // ============ NAVIGATION ============
         function showScreen(name) {
+            // ✅ ИСПРАВЛЕНО: добавлен 'tasksScreen' в список экранов
             ['lobbyScreen','statsScreen','gameScreen','skinsScreen','leaderboardScreen','tasksScreen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
             const target = document.getElementById(name + 'Screen');
             if(target) target.classList.remove('hidden');
@@ -524,7 +525,7 @@
                 if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 lobbyRefreshInterval = setInterval(loadRooms, 3000);
                 loadRooms(); updateStats(); updateBalanceDisplay();
-            } else if(name === 'tasks') {
+            } else if(name === 'tasks') {  // ✅ ИСПРАВЛЕНО: добавлена обработка экрана заданий
                 if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 renderDailyCards();
             } else if(name === 'stats') {
