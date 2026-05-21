@@ -17,7 +17,7 @@
         .header h1 { font-size: 22px; margin-bottom: 5px; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); }
         
-        /* ✅ БЛОК БАЛАНСА */
+        /* ✅ БЛОК БАЛАНСА - УПРОЩЕННЫЙ */
         .balance-container {
             display: flex;
             align-items: center;
@@ -27,25 +27,19 @@
             border-radius: 16px;
             padding: 12px 16px;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .balance-icon {
             width: 40px;
             height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
             flex-shrink: 0;
-            box-shadow: 0 0 14px rgba(251,191,36,0.35);
-            animation: coinPulse 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .balance-icon img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-        }
-        @keyframes coinPulse {
-            0%, 100% { box-shadow: 0 0 14px rgba(251,191,36,0.35); }
-            50% { box-shadow: 0 0 22px rgba(251,191,36,0.65); }
         }
         .balance-info {
             flex: 1;
@@ -524,7 +518,7 @@
         function forceExitToLobby(){isGameFinished=true;currentRoom=null;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(window._timerInterval)clearInterval(window._timerInterval);window._timerRunning=false;document.getElementById('revealOverlay')?.classList.add('hidden');document.getElementById('confettiContainer')?.classList.add('hidden');updateBalanceDisplay();showScreen('lobby');}
         async function updateStats(){try{if(!MY_ID||MY_ID===999999)return;const data=await db('users','GET',null,`?select=wins,losses&telegram_id=eq.${MY_ID}`,false);const wins=data[0]?.wins||0,losses=data[0]?.losses||0;currentWins=wins;document.getElementById('statWins').textContent=wins;document.getElementById('statGames').textContent=wins+losses;const skin=SKINS.find(s=>s.id===currentSkin)||SKINS[0];document.getElementById('statLevel').textContent=SKINS.findIndex(s=>s.id===skin.id)+1;document.getElementById('statSkinBadge').textContent=getSkinName(skin);document.getElementById('mainLogoImg').src=skin.img;}catch(e){console.error(e);}}
 
-        // ✅ ФУНКЦИЯ ОБНОВЛЕНИЯ БАЛАНСА
+        // ✅ ФУНКЦИЯ ОБНОВЛЕНИЯ БАЛАНСА С ОКРУГЛЕНИЕМ ДО ЦЕЛЫХ
         async function updateBalanceDisplay() {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
@@ -540,6 +534,9 @@
                         balance -= absVal;
                     }
                 });
+                
+                // ✅ Округляем до целых
+                balance = Math.round(balance);
                 
                 const balanceEl = document.getElementById('balanceSpike');
                 if (balanceEl) {
@@ -796,7 +793,7 @@
                 document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-';
                 
                 const spikeEl=document.getElementById('statsTotalSpike');
-                spikeEl.textContent=totalSpike+' Spike';
+                spikeEl.textContent=Math.round(totalSpike)+' Spike';
                 if(totalSpike<0)spikeEl.classList.add('negative');else spikeEl.classList.remove('negative');
                 
                 let rh='';
