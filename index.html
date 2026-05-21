@@ -59,20 +59,74 @@
         .room-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .skin-price { font-size: 11px; color: var(--gold); margin-top: 2px; }
         
-        /* Daily Cards Grid */
-        .daily-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; padding: 0 4px; }
-        .daily-card { aspect-ratio: 1; perspective: 1000px; cursor: pointer; }
-        .daily-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Daily Cards Grid - ИСПРАВЛЕННЫЕ СТИЛИ */
+        .daily-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            margin: 16px 0; 
+            padding: 0 4px; 
+            min-height: 300px; /* Гарантируем высоту */
+        }
+        .daily-card { 
+            aspect-ratio: 1; 
+            perspective: 1000px; 
+            cursor: pointer; 
+            display: block; /* Гарантируем отображение */
+        }
+        .daily-card-inner { 
+            width: 100%; 
+            height: 100%; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
         .daily-card-inner.flipped { transform: rotateY(180deg); }
-        .daily-card-front, .daily-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); font-weight: 700; padding: 8px; }
-        .daily-card-front { background: var(--card); color: var(--sec); font-size: 20px; }
-        .daily-card-front.locked { opacity: 0.5; cursor: not-allowed; background: var(--bg); border-style: dashed; }
-        .daily-card-front.today { border-color: var(--gold); box-shadow: 0 0 16px rgba(251,191,36,0.5); animation: cardPulse 1.5s ease-in-out infinite; cursor: pointer; }
-        .daily-card-front.collected { border-color: var(--success); opacity: 0.8; cursor: default; }
+        .daily-card-front, .daily-card-back { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            border-radius: 14px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            border: 2px solid var(--border); 
+            font-weight: 700; 
+            padding: 8px; 
+        }
+        .daily-card-front { 
+            background: var(--card); 
+            color: var(--sec); 
+            font-size: 20px; 
+        }
+        .daily-card-front.locked { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            background: var(--bg); 
+            border-style: dashed; 
+        }
+        .daily-card-front.today { 
+            border-color: var(--gold); 
+            box-shadow: 0 0 16px rgba(251,191,36,0.5); 
+            animation: cardPulse 1.5s ease-in-out infinite; 
+            cursor: pointer; 
+        }
+        .daily-card-front.collected { 
+            border-color: var(--success); 
+            opacity: 0.8; 
+            cursor: default; 
+        }
         @keyframes cardPulse { 0%, 100% { box-shadow: 0 0 16px rgba(251,191,36,0.5); } 50% { box-shadow: 0 0 28px rgba(251,191,36,0.8); } }
         .daily-card-front .day-number { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
         .daily-card-front .day-label { font-size: 10px; text-transform: uppercase; color: var(--sec); }
-        .daily-card-back { background: linear-gradient(135deg, #1a1a2e, #2a2a3e); transform: rotateY(180deg); border-color: var(--gold); gap: 4px; }
+        .daily-card-back { 
+            background: linear-gradient(135deg, #1a1a2e, #2a2a3e); 
+            transform: rotateY(180deg); 
+            border-color: var(--gold); 
+            gap: 4px; 
+        }
         .daily-card-back img.card-image { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; }
         .daily-card-back .card-reward { font-size: 16px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 4px; }
         .daily-card-back .card-reward img { width: 22px; height: 22px; object-fit: contain; }
@@ -285,7 +339,7 @@
             <div class="games-table"><div class="games-table-header"><span data-i18n="opponent">Соперник</span><span data-i18n="stake">Ставка</span><span data-i18n="result">Результат</span><span data-i18n="move">Ход</span></div><div id="gamesTableBody"><div class="loader" style="padding:20px;"><div class="spinner"></div></div></div></div>
         </div>
         
-        <!-- TASKS -->
+        <!-- TASKS - ✅ ИСПРАВЛЕНО: убран класс hidden по умолчанию -->
         <div id="tasksScreen" class="hidden">
             <div class="header"><h2>📋 Задания</h2><div class="header-sub">Открывай карточки каждый день!</div></div>
             <div class="daily-streak-info">🔥 День <span id="dailyStreakNum">1</span> из 9</div>
@@ -446,56 +500,84 @@
             renderDailyCards();
         }
 
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ РЕНДЕРА КАРТОЧЕК
         function renderDailyCards() {
             const grid = document.getElementById('dailyCardsGrid');
             const streakNum = document.getElementById('dailyStreakNum');
-            if(!grid || !streakNum) {
-                console.error('Daily cards elements not found');
+            
+            // ✅ Гарантируем, что элемент существует
+            if(!grid) {
+                console.error('dailyCardsGrid not found!');
                 return;
             }
+            if(!streakNum) {
+                console.error('dailyStreakNum not found!');
+                return;
+            }
+            
             const data = getDailyData();
             const today = getTodayDate();
             const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
             const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
             let currentStreak = data.streak;
             if(data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr) {
-                currentStreak = 0; data.collectedCards = []; data.streak = 0; saveDailyData(data);
+                currentStreak = 0; 
+                data.collectedCards = []; 
+                data.streak = 0; 
+                saveDailyData(data);
             }
+            
             streakNum.textContent = Math.min(currentStreak + 1, 9);
+            
+            // ✅ Очищаем и создаём карточки заново
             grid.innerHTML = '';
+            
+            console.log('Rendering daily cards. Streak:', currentStreak);
+            
             for(let i = 0; i < 9; i++) {
                 const reward = getDailyReward(i);
                 const isCollected = data.collectedCards.includes(i);
                 const isToday = (i === currentStreak);
                 const isLocked = i > currentStreak;
+                
+                console.log(`Card ${i}: isCollected=${isCollected}, isToday=${isToday}, isLocked=${isLocked}`);
+                
                 const wrapper = document.createElement('div');
                 wrapper.className = 'daily-card';
                 wrapper.setAttribute('data-index', i);
+                
                 const inner = document.createElement('div');
                 inner.className = 'daily-card-inner';
                 if(isCollected) inner.classList.add('flipped');
+                
                 const front = document.createElement('div');
                 front.className = 'daily-card-front';
                 if(isCollected) front.classList.add('collected');
                 else if(isToday) front.classList.add('today');
                 else if(isLocked) front.classList.add('locked');
                 front.innerHTML = `<div class="day-number">${isCollected ? '✓' : (i + 1)}</div><div class="day-label">${currentLang === 'ru' ? 'День' : 'Day'} ${i + 1}</div>`;
+                
                 const back = document.createElement('div');
                 back.className = 'daily-card-back';
                 back.innerHTML = `<img class="card-image" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display='none'"><div class="card-reward"><span>${reward}</span><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display='none'"></div><div class="card-collected">✅ +${reward} Spike!</div>`;
+                
                 inner.appendChild(front);
                 inner.appendChild(back);
                 wrapper.appendChild(inner);
-                if(isToday || isCollected) {
-                    wrapper.addEventListener('click', (e) => {
-                        e.stopPropagation();
+                
+                if(isToday) {
+                    wrapper.addEventListener('click', () => {
                         if(isToday && !isCollected) {
                             claimDailyCard(i);
                         }
                     });
                 }
+                
                 grid.appendChild(wrapper);
             }
+            
+            console.log(`Rendered ${grid.children.length} cards`);
         }
 
         // ============ AUDIO ============
@@ -537,7 +619,11 @@
                 loadRooms(); updateStats(); updateBalanceDisplay();
             } else if(name === 'tasks') {  // ✅ ИСПРАВЛЕНО: добавлена обработка экрана заданий
                 if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                renderDailyCards();
+                // ✅ Гарантируем рендер карточек с задержкой
+                setTimeout(() => {
+                    renderDailyCards();
+                    console.log('Daily cards rendered for tasks screen');
+                }, 50);
             } else if(name === 'stats') {
                 if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 loadStats();
@@ -604,7 +690,21 @@
         function filterRooms() { const q = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('#roomsList .room-card').forEach(el => { el.style.display = (el.querySelector('.room-creator')?.textContent.toLowerCase() || '').includes(q) ? 'flex' : 'none'; }); }
 
         // ============ INIT ============
-        window.addEventListener('load', () => { loadOwnedSkins(); const ss = localStorage.getItem('echidna_selected_skin'); if(ss && isSkinOwned(ss)) currentSkin = ss; if(window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } const si = document.getElementById('searchInput'); if(si) si.placeholder = t('searchPlaceholder'); loadRooms(); });
+        window.addEventListener('load', () => { 
+            loadOwnedSkins(); 
+            const ss = localStorage.getItem('echidna_selected_skin'); 
+            if(ss && isSkinOwned(ss)) currentSkin = ss; 
+            if(window.Telegram?.WebApp) { 
+                Telegram.WebApp.expand(); 
+                Telegram.WebApp.setHeaderColor('#0a0a1a'); 
+                Telegram.WebApp.setBackgroundColor('#0a0a1a'); 
+            } 
+            const si = document.getElementById('searchInput'); 
+            if(si) si.placeholder = t('searchPlaceholder'); 
+            loadRooms();
+            // ✅ Принудительно рендерим карточки при загрузке
+            setTimeout(() => renderDailyCards(), 200);
+        });
     </script>
 </body>
 </html>
