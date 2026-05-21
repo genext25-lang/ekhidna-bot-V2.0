@@ -17,14 +17,46 @@
         .header h1 { font-size: 22px; margin-bottom: 5px; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); }
         
-        .balance-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; background: var(--card); border-radius: 16px; padding: 12px 16px; border: 1px solid var(--border); }
-        .balance-icon { width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        .balance-icon img { width: 100%; height: 100%; object-fit: contain; }
-        .balance-info { flex: 1; min-width: 0; }
-        .balance-amount { font-size: 24px; font-weight: 700; color: var(--gold); line-height: 1.2; transition: color 0.3s; }
-        .balance-label { font-size: 10px; color: var(--sec); text-transform: uppercase; letter-spacing: 0.5px; }
-        .balance-add-btn { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); border: none; color: #fff; font-size: 22px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; line-height: 1; }
-        .balance-add-btn:active { transform: scale(0.9); opacity: 0.8; }
+        .balance-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            background: var(--card);
+            border-radius: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+        }
+        .balance-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .balance-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .balance-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .balance-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gold);
+            line-height: 1.2;
+            transition: color 0.3s;
+        }
+        .balance-label {
+            font-size: 10px;
+            color: var(--sec);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
         
         .player-stats { display: flex; gap: 8px; margin-bottom: 16px; background: var(--card); border-radius: 16px; padding: 12px; border: 1px solid var(--border); }
         .stat-box { flex: 1; text-align: center; }
@@ -37,6 +69,15 @@
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
         .btn-sec { background: var(--card); border: 1px solid var(--border); color: var(--sec); }
         .btn-buy { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-weight: 700; }
+        .btn-create-room {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #10b981, #059669);
+            margin-bottom: 12px;
+        }
         .section-title { font-size: 13px; color: var(--sec); margin: 18px 0 8px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; opacity: 1 !important; visibility: visible !important; position: relative; z-index: 2; }
         .room-card:active { transform: scale(0.98); background: #1f1f35; }
@@ -45,6 +86,8 @@
         .room-card.equipped { border: 2px solid var(--gold); }
         .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--sec); position: relative; }
         .room-icon img { width: 100%; height: 100%; object-fit: cover; }
+        /* ✅ УВЕЛИЧЕННЫЕ ИКОНКИ СКИНОВ */
+        .skin-room-icon { width: 90px; height: 90px; border-radius: 14px; }
         .lock-icon { position: absolute; top: 2px; right: 2px; background: var(--gold); border-radius: 50%; padding: 1px 4px; font-size: 10px; }
         .room-info { flex: 1; min-width: 0; }
         .room-stake { font-weight: 700; color: var(--gold); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
@@ -94,27 +137,26 @@
         .lang-btn.active { background: var(--primary); color: #fff; }
         .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; box-sizing: border-box; transition: opacity 0.5s, visibility 0.5s; }
         .splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; display: none !important; }
-        .splash-content { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; flex-shrink: 0; }
-        /* ✅ НОВАЯ ПРЯМОУГОЛЬНАЯ КАРТИНКА */
-        .splash-banner { width: 100%; max-width: 400px; margin-bottom: 16px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .splash-content { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 420px; flex-shrink: 0; }
+        .splash-title { flex-shrink: 0; margin-bottom: 16px; font-size: 32px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; }
+        .splash-banner { width: 100%; max-width: 420px; margin-bottom: 0; border-radius: 16px 16px 0 0; overflow: hidden; }
         .splash-banner img { width: 100%; height: auto; display: block; object-fit: cover; aspect-ratio: 7/3; }
-        .splash-title { flex-shrink: 0; margin-top: 8px; font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: splashText 2s ease-in-out infinite; }
-        @keyframes splashText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
-        .splash-rules { flex-shrink: 0; margin-top: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; }
+        .splash-rules { flex-shrink: 0; background: var(--card); border: 1px solid var(--border); border-radius: 0 0 16px 16px; padding: 20px; width: 100%; border-top: none; }
         .splash-rules h3 { color: var(--gold); margin-bottom: 12px; font-size: 16px; text-align: center; }
         .splash-rules ul { list-style: none; padding: 0; margin: 0; }
         .splash-rules ul li { position: relative; padding-left: 24px; margin-bottom: 8px; color: var(--sec); font-size: 14px; line-height: 1.5; }
         .splash-rules ul li::before { content: '•'; position: absolute; left: 6px; color: var(--gold); font-size: 24px; line-height: 0.8; }
-        .splash-btn { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; transition: all 0.2s; margin-top: 16px; }
+        .splash-btn { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; transition: all 0.2s; margin-top: 0; }
         .splash-btn:active { transform: scale(0.97); }
         .skin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
         .skin-modal.hidden { display: none; }
-        .skin-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 360px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
+        .skin-modal-content { background: var(--card); border-radius: 20px; padding: 24px; max-width: 400px; width: 100%; border: 2px solid var(--border); position: relative; animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .skin-modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: var(--error); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .skin-modal-close:active { transform: scale(0.9); }
-        .skin-modal-img { width: 150px; height: 150px; margin: 0 auto 16px; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        /* ✅ УВЕЛИЧЕННАЯ КАРТИНКА В МОДАЛЬНОМ ОКНЕ */
+        .skin-modal-img { width: 220px; height: 220px; margin: 0 auto 16px; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
         .skin-modal-img img { width: 100%; height: 100%; object-fit: cover; }
         .skin-modal-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 8px; }
         .skin-modal-price { text-align: center; font-size: 14px; color: var(--gold); margin-bottom: 16px; font-weight: 600; }
@@ -206,11 +248,11 @@
     </div>
     <div id="splashScreen" class="splash-screen">
         <div class="splash-content">
-            <!-- ✅ НОВАЯ ПРЯМОУГОЛЬНАЯ КАРТИНКА -->
+            <!-- ✅ ЗАГОЛОВОК НАД БАННЕРОМ -->
+            <div class="splash-title" data-i18n="splashTitle">Echidna Naklz</div>
             <div class="splash-banner">
                 <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-banner.png" alt="Echidna Naklz">
             </div>
-            <div class="splash-title" data-i18n="splashTitle">Echidna Naklz</div>
             <div class="splash-rules">
                 <h3 data-i18n="rulesTitle">📜 Как играть</h3>
                 <ul data-i18n="rulesList">
@@ -221,8 +263,8 @@
                     <li>Победитель забирает весь банк</li>
                     <li>Зарабатывай Spike и прокачивай Ехидну — покупай новые скины!</li>
                 </ul>
-                <button class="splash-btn" onclick="startGame()" data-i18n="playBtn">🎮 Играть</button>
             </div>
+            <button class="splash-btn" onclick="startGame()" data-i18n="playBtn">🎮 ИГРАТЬ</button>
         </div>
     </div>
     <div class="container">
@@ -233,6 +275,7 @@
                 <div class="header-sub" data-i18n="subtitle">Камень • Ножницы • Бумага</div>
             </div>
             
+            <!-- ✅ БАЛАНС БЕЗ КНОПКИ ПОПОЛНЕНИЯ -->
             <div class="balance-container">
                 <div class="balance-icon">
                     <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display='none';this.parentElement.innerHTML='🦔'">
@@ -241,7 +284,6 @@
                     <div class="balance-amount" id="balanceSpike">0</div>
                     <div class="balance-label">Spike</div>
                 </div>
-                <button class="balance-add-btn" onclick="addSpike()" title="Пополнить баланс">+</button>
             </div>
             
             <div class="player-stats">
@@ -249,8 +291,10 @@
                 <div class="stat-box"><div class="stat-val" id="statGames">0</div><div class="stat-lbl" data-i18n="games">Игр</div></div>
                 <div class="stat-box"><div class="stat-val" id="statSkinName">Обычная</div><div class="stat-lbl" data-i18n="level">Скин</div><div class="skin-badge" id="statSkinBadge">#1</div></div>
             </div>
-            <button class="btn btn-success" onclick="openStakeModal()" data-i18n="createRoom">🦔 Создать комнату</button>
-            <button class="btn btn-sec" onclick="loadRooms()" data-i18n="refresh">🔄 Обновить</button>
+            
+            <!-- ✅ КНОПКА БЕЗ "ОБНОВИТЬ", КНОПКА СОЗДАТЬ КОМНАТУ БОЛЬШАЯ -->
+            <button class="btn btn-create-room" onclick="openStakeModal()">🦔 СОЗДАТЬ КОМНАТУ</button>
+            
             <div class="section-title" data-i18n="myRooms">Мои комнаты</div>
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div>
             <div class="section-title" data-i18n="availableRooms">
@@ -337,8 +381,8 @@
         const i18n = {
             ru: { 
                 splashTitle: 'Echidna Naklz', rulesTitle: '📜 Как играть', rulesList: '<li>Создай комнату или присоединись к существующей</li><li>Выбери ставку от 10 до 1000 Spike</li><li>Выбери один из трёх ходов: Камень, Ножницы или Бумага</li><li>Камень побеждает Ножницы, Ножницы режут Бумагу, Бумага накрывает Камень</li><li>Победитель забирает весь банк</li><li>Зарабатывай Spike и прокачивай Ехидну — покупай новые скины!</li>', 
-                playBtn: '🎮 Играть', title: 'Echidna Naklz', subtitle: 'Камень • Ножницы • Бумага', wins: 'Побед', games: 'Игр', level: 'Скин', 
-                createRoom: '🦔 Создать комнату', refresh: '🔄 Обновить', myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', 
+                playBtn: '🎮 ИГРАТЬ', title: 'Echidna Naklz', subtitle: 'Камень • Ножницы • Бумага', wins: 'Побед', games: 'Игр', level: 'Скин', 
+                createRoom: '🦔 СОЗДАТЬ КОМНАТУ', refresh: '🔄 Обновить', myRooms: 'Мои комнаты', availableRooms: 'Доступные комнаты', 
                 battle: '⚔️ Битва!', stake: 'Ставка', winAmount: 'Ты получишь', rock: 'Камень', scissors: 'Ножницы', paper: 'Бумага', 
                 toLobby: '🏠 В лобби', skins: '🎨 Скины', skinsSubtitle: 'Покупай и меняй скины за Spike', leaderboard: '🏆 Рейтинг', features: '✨ Особенности:', 
                 selectStake: '🦔 Выбери ставку Spike', orEnter: 'Или введи:', createRoomBtn: 'Создать комнату', 
@@ -366,8 +410,8 @@
             },
             en: { 
                 splashTitle: 'Echidna Naklz', rulesTitle: '📜 How to Play', rulesList: '<li>Create a room or join an existing one</li><li>Choose a stake from 10 to 1000 Spike</li><li>Choose one of three moves: Rock, Scissors or Paper</li><li>Rock beats Scissors, Scissors cuts Paper, Paper covers Rock</li><li>Winner takes the entire pot</li><li>Earn Spike and upgrade your Echidna — buy new skins!</li>', 
-                playBtn: '🎮 Play', title: 'Echidna Naklz', subtitle: 'Rock • Scissors • Paper', wins: 'Wins', games: 'Games', level: 'Skin', 
-                createRoom: '🦔 Create Room', refresh: '🔄 Refresh', myRooms: 'My Rooms', availableRooms: 'Available Rooms', 
+                playBtn: '🎮 PLAY', title: 'Echidna Naklz', subtitle: 'Rock • Scissors • Paper', wins: 'Wins', games: 'Games', level: 'Skin', 
+                createRoom: '🦔 CREATE ROOM', refresh: '🔄 Refresh', myRooms: 'My Rooms', availableRooms: 'Available Rooms', 
                 battle: '⚔️ Battle!', stake: 'Stake', winAmount: 'You get', rock: 'Rock', scissors: 'Scissors', paper: 'Paper', 
                 toLobby: '🏠 To Lobby', skins: '🎨 Skins', skinsSubtitle: 'Buy and change skins for Spike', leaderboard: '🏆 Leaderboard', features: '✨ Features:', 
                 selectStake: '🦔 Select Spike Stake', orEnter: 'Or enter:', createRoomBtn: 'Create Room', 
@@ -465,18 +509,13 @@
 
         async function updateBalanceDisplay() { try { if (!MY_ID || MY_ID === 999999) return; const games = await db('game_history', 'GET', null, `?player_id=eq.${MY_ID}&order=played_at.desc&limit=100`, false); const gamesList = Array.isArray(games) ? games : []; let balance = 0; gamesList.forEach(game => { const absVal = Math.abs(game.stake || 0); if (game.result === 'win') balance += absVal; else if (game.result === 'lose') balance -= absVal; }); currentBalance = Math.round(balance); const balanceEl = document.getElementById('balanceSpike'); if (balanceEl) { balanceEl.textContent = formatCompactNumber(currentBalance); balanceEl.style.color = currentBalance < 0 ? 'var(--error)' : currentBalance > 0 ? 'var(--success)' : 'var(--gold)'; } } catch (e) { console.error('Balance update error:', e); } }
 
-        function addSpike() { alert(currentLang === 'ru' ? '🦔 Пополнение баланса Spike будет доступно в следующем обновлении!' : '🦔 Spike balance top-up will be available in the next update!'); }
-
-        function renderSkins() { const c = document.getElementById('skinsList'); if(!c) return; c.innerHTML = ''; SKINS.forEach((skin, index) => { const owned = isSkinOwned(skin.id); const equipped = currentSkin === skin.id; const canBuy = !owned && currentBalance >= skin.price; const el = document.createElement('div'); el.className = `room-card ${equipped ? 'equipped' : ''}`; el.onclick = () => openSkinModal(skin); let btnHtml = ''; if (equipped) { btnHtml = `<button class="room-btn equipped">${t('equippedSkin')}</button>`; } else if (owned) { btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); equipSkin('${skin.id}')">${t('equipSkin')}</button>`; } else { btnHtml = `<button class="room-btn buy" onclick="event.stopPropagation(); buySkin('${skin.id}')" ${!canBuy ? 'disabled' : ''}>${formatCompactNumber(skin.price)} Spike</button>`; } el.innerHTML = `<div style="font-weight:700;width:30px;color:var(--sec);">#${index + 1}</div><div class="room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinNameById(skin.id)}</div>${!owned ? `<div class="skin-price">💰 ${formatCompactNumber(skin.price)} Spike</div>` : `<div class="skin-price" style="color:var(--success);">✅ ${t('unlocked')}</div>`}</div><div class="room-actions">${btnHtml}</div>`; c.appendChild(el); }); }
+        // ✅ РЕНДЕР СКИНОВ С УВЕЛИЧЕННЫМИ ИКОНКАМИ
+        function renderSkins() { const c = document.getElementById('skinsList'); if(!c) return; c.innerHTML = ''; SKINS.forEach((skin, index) => { const owned = isSkinOwned(skin.id); const equipped = currentSkin === skin.id; const canBuy = !owned && currentBalance >= skin.price; const el = document.createElement('div'); el.className = `room-card ${equipped ? 'equipped' : ''}`; el.onclick = () => openSkinModal(skin); let btnHtml = ''; if (equipped) { btnHtml = `<button class="room-btn equipped">${t('equippedSkin')}</button>`; } else if (owned) { btnHtml = `<button class="room-btn join" onclick="event.stopPropagation(); equipSkin('${skin.id}')">${t('equipSkin')}</button>`; } else { btnHtml = `<button class="room-btn buy" onclick="event.stopPropagation(); buySkin('${skin.id}')" ${!canBuy ? 'disabled' : ''}>${formatCompactNumber(skin.price)} Spike</button>`; } el.innerHTML = `<div style="font-weight:700;width:30px;color:var(--sec);">#${index + 1}</div><div class="room-icon skin-room-icon"><img src="${skin.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinNameById(skin.id)}</div>${!owned ? `<div class="skin-price">💰 ${formatCompactNumber(skin.price)} Spike</div>` : `<div class="skin-price" style="color:var(--success);">✅ ${t('unlocked')}</div>`}</div><div class="room-actions">${btnHtml}</div>`; c.appendChild(el); }); }
 
         function openSkinModal(skin) { currentModalSkin = skin; const modal = document.getElementById('skinModal'); document.getElementById('modalImg').src = skin.img; document.getElementById('modalTitle').textContent = getSkinNameById(skin.id); document.getElementById('modalDesc').textContent = getSkinDescById(skin.id); const priceEl = document.getElementById('modalPrice'); const btnEl = document.getElementById('modalBtn'); if (currentSkin === skin.id) { priceEl.textContent = '✅ ' + t('equippedSkin'); btnEl.textContent = t('equippedSkin'); btnEl.className = 'skin-modal-btn equipped'; btnEl.disabled = true; } else if (isSkinOwned(skin.id)) { priceEl.textContent = '✅ ' + t('unlocked'); btnEl.textContent = t('equipSkin'); btnEl.className = 'skin-modal-btn equip'; btnEl.disabled = false; } else { priceEl.textContent = '💰 ' + formatCompactNumber(skin.price) + ' Spike'; btnEl.textContent = currentBalance >= skin.price ? t('buySkin') + ' - ' + formatCompactNumber(skin.price) + ' Spike' : t('needMore') + formatCompactNumber(skin.price - currentBalance) + ' Spike'; btnEl.className = 'skin-modal-btn buy'; btnEl.disabled = currentBalance < skin.price; } modal.classList.remove('hidden'); }
-
         function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') { document.getElementById('skinModal')?.classList.add('hidden'); currentModalSkin = null; } }
-
         function handleSkinAction() { if (!currentModalSkin) return; if (currentSkin === currentModalSkin.id) return; if (isSkinOwned(currentModalSkin.id)) { equipSkin(currentModalSkin.id); } else { buySkin(currentModalSkin.id); } }
-
         function buySkin(skinId) { if (isSkinOwned(skinId)) return; const price = getSkinPrice(skinId); if (currentBalance < price) { alert(currentLang === 'ru' ? 'Недостаточно Spike!' : 'Not enough Spike!'); return; } currentBalance -= price; ownedSkins.push(skinId); saveOwnedSkins(); updateBalanceDisplay(); renderSkins(); const skin = SKINS.find(s => s.id === skinId); if (skin) openSkinModal(skin); alert(currentLang === 'ru' ? `✅ Скин "${getSkinNameById(skinId)}" куплен!` : `✅ Skin "${getSkinNameById(skinId)}" purchased!`); }
-
         function equipSkin(id) { if (!isSkinOwned(id)) return; currentSkin = id; try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {} updateStats(); renderSkins(); document.getElementById('skinModal')?.classList.add('hidden'); currentModalSkin = null; }
 
         function openStakeModal() { selectedStake = 10; document.getElementById('stakeInput').value = ''; document.getElementById('stakeError').textContent = ''; document.getElementById('roomPassword').value = ''; document.querySelectorAll('.stake-preset-btn').forEach(btn => { btn.classList.remove('selected'); }); const defBtn = document.querySelector('.stake-preset-btn[data-stake="10"]'); if(defBtn) defBtn.classList.add('selected'); const input = document.getElementById('stakeInput'), label = document.querySelector('.stake-input-label'); input.placeholder = '10 - 1000'; input.min = 10; input.max = 1000; input.step = 10; label.textContent = currentLang === 'ru' ? 'Или введи (Spike):' : 'Or enter (Spike):'; const pwdInput = document.getElementById('roomPassword'); if (pwdInput) pwdInput.placeholder = t('passwordPlaceholder'); document.getElementById('stakeModal')?.classList.remove('hidden'); }
@@ -506,7 +545,91 @@
         function showGameResult(room){const msg=calculateWinner(room).msg;document.getElementById('statusMessage').innerHTML=`<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">${msg}</div>`;updateStats();updateBalanceDisplay();setTimeout(()=>forceExitToLobby(),3000);}
         function calculateWinner(room){const{c1=room.creator_choice,c2=room.opponent_choice,id1=room.creator_tg_id,id2=room.opponent_tg_id}=room;if(!c1&&!c2)return{msg:t('draw'),winnerId:null};if(!c1)return{msg:(MY_ID===id1)?t('defeat'):t('victory'),winnerId:id2};if(!c2)return{msg:(MY_ID===id2)?t('defeat'):t('victory'),winnerId:id1};if(c1===c2)return{msg:t('draw'),winnerId:null};const beats={rock:'scissors',scissors:'paper',paper:'rock'};const cw=beats[c1]===c2;return{msg:(cw?(MY_ID===id1):(MY_ID===id2))?t('victory'):t('defeat'),winnerId:cw?id1:id2};}
         
-        async function loadLeaderboard() { const c=document.getElementById('leaderboardList');if(!c)return; try{const tu=await db('users','GET',null,'?select=username,wins,losses,telegram_id&order=wins.desc.nullslast&limit=20');c.innerHTML=''; tu.forEach((u,i)=>{const w=u.wins||0;const sk=SKINS[Math.min(Math.floor(w/100),7)];const n=u.username||`User_${String(u.telegram_id).slice(-4)}`;const im=Number(u.telegram_id)===MY_ID;const el=document.createElement('div');el.className=`room-card ${im?'my-room':''}`;el.innerHTML=`<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${sk.img}" alt=""></div><div class="room-info"><div class="room-stake">@${n}</div><div class="lb-stats"><span>✅ ${w}</span><span>❌ ${u.losses||0}</span></div></div>`;c.appendChild(el);}); const md=await db('users','GET',null,`?telegram_id=eq.${MY_ID}&select=wins,losses`,false);let mw=0,ml=0;if(md&&md.length>0){mw=md[0].wins||0;ml=md[0].losses||0;}currentWins=mw; const bp=await db('users','GET',null,`?wins=gt.${mw}&select=telegram_id`);const mr=bp.length+1; if(mr>20){const ms=SKINS[Math.min(Math.floor(mw/100),7)];const mn=user.username||`User_${String(MY_ID).slice(-4)}`;const el=document.createElement('div');el.className='room-card my-room';el.style.border='1px dashed var(--gold)';el.style.background='rgba(251,191,36,0.05)';el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--gold);">${mr}</div><div class="room-icon"><img src="${ms.img}" alt=""></div><div class="room-info"><div class="room-stake">@${mn} <span style="color:var(--success);font-size:10px;font-weight:bold;">(${currentLang==='ru'?'Вы':'You'})</span></div><div class="lb-stats"><span>✅ ${mw}</span><span>❌ ${ml}</span></div></div>`;c.appendChild(el);} else{const note=document.createElement('div');note.style.cssText='text-align:center;padding:12px;color:var(--success);font-weight:600;background:var(--card);border-radius:12px;margin-top:8px;';note.innerHTML=`${t('top20Note')}<span style="color:var(--gold);">#${mr}</span>`;c.appendChild(note);} }catch(e){c.innerHTML=`<div style="color:red;padding:15px;">${e.message}</div>`;} }
+        // ✅ РЕЙТИНГ ПО КОЛИЧЕСТВУ SPIKE
+        async function loadLeaderboard() { 
+            const c=document.getElementById('leaderboardList');if(!c)return; 
+            try{
+                // Получаем всех пользователей
+                const allUsers = await db('users','GET',null,'?select=telegram_id,username,wins,losses&order=wins.desc.nullslast&limit=50');
+                const usersList = Array.isArray(allUsers) ? allUsers : [];
+                
+                // Для каждого пользователя считаем баланс Spike
+                const leaderboardData = [];
+                for (const u of usersList) {
+                    const games = await db('game_history','GET',null,`?player_id=eq.${u.telegram_id}&order=played_at.desc&limit=50`,false);
+                    const gamesList = Array.isArray(games) ? games : [];
+                    let balance = 0;
+                    gamesList.forEach(game => {
+                        const absVal = Math.abs(game.stake || 0);
+                        if (game.result === 'win') balance += absVal;
+                        else if (game.result === 'lose') balance -= absVal;
+                    });
+                    leaderboardData.push({
+                        telegram_id: u.telegram_id,
+                        username: u.username,
+                        wins: u.wins || 0,
+                        losses: u.losses || 0,
+                        balance: Math.round(balance)
+                    });
+                }
+                
+                // Сортируем по балансу Spike
+                leaderboardData.sort((a,b) => b.balance - a.balance);
+                
+                c.innerHTML = '';
+                const top20 = leaderboardData.slice(0, 20);
+                
+                top20.forEach((u,i) => {
+                    const sk = SKINS[Math.min(Math.floor(Math.abs(u.balance) / 100000), 7)] || SKINS[0];
+                    const n = u.username || `User_${String(u.telegram_id).slice(-4)}`;
+                    const im = Number(u.telegram_id) === MY_ID;
+                    const el = document.createElement('div');
+                    el.className = `room-card ${im ? 'my-room' : ''}`;
+                    el.innerHTML = `
+                        <div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+                        <div class="room-icon"><img src="${sk.img}" alt=""></div>
+                        <div class="room-info">
+                            <div class="room-stake">@${n}</div>
+                            <div class="lb-stats">
+                                <span>🦔 ${formatCompactNumber(u.balance)} Spike</span>
+                                <span>✅ ${u.wins}</span>
+                            </div>
+                        </div>
+                    `;
+                    c.appendChild(el);
+                });
+                
+                // Находим себя в рейтинге
+                const myRank = leaderboardData.findIndex(u => Number(u.telegram_id) === MY_ID) + 1;
+                const myData = leaderboardData.find(u => Number(u.telegram_id) === MY_ID);
+                
+                if (myRank > 20 && myData) {
+                    const ms = SKINS[Math.min(Math.floor(Math.abs(myData.balance) / 100000), 7)] || SKINS[0];
+                    const mn = user.username || `User_${String(MY_ID).slice(-4)}`;
+                    const el = document.createElement('div');
+                    el.className = 'room-card my-room';
+                    el.style.border = '1px dashed var(--gold)';
+                    el.style.background = 'rgba(251,191,36,0.05)';
+                    el.innerHTML = `
+                        <div style="font-weight:700;width:30px;color:var(--gold);">${myRank}</div>
+                        <div class="room-icon"><img src="${ms.img}" alt=""></div>
+                        <div class="room-info">
+                            <div class="room-stake">@${mn} <span style="color:var(--success);font-size:10px;font-weight:bold;">(${currentLang==='ru'?'Вы':'You'})</span></div>
+                            <div class="lb-stats">
+                                <span>🦔 ${formatCompactNumber(myData.balance)} Spike</span>
+                                <span>✅ ${myData.wins}</span>
+                            </div>
+                        </div>
+                    `;
+                    c.appendChild(el);
+                } else if (myRank > 0 && myRank <= 20) {
+                    const note = document.createElement('div');
+                    note.style.cssText = 'text-align:center;padding:12px;color:var(--success);font-weight:600;background:var(--card);border-radius:12px;margin-top:8px;';
+                    note.innerHTML = `${t('top20Note')}<span style="color:var(--gold);">#${myRank}</span>`;
+                    c.appendChild(note);
+                }
+            } catch(e) { c.innerHTML = `<div style="color:red;padding:15px;">${e.message}</div>`; } 
+        }
 
         async function loadStats() { if(!MY_ID||MY_ID===999999)return; const tb=document.getElementById('gamesTableBody');tb.innerHTML='<div class="loader" style="padding:20px;"><div class="spinner"></div></div>'; try{ const games=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`,false); const gl=Array.isArray(games)?games:[]; if(gl.length===0){tb.innerHTML=`<div class="games-empty"><div class="empty-icon">🎮</div><div>${t('noGames')}</div></div>`;document.getElementById('statsWinRate').textContent='0%';document.getElementById('statsFavMove').textContent='-';document.getElementById('statsTotalSpike').textContent='0 Spike';return;} let wins=0,losses=0,draws=0,totalSpike=0; const mc={rock:0,scissors:0,paper:0}; gl.forEach(game=>{ const absVal=Math.abs(game.stake||0); if(game.result==='win'){ wins++; totalSpike+=absVal; } else if(game.result==='lose'){ losses++; totalSpike-=absVal; } else{draws++;} if(game.player_move&&mc[game.player_move]!==undefined)mc[game.player_move]++; }); const tg=wins+losses+draws; const wr=tg>0?Math.round((wins/tg)*100):0; const mm=Object.entries(mc).sort((a,b)=>b[1]-a[1]); const fm=mm[0]&&mm[0][1]>0?mm[0][0]:null; const me={rock:t('rockEmoji'),scissors:t('scissorsEmoji'),paper:t('paperEmoji')}; const mn={rock:t('rock'),scissors:t('scissors'),paper:t('paper')}; document.getElementById('statsWinRate').textContent=wr+'%'; document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-'; const spikeEl=document.getElementById('statsTotalSpike'); spikeEl.textContent=formatCompactNumber(Math.round(totalSpike))+' Spike'; if(totalSpike<0)spikeEl.classList.add('negative');else spikeEl.classList.remove('negative'); let rh=''; gl.slice(0,20).forEach(game=>{ const on=game.opponent_name||'???'; const rc=game.result==='win'?'win':game.result==='lose'?'lose':'draw'; const rt=game.result==='win'?t('winText'):game.result==='lose'?t('loseText'):t('drawText'); const mve=game.player_move?(me[game.player_move]||''):''; const absVal=Math.abs(game.stake||0); const sd=game.stake===0?'0':formatCompactNumber(absVal)+' Spike'; rh+=`<div class="game-row"><span class="game-opponent">${escapeHtml(on)}</span><span class="game-stake">${sd}</span><span class="game-result ${rc}">${rt}</span><span class="game-move">${mve}</span></div>`; }); tb.innerHTML=rh; }catch(e){console.error('Load stats error:',e);tb.innerHTML=`<div class="games-empty"><div class="empty-icon">⚠️</div><div>${currentLang==='ru'?'Ошибка загрузки':'Load error'}</div></div>`;} }
         function escapeHtml(str){if(!str)return'';return str.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);}
