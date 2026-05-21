@@ -606,35 +606,48 @@
 
         // ============ NAVIGATION ============
         function showScreen(name) {
-            // ✅ ИСПРАВЛЕНО: добавлен 'tasksScreen' в список экранов
-            ['lobbyScreen','statsScreen','gameScreen','skinsScreen','leaderboardScreen','tasksScreen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
-            const target = document.getElementById(name + 'Screen');
-            if(target) target.classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach((b, i) => b?.classList?.toggle('active', ['lobby','tasks','stats','skins','leaderboard'][i] === name));
-            if(name === 'lobby') {
-                currentRoom = null; isGameFinished = false;
-                if(pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                lobbyRefreshInterval = setInterval(loadRooms, 3000);
-                loadRooms(); updateStats(); updateBalanceDisplay();
-            } else if(name === 'tasks') {  // ✅ ИСПРАВЛЕНО: добавлена обработка экрана заданий
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                // ✅ Гарантируем рендер карточек с задержкой
-                setTimeout(() => {
-                    renderDailyCards();
-                    console.log('Daily cards rendered for tasks screen');
-                }, 50);
-            } else if(name === 'stats') {
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                loadStats();
-            } else if(name === 'leaderboard') {
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                loadLeaderboard();
-            } else {
-                if(lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-            }
-            if(name === 'skins') renderSkins();
+    console.log('showScreen called with:', name);
+    
+    // Скрываем все экраны
+    const screens = ['lobbyScreen','statsScreen','gameScreen','skinsScreen','leaderboardScreen','tasksScreen'];
+    screens.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.classList.add('hidden');
+            console.log('Hid:', id);
+        } else {
+            console.error('Element not found:', id);
         }
+    });
+    
+    // Показываем нужный экран
+    const target = document.getElementById(name + 'Screen');
+    if(target) {
+        target.classList.remove('hidden');
+        console.log('Showed:', name + 'Screen');
+    } else {
+        console.error('Target not found:', name + 'Screen');
+    }
+    
+    // Обновляем навигацию
+    const navOrder = ['lobby','tasks','stats','skins','leaderboard'];
+    document.querySelectorAll('.nav-btn').forEach((b, i) => {
+        b?.classList?.toggle('active', navOrder[i] === name);
+    });
+    
+    // Обработка для каждого экрана
+    if(name === 'tasks') {
+        console.log('Rendering daily cards...');
+        // Небольшая задержка для уверенности, что DOM готов
+        setTimeout(() => {
+            const grid = document.getElementById('dailyCardsGrid');
+            console.log('Grid element found:', !!grid);
+            if(grid) {
+                renderDailyCards();
+                console.log('Cards rendered, count:', grid.children.length);
+            }
+        }, 100);
+    }
 
         function forceExitToLobby() { isGameFinished = true; currentRoom = null; if(pollInterval) { clearInterval(pollInterval); pollInterval = null; } if(window._timerInterval) clearInterval(window._timerInterval); window._timerRunning = false; document.getElementById('revealOverlay')?.classList.add('hidden'); document.getElementById('confettiContainer')?.classList.add('hidden'); updateBalanceDisplay(); showScreen('lobby'); }
         async function updateStats() { try { if(!MY_ID || MY_ID === 999999) return; const d = await db('users', 'GET', null, `?select=wins,losses&telegram_id=eq.${MY_ID}`, false); const w = d[0]?.wins || 0, l = d[0]?.losses || 0; currentWins = w; document.getElementById('statWins').textContent = w; document.getElementById('statGames').textContent = w + l; document.getElementById('statSkinName').textContent = getSkinNameById(currentSkin); document.getElementById('statSkinBadge').textContent = '#' + (SKINS.findIndex(s => s.id === currentSkin) + 1); document.getElementById('mainLogoImg').src = getSkinImg(currentSkin); } catch(e) { console.error(e); } }
