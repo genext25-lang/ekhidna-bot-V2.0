@@ -11,13 +11,67 @@
         html { height: 100%; width: 100%; }
         body { height: 100%; width: 100%; overflow: hidden; margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
         .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 15px; padding-bottom: 100px; box-sizing: border-box; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        
+        /* НОВЫЙ ВЕРХНИЙ БАР */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .balance-mini { background: var(--card); border-radius: 40px; padding: 8px 16px; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 8px; }
+        .balance-mini-icon { width: 28px; height: 28px; }
+        .balance-mini-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .balance-mini-amount { font-size: 20px; font-weight: 700; color: var(--gold); }
+        
+        /* ЦЕНТРАЛЬНАЯ КАРТИНКА ЕХИДНЫ (ПРЯМОУГОЛЬНИК) */
+        .hero-echidna { width: 100%; max-width: 280px; margin: 0 auto 20px; border-radius: 24px; overflow: hidden; background: var(--card); border: 2px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .hero-echidna img { width: 100%; height: auto; display: block; object-fit: cover; aspect-ratio: 1/1.2; }
+        
+        /* ПАНЕЛЬ СТАТИСТИКИ */
+        .stats-panel { display: flex; gap: 12px; margin-bottom: 20px; background: var(--card); border-radius: 20px; padding: 16px; border: 1px solid var(--border); }
+        .stat-item { flex: 1; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 11px; color: var(--sec); text-transform: uppercase; margin-top: 4px; }
+        .skin-badge-small { display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; margin-top: 4px; }
+        
+        /* КНОПКА СОЗДАНИЯ КОМНАТЫ */
+        .btn-create { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 16px; color: #fff; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-create:active { transform: scale(0.97); }
+        
+        /* КНОПКА ОТКРЫТЫЕ КОМНАТЫ */
+        .btn-open-rooms { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; background: transparent; border: 2px solid var(--primary); border-radius: 16px; color: var(--primary); cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-open-rooms:active { transform: scale(0.97); background: rgba(99,102,241,0.1); }
+        
+        /* ЭКРАН КОМНАТ */
+        .rooms-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 200; padding: 15px; padding-bottom: 90px; overflow-y: auto; transform: translateX(100%); transition: transform 0.3s ease-out; }
+        .rooms-screen.open { transform: translateX(0); }
+        .rooms-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .back-btn { background: var(--card); border: 1px solid var(--border); border-radius: 40px; padding: 10px 16px; color: var(--text); font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .back-btn:active { transform: scale(0.97); }
+        .rooms-title { font-size: 20px; font-weight: 700; }
+        
+        .section-title { font-size: 13px; color: var(--sec); margin: 18px 0 8px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; box-sizing: border-box; }
+        .search-input:focus { border-color: var(--primary); }
+        
+        .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
+        .room-card:active { transform: scale(0.98); background: #1f1f35; }
+        .room-card.my-room { border-left: 3px solid var(--success); }
+        .room-card.equipped { border: 2px solid var(--gold); }
+        .room-icon { width: 50px; height: 50px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: var(--sec); position: relative; }
+        .room-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .lock-icon { position: absolute; top: 2px; right: 2px; background: var(--gold); border-radius: 50%; padding: 1px 4px; font-size: 8px; }
+        .room-info { flex: 1; min-width: 0; }
+        .room-stake { font-weight: 700; color: var(--gold); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 13px; }
+        .room-creator { font-size: 11px; color: var(--sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .room-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .room-btn { padding: 6px 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 11px; white-space: nowrap; }
+        .room-btn.join { background: var(--primary); color: #fff; }
+        .room-btn.cancel { background: var(--error); color: #fff; }
+        .room-timer { font-family: monospace; font-size: 10px; color: var(--gold); font-weight: bold; margin-left: 4px; background: rgba(251, 191, 36, 0.1); padding: 1px 4px; border-radius: 4px; }
+        .room-timer.urgent { color: var(--error); animation: timerPulse 1s infinite; }
+        @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
         .header { text-align: center; margin-bottom: 20px; }
-        .header-logo { width: 120px; height: 120px; margin: 0 auto 12px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 30px rgba(99,102,241,0.5); animation: float 3s ease-in-out infinite; }
-        .header-logo img { width: 100%; height: 100%; object-fit: cover; }
-        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         .header h1 { font-size: 22px; margin-bottom: 5px; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); }
-
+        
         /* КАРТОЧКИ ЗАДАНИЙ */
         .daily-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; padding: 0 4px; }
         .daily-card { aspect-ratio: 0.85; perspective: 1000px; cursor: pointer; }
@@ -41,40 +95,6 @@
         .daily-streak-info span { color: var(--gold); font-weight: 700; font-size: 18px; }
 
         /* ОСТАЛЬНЫЕ СТИЛИ */
-        .balance-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; background: var(--card); border-radius: 16px; padding: 12px 16px; border: 1px solid var(--border); }
-        .balance-icon { width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        .balance-icon img { width: 100%; height: 100%; object-fit: contain; }
-        .balance-info { flex: 1; min-width: 0; }
-        .balance-amount { font-size: 24px; font-weight: 700; color: var(--gold); }
-        .balance-label { font-size: 10px; color: var(--sec); }
-        .player-stats { display: flex; gap: 8px; margin-bottom: 16px; background: var(--card); border-radius: 16px; padding: 12px; border: 1px solid var(--border); }
-        .stat-box { flex: 1; text-align: center; }
-        .stat-val { font-size: 20px; font-weight: 700; color: var(--primary); }
-        .stat-lbl { font-size: 10px; color: var(--sec); }
-        .skin-badge { display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 4px; }
-        .btn { width: 100%; padding: 14px; margin: 6px 0; border: none; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; color: #fff; transition: all 0.2s; box-sizing: border-box; }
-        .btn:active { transform: scale(0.97); }
-        .btn-create-room { padding: 20px; font-size: 18px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(135deg, #10b981, #059669); margin-bottom: 12px; }
-        .section-title { font-size: 13px; color: var(--sec); margin: 18px 0 8px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
-        .room-card { background: var(--card); border-radius: 14px; margin-bottom: 8px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
-        .room-card:active { transform: scale(0.98); background: #1f1f35; }
-        .room-card.my-room { border-left: 3px solid var(--success); }
-        .room-card.equipped { border: 2px solid var(--gold); }
-        .room-icon { width: 60px; height: 60px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: var(--sec); position: relative; }
-        .room-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .skin-room-icon { width: 90px; height: 90px; border-radius: 14px; }
-        .lock-icon { position: absolute; top: 2px; right: 2px; background: var(--gold); border-radius: 50%; padding: 1px 4px; font-size: 10px; }
-        .room-info { flex: 1; min-width: 0; }
-        .room-stake { font-weight: 700; color: var(--gold); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-        .room-creator { font-size: 12px; color: var(--sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .room-actions { display: flex; gap: 6px; flex-shrink: 0; }
-        .room-btn { padding: 8px 12px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 12px; white-space: nowrap; }
-        .room-btn.join { background: var(--primary); color: #fff; }
-        .room-btn.cancel { background: var(--error); color: #fff; }
-        .room-btn.buy { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
-        .room-btn.equipped { background: var(--success); color: #fff; }
-        .room-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .skin-price { font-size: 11px; color: var(--gold); margin-top: 2px; }
         .player-wrapper { display: flex; flex-direction: column; align-items: center; width: 90px; }
         .player-avatar { width: 85px; height: 85px; border-radius: 50%; overflow: hidden; border: 3px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--sec); }
         .player-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -107,7 +127,7 @@
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--sec); font-size: 10px; cursor: pointer; padding: 5px 0; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn svg { width: 28px; height: 28px; }
-        .lang-switcher { position: fixed; top: 15px; right: 15px; z-index: 10001; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 4px; display: flex; gap: 4px; }
+        .lang-switcher { display: flex; gap: 4px; }
         .lang-btn { padding: 6px 12px; border: none; border-radius: 16px; background: transparent; color: var(--sec); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .lang-btn.active { background: var(--primary); color: #fff; }
         .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; box-sizing: border-box; transition: opacity 0.5s, visibility 0.5s; }
@@ -153,9 +173,6 @@
         .stake-confirm-btn { background: linear-gradient(135deg, #10b981, #059669); width: 100%; }
         .lb-stats { font-size: 11px; color: var(--sec); display: flex; gap: 8px; margin-top: 4px; }
         .lb-stats span { display: flex; align-items: center; gap: 2px; }
-        .room-timer { font-family: monospace; font-size: 11px; color: var(--gold); font-weight: bold; margin-left: 4px; background: rgba(251, 191, 36, 0.1); padding: 1px 4px; border-radius: 4px; }
-        .room-timer.urgent { color: var(--error); animation: timerPulse 1s infinite; }
-        @keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .reveal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 26, 0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
         .reveal-overlay.hidden { display: none; }
         .reveal-title { font-size: 18px; color: var(--sec); margin-bottom: 30px; animation: slideDown 0.5s ease-out; }
@@ -185,8 +202,6 @@
         .confetti-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 2001; overflow: hidden; }
         .confetti { position: absolute; width: 10px; height: 10px; animation: confettiFall 3s ease-out forwards; }
         @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); color: var(--text); font-size: 12px; outline: none; box-sizing: border-box; }
-        .search-input:focus { border-color: var(--primary); }
         .stats-header { text-align: center; margin-bottom: 20px; }
         .stats-header h2 { font-size: 22px; margin-bottom: 5px; }
         .stats-header .subtitle { color: var(--sec); font-size: 13px; }
@@ -214,11 +229,6 @@
     </style>
 </head>
 <body>
-    <div class="lang-switcher">
-        <button class="lang-btn active" onclick="setLanguage('ru')">RU</button>
-        <button class="lang-btn" onclick="setLanguage('en')">EN</button>
-    </div>
-
     <div id="splashScreen" class="splash-screen">
         <div class="splash-content">
             <div class="splash-title">Echidna Naklz</div>
@@ -242,25 +252,60 @@
 
     <div class="container">
         <div id="lobbyScreen">
-            <div class="header">
-                <div class="header-logo"><img src="" id="mainLogoImg" alt="logo"></div>
-                <h1>Echidna Naklz</h1>
-                <div class="header-sub">Камень • Ножницы • Бумага</div>
+            <!-- Верхняя панель: баланс слева, переключатель языка справа -->
+            <div class="top-bar">
+                <div class="balance-mini">
+                    <div class="balance-mini-icon"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display='none';this.parentElement.innerHTML='🪙'"></div>
+                    <span class="balance-mini-amount" id="balanceSpike">0</span>
+                </div>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" onclick="setLanguage('ru')">RU</button>
+                    <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+                </div>
             </div>
-            <div class="balance-container">
-                <div class="balance-icon"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display='none';this.parentElement.innerHTML='🦔'"></div>
-                <div class="balance-info"><div class="balance-amount" id="balanceSpike">0</div><div class="balance-label">Spike</div></div>
+            
+            <!-- Центральная картинка ехидны (прямоугольник) -->
+            <div class="hero-echidna">
+                <img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png" alt="Echidna" id="heroEchidnaImg">
             </div>
-            <div class="player-stats">
-                <div class="stat-box"><div class="stat-val" id="statWins">0</div><div class="stat-lbl">Побед</div></div>
-                <div class="stat-box"><div class="stat-val" id="statGames">0</div><div class="stat-lbl">Игр</div></div>
-                <div class="stat-box"><div class="stat-val" id="statSkinName">Обычная</div><div class="stat-lbl">Скин</div><div class="skin-badge" id="statSkinBadge">#1</div></div>
+            
+            <!-- Панель статистики -->
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <div class="stat-value" id="statWins">0</div>
+                    <div class="stat-label">Побед</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statGames">0</div>
+                    <div class="stat-label">Игр</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statSkinName">Обычная</div>
+                    <div class="stat-label">Скин</div>
+                    <div class="skin-badge-small" id="statSkinBadge">#1</div>
+                </div>
             </div>
-            <button class="btn btn-create-room" onclick="openStakeModal()">🦔 СОЗДАТЬ КОМНАТУ</button>
+            
+            <!-- Кнопка создания комнаты (с дверью вместо ежа) -->
+            <button class="btn-create" onclick="openStakeModal()">🚪 СОЗДАТЬ КОМНАТУ</button>
+            
+            <!-- Кнопка открытых комнат -->
+            <button class="btn-open-rooms" onclick="openRoomsScreen()">📋 ОТКРЫТЫЕ КОМНАТЫ</button>
+        </div>
+        
+        <!-- ЭКРАН КОМНАТ (выезжающая панель) -->
+        <div id="roomsScreen" class="rooms-screen">
+            <div class="rooms-header">
+                <button class="back-btn" onclick="closeRoomsScreen()">← Назад</button>
+                <div class="rooms-title">Комнаты</div>
+            </div>
+            
             <div class="section-title">Мои комнаты</div>
             <div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div>
-            <div class="section-title"><span>Доступные комнаты</span><input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск по нику..." oninput="filterRooms()"></div>
-            <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
+            
+            <div class="section-title"><span>Доступные комнаты</span></div>
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск по нику..." oninput="filterRooms()">
+            <div id="roomsList" style="margin-top: 8px;"><div class="loader"><div class="spinner"></div></div></div>
         </div>
         
         <div id="tasksScreen" class="hidden">
@@ -326,6 +371,14 @@
             document.querySelectorAll('.lang-btn').forEach(function(b) {
                 b.classList.toggle('active', b.textContent.toLowerCase() === lang);
             });
+        }
+        
+        function openRoomsScreen() {
+            document.getElementById('roomsScreen').classList.add('open');
+        }
+        
+        function closeRoomsScreen() {
+            document.getElementById('roomsScreen').classList.remove('open');
         }
         
         function startGame() {
@@ -841,6 +894,7 @@
                 loadRooms();
                 updateStats();
                 updateBalanceDisplay();
+                updateHeroImage();
             } else if (name === 'tasks') {
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 setTimeout(function() { renderDailyCards(); }, 100);
@@ -855,6 +909,13 @@
             }
             
             if (name === 'skins') renderSkins();
+        }
+        
+        function updateHeroImage() {
+            var heroImg = document.getElementById('heroEchidnaImg');
+            if (heroImg) {
+                heroImg.src = getSkinImg(currentSkin);
+            }
         }
 
         function forceExitToLobby() {
@@ -881,7 +942,7 @@
                 document.getElementById('statSkinName').textContent = getSkinNameById(currentSkin);
                 var skinIndex = SKINS.findIndex(function(s) { return s.id === currentSkin; });
                 document.getElementById('statSkinBadge').textContent = '#' + (skinIndex + 1);
-                document.getElementById('mainLogoImg').src = getSkinImg(currentSkin);
+                updateHeroImage();
             } catch(e) { console.error(e); }
         }
 
@@ -1225,6 +1286,7 @@
                 var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
                 if (!res) throw new Error('Ошибка');
                 currentRoom = res; showGameScreen(); startPolling(); loadRooms();
+                closeRoomsScreen();
             } catch(e) { alert('Ошибка: ' + e.message); if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } }
         }
 
@@ -1270,6 +1332,7 @@
         }
 
         function showGameScreen() {
+            closeRoomsScreen();
             ['lobbyScreen', 'statsScreen', 'skinsScreen', 'leaderboardScreen', 'tasksScreen'].forEach(function(id) {
                 document.getElementById(id).classList.add('hidden');
             });
