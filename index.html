@@ -397,9 +397,9 @@
     <script>
         // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
         var moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
-        var isCreatingRoom = false; // Блокировка двойного создания комнаты
-        var lastStake = 10; // Для кнопки "Сыграть ещё"
-        var lastOpponentId = null; // Для реванша
+        var isCreatingRoom = false;
+        var lastStake = 10;
+        var lastOpponentId = null;
         
         function vibrate() {
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
@@ -468,7 +468,6 @@
         var MY_PHOTO_URL = user.photo_url || null;
         var MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
 
-        // Сохраняем хеш пользователя для проверки подлинности
         var USER_HASH = btoa(MY_ID + 'echidna_secret_salt_2024');
 
         var SKINS = [
@@ -497,44 +496,30 @@
         function getSkinImg(id) { var s = SKINS.find(function(s) { return s.id === id; }); return s ? s.img : ''; }
         function isSkinOwned(id) { return ownedSkins.indexOf(id) !== -1; }
         
-        // ============ ЗАГРУЗКА СКИНОВ ИЗ SUPABASE ============
         async function loadSkinsFromDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return false;
-                
-                console.log('[SKINS] Loading from DB for player:', MY_ID);
-                
                 var result = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
-                
                 if (result && result.length > 0) {
                     var userSkinData = result[0];
-                    console.log('[SKINS] Data from DB:', userSkinData);
-                    
                     if (userSkinData.owned_skins) {
                         try {
                             var loadedOwned = JSON.parse(userSkinData.owned_skins);
                             if (Array.isArray(loadedOwned) && loadedOwned.length > 0) {
                                 ownedSkins = loadedOwned;
                                 if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
-                                console.log('[SKINS] Loaded owned skins:', ownedSkins);
                             }
                         } catch(e) { console.warn('Parse owned skins error:', e); }
                     }
-                    
                     if (userSkinData.current_skin) {
                         currentSkin = userSkinData.current_skin;
-                        console.log('[SKINS] Loaded current skin:', currentSkin);
                     }
-                    
                     try {
                         localStorage.setItem('echidna_owned_skins_v2', JSON.stringify(ownedSkins));
                         localStorage.setItem('echidna_selected_skin', currentSkin);
-                        console.log('[SKINS] Saved to localStorage cache');
                     } catch(e) {}
-                    
                     return true;
                 } else {
-                    console.log('[SKINS] No data in DB, will create new record');
                     await saveSkinsToDB();
                     return false;
                 }
@@ -545,46 +530,31 @@
                     if (s) {
                         ownedSkins = JSON.parse(s);
                         if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
-                        console.log('[SKINS] Fallback loaded owned from localStorage:', ownedSkins);
                     }
-                    
                     var savedSkin = localStorage.getItem('echidna_selected_skin');
                     if (savedSkin && isSkinOwned(savedSkin)) {
                         currentSkin = savedSkin;
-                        console.log('[SKINS] Fallback loaded current skin from localStorage:', currentSkin);
                     }
                 } catch(le) { console.warn('LocalStorage fallback error:', le); }
                 return false;
             }
         }
         
-        // ============ СОХРАНЕНИЕ СКИНОВ В SUPABASE ============
         async function saveSkinsToDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return false;
-                
-                console.log('[SKINS] Saving to DB for player:', MY_ID);
-                console.log('[SKINS] ownedSkins:', ownedSkins);
-                console.log('[SKINS] currentSkin:', currentSkin);
-                
                 var existing = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
-                
                 var payload = {
                     player_id: MY_ID,
                     owned_skins: JSON.stringify(ownedSkins),
                     current_skin: currentSkin,
                     updated_at: new Date().toISOString()
                 };
-                
                 if (existing && existing.length > 0) {
-                    console.log('[SKINS] Updating existing record');
                     await db('user_skins', 'PATCH', payload, '?player_id=eq.' + MY_ID);
                 } else {
-                    console.log('[SKINS] Creating new record');
                     await db('user_skins', 'POST', [payload]);
                 }
-                
-                console.log('[SKINS] Successfully saved to DB');
                 return true;
             } catch(e) {
                 console.error('[SKINS] Failed to save skins to DB:', e);
@@ -611,7 +581,7 @@
         var isGameFinished = false;
         var currentWins = 0;
         var currentBalance = 0;
-        var currentUserBalance = 0; // Кэшированный баланс из таблицы users
+        var currentUserBalance = 0;
         window.roomExpiry = {};
         window._lastStatsUpdate = 0;
 
@@ -629,7 +599,6 @@
         function disableBottomNav() { document.getElementById('bottomNav').classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav').classList.remove('disabled'); }
 
-        // ============ ЗВУКИ ============
         var audioCtx = null;
         
         function initAudio() {
@@ -714,7 +683,6 @@
             }
         }
 
-        // ============ ОГРАНИЧЕНИЕ КОМНАТ ============
         async function canCreateRoom() {
             try {
                 var myRooms = await db('rooms', 'GET', null, '?creator_tg_id=eq.' + MY_ID + '&status=neq.finished&limit=10');
@@ -730,15 +698,11 @@
             }
         }
 
-        // ============ УПРАВЛЕНИЕ БАЛАНСОМ В БД ============
         async function updateUserBalance(changeAmount) {
             try {
-                // Получаем текущий баланс пользователя
                 var userData = await db('users', 'GET', null, '?select=current_balance&telegram_id=eq.' + MY_ID, false);
                 var currentBalanceVal = (userData && userData[0] && userData[0].current_balance) ? userData[0].current_balance : 0;
                 var newBalance = currentBalanceVal + changeAmount;
-                
-                // Обновляем баланс в БД
                 await db('users', 'PATCH', { current_balance: newBalance }, '?telegram_id=eq.' + MY_ID);
                 currentUserBalance = newBalance;
                 return newBalance;
@@ -760,7 +724,6 @@
             }
         }
 
-        // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
         async function loadDailyDataFromDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return null;
@@ -782,9 +745,7 @@
         async function saveDailyDataToDB(data) {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
-                
                 var existing = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
-                
                 var payload = {
                     player_id: MY_ID,
                     streak: data.streak || 0,
@@ -792,7 +753,6 @@
                     collected_cards: data.collectedCards || [],
                     updated_at: new Date().toISOString()
                 };
-                
                 if (existing && existing.length > 0) {
                     await db('daily_tasks', 'PATCH', payload, '?player_id=eq.' + MY_ID);
                 } else {
@@ -809,12 +769,10 @@
                 try { localStorage.setItem('echidna_daily_v5', JSON.stringify(dbData)); } catch(e) {}
                 return dbData;
             }
-            
             try {
                 var s = localStorage.getItem('echidna_daily_v5');
                 if (s) return JSON.parse(s);
             } catch(e) {}
-            
             return { streak: 0, lastClaimDate: null, collectedCards: [] };
         }
         
@@ -856,18 +814,13 @@
             }
             
             var reward = getDailyReward(cardIndex);
-            
-            // Обновляем баланс в БД
             await updateUserBalance(reward);
             currentBalance += reward;
-            
             data.streak = cardIndex + 1;
             data.lastClaimDate = today;
             if (!data.collectedCards) data.collectedCards = [];
             data.collectedCards.push(cardIndex);
-            
             saveDailyData(data);
-            
             await updateBalanceDisplay();
             
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
@@ -889,7 +842,6 @@
             
             var data = await getDailyData();
             var today = getTodayDate();
-            
             var yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             var yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
@@ -952,7 +904,6 @@
             }
         }
 
-        // ============ БАЗА ДАННЫХ ============
         async function db(table, method, payload, filters, single) {
             payload = payload || null;
             filters = filters || '';
@@ -977,14 +928,11 @@
                     headers: headers,
                     body: payload ? JSON.stringify(payload) : null
                 });
-                
                 if (!response.ok) {
                     var errorText = await response.text();
                     throw new Error(response.status + ' ' + errorText);
                 }
-                
                 if (method === 'DELETE') return true;
-                
                 var responseData = await response.json();
                 return single && Array.isArray(responseData) ? responseData[0] : responseData;
             } catch(e) {
@@ -1017,7 +965,6 @@
             }
         }
 
-        // ============ НАВИГАЦИЯ ============
         function showScreen(name) {
             var screens = ['lobbyScreen', 'statsScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen', 'tasksScreen'];
             screens.forEach(function(id) {
@@ -1055,7 +1002,6 @@
             } else {
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
             }
-            
             if (name === 'skins') renderSkins();
         }
         
@@ -1090,18 +1036,13 @@
                 alert('Подождите, комната уже создается...');
                 return;
             }
-            
             var canCreate = await canCreateRoom();
             if (!canCreate) return;
-            
             if (currentBalance < stake) { 
                 alert('Недостаточно средств!'); 
                 return;
             }
-            
             isCreatingRoom = true;
-            var btn = document.getElementById('createRoomBtn');
-            
             try {
                 await ensureUserExists(MY_ID, user.username);
                 var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: stake, status: 'waiting', room_password: null }], '', true);
@@ -1135,7 +1076,6 @@
         async function updateBalanceDisplay() {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
-                // Используем кэшированный баланс из таблицы users
                 var balance = await getUserBalance();
                 currentBalance = balance;
                 var el = document.getElementById('balanceSpike');
@@ -1146,7 +1086,6 @@
             } catch(e) { console.error('Balance update error:', e); }
         }
 
-        // ============ СКИНЫ ============
         function renderSkins() {
             var c = document.getElementById('skinsList');
             if (!c) return;
@@ -1179,7 +1118,6 @@
                     '<div class="room-info"><div class="skin-card-name">' + getSkinNameById(s.id) + '</div>' +
                     (!owned ? '<div class="skin-price">💰 ' + formatCompactNumber(s.price) + ' Spike</div>' : '<div class="skin-price" style="color:var(--success);">✅ Куплено</div>') +
                     '</div><div class="room-actions">' + btnHtml + '</div>';
-                
                 c.appendChild(el);
             });
         }
@@ -1233,22 +1171,12 @@
             var price = getSkinPrice(skinId);
             if (currentBalance < price) { alert('Недостаточно Spike!'); return; }
             
-            console.log('[SKINS] Buying skin:', skinId, 'price:', price);
-            
-            // Обновляем баланс в БД
             await updateUserBalance(-price);
             currentBalance -= price;
-            
             ownedSkins.push(skinId);
             saveOwnedSkinsLocally();
-            
-            var saved = await saveSkinsToDB();
-            if (!saved) {
-                console.warn('[SKINS] Could not save to DB, but skin purchased locally');
-            }
-            
+            await saveSkinsToDB();
             await saveGameHistory('lose', 'rock', price);
-            
             await updateBalanceDisplay();
             renderSkins();
             
@@ -1259,17 +1187,9 @@
 
         async function equipSkin(id) {
             if (!isSkinOwned(id)) return;
-            
-            console.log('[SKINS] Equipping skin:', id);
-            
             currentSkin = id;
             try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
-            
-            var saved = await saveSkinsToDB();
-            if (!saved) {
-                console.warn('[SKINS] Could not save to DB, but skin equipped locally');
-            }
-            
+            await saveSkinsToDB();
             updateStats();
             renderSkins();
             document.getElementById('skinModal').classList.add('hidden');
@@ -1277,7 +1197,6 @@
             enableBottomNav();
         }
 
-        // ============ СТАВКИ ============
         function openStakeModal() {
             if (currentBalance < 10) { alert('Недостаточно средств!'); return; }
             selectedStake = 10;
@@ -1319,15 +1238,12 @@
         }
 
         async function confirmStake() {
-            // Блокировка двойного нажатия
             if (isCreatingRoom) {
                 alert('Подождите, комната уже создается...');
                 return;
             }
-            
             var canCreate = await canCreateRoom();
             if (!canCreate) return;
-            
             var inputVal = document.getElementById('stakeInput').value;
             var finalStake = selectedStake;
             if (inputVal) {
@@ -1338,16 +1254,13 @@
             if (currentBalance < finalStake) { document.getElementById('stakeError').textContent = 'Недостаточно средств!'; return; }
             var rawPassword = document.getElementById('roomPassword').value.trim();
             if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; return; }
-            
             closeStakeModal();
-            
             isCreatingRoom = true;
             var btn = document.getElementById('createRoomBtn');
             if (btn) {
                 btn.classList.add('loading');
                 btn.textContent = '⏳ СОЗДАНИЕ...';
             }
-            
             try {
                 await ensureUserExists(MY_ID, user.username);
                 var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: rawPassword || null }], '', true);
@@ -1367,7 +1280,6 @@
             }
         }
 
-        // ============ КОМНАТЫ ============
         function formatCountdown(ms) {
             if (ms <= 0) return "00:00";
             var totalSeconds = Math.floor(ms / 1000);
@@ -1470,7 +1382,6 @@
 
         async function cancelRoom(roomId) {
             if (!confirm('❌ Вы уверены, что хотите отменить создание комнаты?')) return;
-            
             try {
                 await db('rooms', 'DELETE', null, '?id=eq.' + roomId);
                 delete window.roomExpiry[roomId];
@@ -1491,15 +1402,12 @@
                 var roomData = await db('rooms', 'GET', null, '?id=eq.' + roomId, false);
                 if (!roomData || !roomData.length) throw new Error('Комната занята');
                 var room = roomData[0];
-                
-                // Защита от входа в свою комнату
                 if (Number(room.creator_tg_id) === MY_ID) {
                     alert('❌ Нельзя войти в собственную комнату!');
                     btnElement.disabled = false;
                     btnElement.textContent = 'Войти';
                     return;
                 }
-                
                 if (Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
                 if (room.room_password) {
                     var pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:');
@@ -1520,7 +1428,6 @@
             } catch(e) { alert('Ошибка: ' + e.message); if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } }
         }
 
-        // ============ ИГРА ============
         async function renderPlayerStats() {
             if (!currentRoom || !currentRoom.id) return;
             try {
@@ -1563,7 +1470,6 @@
 
         function showGameScreen() {
             closeRoomsScreen();
-            // Скрываем кнопку реванша при входе в новую игру
             var rematchBtn = document.getElementById('rematchBtn');
             if (rematchBtn) rematchBtn.classList.add('hidden');
             
@@ -1788,24 +1694,18 @@
             } else { emDiv.classList.add('hidden'); }
             
             var resultForHistory = 'draw';
-            var historyStake = 0;
             var balanceChange = 0;
             
             if (result.winnerId) {
                 resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
-                historyStake = (result.winnerId === MY_ID) ? room.stake : -room.stake;
                 balanceChange = (result.winnerId === MY_ID) ? room.stake : -room.stake;
-            } else {
-                // При ничье баланс не меняется
-                balanceChange = 0;
             }
             
-            // Обновляем баланс в БД
             if (balanceChange !== 0) {
                 await updateUserBalance(balanceChange);
             }
             
-            await saveGameHistory(resultForHistory, myMove, Math.abs(historyStake));
+            await saveGameHistory(resultForHistory, myMove, Math.abs(balanceChange));
             
             var countdown = 3;
             var countdownEl = document.getElementById('revealCountdown');
@@ -1819,7 +1719,6 @@
                     overlay.classList.add('hidden'); confetti.classList.add('hidden');
                     updateStats(); updateBalanceDisplay(); 
                     
-                    // Показываем кнопку "Сыграть ещё"
                     var rematchBtn = document.getElementById('rematchBtn');
                     if (rematchBtn && !isDraw) {
                         rematchBtn.classList.remove('hidden');
@@ -1884,7 +1783,6 @@
             return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
         }
 
-        // ============ РЕЙТИНГ ============
         async function loadLeaderboard() {
             var c = document.getElementById('leaderboardList');
             if (!c) return;
@@ -1914,7 +1812,6 @@
             } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">' + e.message + '</div>'; }
         }
 
-        // ============ СТАТИСТИКА ============
         async function loadStats() {
             if (!MY_ID || MY_ID === 999999) return;
             var tableBody = document.getElementById('gamesTableBody');
@@ -2002,10 +1899,8 @@
             });
         }
 
-        // ============ ИНИЦИАЛИЗАЦИЯ ============
         window.addEventListener('load', async function() {
             await loadSkinsFromDB();
-            
             loadOwnedSkinsLocally();
             var savedSkin = localStorage.getItem('echidna_selected_skin');
             if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
