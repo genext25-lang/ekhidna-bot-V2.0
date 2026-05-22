@@ -40,6 +40,7 @@
         .btn-create { background: linear-gradient(135deg, rgba(16,185,129,0.9), rgba(5,150,105,0.9)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
         .btn-open-rooms { background: rgba(99,102,241,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(99,102,241,0.5); color: var(--primary); font-size: 16px; font-weight: 700; text-transform: none; }
         .btn-create:active, .btn-open-rooms:active { transform: scale(0.97); opacity: 0.8; }
+        .btn-create.loading { opacity: 0.6; pointer-events: none; }
         
         /* ЭКРАН КОМНАТ */
         .rooms-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,10,26,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 200; padding: 15px; padding-bottom: 90px; overflow-y: auto; transform: translateX(100%); transition: transform 0.3s ease-out; }
@@ -249,6 +250,11 @@
         .leaderboard-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .leaderboard-left { display: flex; align-items: center; gap: 12px; }
         .leaderboard-right { display: flex; align-items: center; gap: 6px; }
+        
+        /* Индикатор загрузки */
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+        .loading-overlay.active { display: flex; }
+        .loading-text { color: var(--gold); font-size: 16px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -266,11 +272,18 @@
                     <li>Выбери один из трёх ходов: Камень, Ножницы или Бумага</li>
                     <li>Камень побеждает Ножницы, Ножницы режут Бумагу, Бумага накрывает Камень</li>
                     <li>Победитель забирает весь банк</li>
+                    <li>При ничьей ставка возвращается обоим игрокам</li>
                     <li>Зарабатывай Spike и прокачивай Ехидну — покупай новые скины!</li>
                 </ul>
             </div>
             <button class="splash-btn" onclick="startGame()">🎮 ИГРАТЬ</button>
         </div>
+    </div>
+    
+    <!-- Индикатор загрузки -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Загрузка...</div>
     </div>
 
     <div class="container">
@@ -306,7 +319,7 @@
                 </div>
             </div>
             
-            <button class="btn-create" onclick="openStakeModal()">🚪 СОЗДАТЬ КОМНАТУ</button>
+            <button class="btn-create" id="createRoomBtn" onclick="openStakeModal()">🚪 СОЗДАТЬ КОМНАТУ</button>
             <button class="btn-open-rooms" onclick="openRoomsScreen()">📋 ОТКРЫТЫЕ КОМНАТЫ</button>
         </div>
         
@@ -350,7 +363,7 @@
                 <div class="player-wrapper"><div class="player-avatar" id="opponentAvatar"></div><div class="player-stats-small" id="opponentStats"></div></div>
             </div>
             <div class="game-stakes"><div class="stake-line">💰 Ставка: <span id="stakeAmount" class="stake-value">10</span> Spike</div><div class="stake-line">🏆 Ты получишь: <span id="winAmount" class="stake-win">20</span> Spike</div></div>
-            <div class="status-box"><div id="statusMessage"><div class="spinner"></div></div><div class="timer-text" id="timerText">30s</div><div class="timer-bar-container" id="timerBarContainer"><div class="timer-bar" id="timerBar"></div></div></div>
+            <div class="status-box"><div id="statusMessage"><div class="spinner"></div></div><div class="timer-text" id="timerText">45s</div><div class="timer-bar-container" id="timerBarContainer"><div class="timer-bar" id="timerBar"></div></div></div>
             <div class="choices">
                 <button class="choice-btn" onclick="makeMove('rock')"><img src="move-rock.png" alt="Камень"><span>Камень</span></button>
                 <button class="choice-btn" onclick="makeMove('scissors')"><img src="move-scissors.png" alt="Ножницы"><span>Ножницы</span></button>
@@ -382,6 +395,7 @@
     <script>
         // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
         var moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
+        var isCreatingRoom = false; // Блокировка двойного создания комнаты
         
         function setLanguage(lang) {
             document.querySelectorAll('.lang-mini-btn').forEach(function(b) {
@@ -395,6 +409,17 @@
         
         function closeRoomsScreen() {
             document.getElementById('roomsScreen').classList.remove('open');
+        }
+        
+        function showLoading(message) {
+            var overlay = document.getElementById('loadingOverlay');
+            var textEl = overlay.querySelector('.loading-text');
+            if (textEl) textEl.textContent = message || 'Загрузка...';
+            overlay.classList.add('active');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
         }
         
         function startGame() {
@@ -430,6 +455,9 @@
         var MY_ID = Number(user.id);
         var MY_PHOTO_URL = user.photo_url || null;
         var MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
+
+        // Сохраняем хеш пользователя для проверки подлинности (простая защита)
+        var USER_HASH = btoa(MY_ID + 'echidna_secret_salt_2024');
 
         var SKINS = [
             { id: 'default', price: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
@@ -786,7 +814,6 @@
             
             var reward = getDailyReward(cardIndex);
             
-            // Добавляем монеты к балансу
             currentBalance += reward;
             
             data.streak = cardIndex + 1;
@@ -796,7 +823,6 @@
             
             saveDailyData(data);
             
-            // Обновляем отображение баланса
             await updateBalanceDisplay();
             
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
@@ -891,7 +917,9 @@
             var headers = {
                 'apikey': SUPABASE_ANON_KEY,
                 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-User-Id': String(MY_ID),
+                'X-User-Hash': USER_HASH
             };
             
             if (method === 'POST') headers['Prefer'] = 'return=representation';
@@ -927,7 +955,7 @@
             try {
                 var existing = await db('users', 'GET', null, '?telegram_id=eq.' + userId + '&limit=1');
                 if (!existing || existing.length === 0) {
-                    await db('users', 'POST', [{ telegram_id: userId, username: username || 'User_' + userId, wins: 0, losses: 0 }]);
+                    await db('users', 'POST', [{ telegram_id: userId, username: username || 'User_' + userId, wins: 0, losses: 0, draws: 0 }]);
                 }
             } catch(e) {
                 console.error('Failed to ensure user exists:', e);
@@ -1031,6 +1059,7 @@
                     var absVal = Math.abs(game.stake || 0);
                     if (game.result === 'win') balance += absVal;
                     else if (game.result === 'lose') balance -= absVal;
+                    // При ничьей баланс не меняется
                 });
                 currentBalance = Math.round(balance);
                 var el = document.getElementById('balanceSpike');
@@ -1212,6 +1241,12 @@
         }
 
         async function confirmStake() {
+            // Блокировка двойного нажатия
+            if (isCreatingRoom) {
+                alert('Подождите, комната уже создается...');
+                return;
+            }
+            
             var canCreate = await canCreateRoom();
             if (!canCreate) return;
             
@@ -1225,7 +1260,16 @@
             if (currentBalance < finalStake) { document.getElementById('stakeError').textContent = 'Недостаточно средств!'; return; }
             var rawPassword = document.getElementById('roomPassword').value.trim();
             if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; return; }
+            
             closeStakeModal();
+            
+            isCreatingRoom = true;
+            var btn = document.getElementById('createRoomBtn');
+            if (btn) {
+                btn.classList.add('loading');
+                btn.textContent = '⏳ СОЗДАНИЕ...';
+            }
+            
             try {
                 await ensureUserExists(MY_ID, user.username);
                 var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: rawPassword || null }], '', true);
@@ -1233,7 +1277,15 @@
                 showGameScreen();
                 startPolling();
                 loadRooms();
-            } catch(e) { alert('Ошибка: ' + e.message); }
+            } catch(e) { 
+                alert('Ошибка: ' + e.message); 
+            } finally {
+                isCreatingRoom = false;
+                if (btn) {
+                    btn.classList.remove('loading');
+                    btn.textContent = '🚪 СОЗДАТЬ КОМНАТУ';
+                }
+            }
         }
 
         // ============ КОМНАТЫ ============
@@ -1338,7 +1390,8 @@
         }
 
         async function cancelRoom(roomId) {
-            if (!roomId) return;
+            if (!confirm('❌ Вы уверены, что хотите отменить создание комнаты?')) return;
+            
             try {
                 await db('rooms', 'DELETE', null, '?id=eq.' + roomId);
                 delete window.roomExpiry[roomId];
@@ -1483,7 +1536,7 @@
 
         function startTimer(startTime) {
             if (window._timerInterval) clearInterval(window._timerInterval);
-            var timeLimit = 30000;
+            var timeLimit = 45000; // Увеличено до 45 секунд
             var timerBar = document.getElementById('timerBar');
             var timerText = document.getElementById('timerText');
             
@@ -1634,8 +1687,15 @@
             } else { emDiv.classList.add('hidden'); }
             
             var resultForHistory = 'draw';
-            if (result.winnerId) { resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose'; }
-            await saveGameHistory(resultForHistory, myMove);
+            var historyStake = 0;
+            if (result.winnerId) {
+                resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
+                historyStake = (result.winnerId === MY_ID) ? room.stake : -room.stake;
+            } else {
+                // При ничьей возвращаем ставку - записываем нулевую транзакцию
+                historyStake = 0;
+            }
+            await saveGameHistory(resultForHistory, myMove, Math.abs(historyStake));
             
             var countdown = 3;
             var countdownEl = document.getElementById('revealCountdown');
@@ -1653,8 +1713,9 @@
             
             await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + room.id);
             
-            var loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
+            var loserId = null;
             if (result.winnerId) {
+                loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
                 db('users', 'GET', null, '?telegram_id=eq.' + result.winnerId + '&select=wins', false).then(function(d) {
                     return db('users', 'PATCH', { wins: ((d[0] && d[0].wins) || 0) + 1 }, '?telegram_id=eq.' + result.winnerId);
                 }).catch(console.warn);
@@ -1696,10 +1757,10 @@
         function calculateWinner(room) {
             var c1 = room.creator_choice, c2 = room.opponent_choice;
             var id1 = room.creator_tg_id, id2 = room.opponent_tg_id;
-            if (!c1 && !c2) return { msg: '🤝 Ничья!', winnerId: null };
+            if (!c1 && !c2) return { msg: '🤝 Ничья! Ставка возвращена', winnerId: null };
             if (!c1) return { msg: (MY_ID === id1) ? '😢 Поражение' : '🏆 Победа!', winnerId: id2 };
             if (!c2) return { msg: (MY_ID === id2) ? '😢 Поражение' : '🏆 Победа!', winnerId: id1 };
-            if (c1 === c2) return { msg: '🤝 Ничья!', winnerId: null };
+            if (c1 === c2) return { msg: '🤝 Ничья! Ставка возвращена', winnerId: null };
             var beats = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
             var creatorWins = beats[c1] === c2;
             return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
