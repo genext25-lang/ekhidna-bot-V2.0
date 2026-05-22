@@ -18,27 +18,31 @@
         .header h1 { font-size: 22px; margin-bottom: 5px; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); }
 
-        /* ✅ КАРТОЧКИ ЗАДАНИЙ */
+        /* ✅ КАРТОЧКИ ЗАДАНИЙ - КАРТИНКИ НА ЗАКРЫТОЙ СТОРОНЕ */
         .daily-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; padding: 0 4px; }
         .daily-card { aspect-ratio: 0.85; perspective: 1000px; cursor: pointer; }
         .daily-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         .daily-card-inner.flipped { transform: rotateY(180deg); }
-        .daily-card-front, .daily-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); font-weight: 700; padding: 8px; box-sizing: border-box; }
-        .daily-card-front { background: var(--card); color: var(--sec); font-size: 18px; }
-        .daily-card-front.locked { opacity: 0.35; cursor: not-allowed; background: rgba(10,10,26,0.4); border-style: dashed; }
-        .daily-card-front.today { border-color: var(--gold); box-shadow: 0 0 20px rgba(251,191,36,0.6); animation: cardPulse 1.5s ease-in-out infinite; cursor: pointer; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05)); }
-        .daily-card-front.collected { border-color: var(--success); opacity: 0.85; cursor: default; background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05)); }
+        .daily-card-front, .daily-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); font-weight: 700; box-sizing: border-box; overflow: hidden; }
+        
+        /* ✅ ЗАКРЫТАЯ СТОРОНА (РУБАШКА) - КАРТИНКА НА ВСЮ КАРТОЧКУ */
+        .daily-card-front { background: var(--card); padding: 0; }
+        .daily-card-front img.card-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .daily-card-front .day-number-overlay { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: var(--gold); font-size: 14px; font-weight: 800; padding: 2px 8px; border-radius: 8px; z-index: 1; }
+        .daily-card-front.locked { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.5); }
+        .daily-card-front.locked .day-number-overlay { background: rgba(0,0,0,0.5); color: var(--sec); }
+        .daily-card-front.today { border-color: var(--gold); box-shadow: 0 0 20px rgba(251,191,36,0.6); animation: cardPulse 1.5s ease-in-out infinite; cursor: pointer; }
+        .daily-card-front.today .day-number-overlay { background: rgba(251,191,36,0.9); color: #000; font-size: 16px; }
+        .daily-card-front.collected { border-color: var(--success); opacity: 0.9; cursor: default; }
+        .daily-card-front.collected .day-number-overlay { background: rgba(16,185,129,0.9); color: #fff; }
         @keyframes cardPulse { 0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); transform: scale(1); } 50% { box-shadow: 0 0 35px rgba(251,191,36,0.9); transform: scale(1.03); } }
-        .daily-card-front .day-number { font-size: 32px; font-weight: 800; margin-bottom: 6px; color: var(--text); }
-        .daily-card-front.today .day-number { color: var(--gold); font-size: 36px; animation: numberGlow 1.5s ease-in-out infinite; }
-        @keyframes numberGlow { 0%, 100% { text-shadow: 0 0 10px rgba(251,191,36,0.5); } 50% { text-shadow: 0 0 25px rgba(251,191,36,0.9); } }
-        .daily-card-front.collected .day-number { color: var(--success); }
-        .daily-card-front .day-label { font-size: 10px; text-transform: uppercase; color: var(--sec); letter-spacing: 0.5px; }
-        .daily-card-front .day-reward-hint { font-size: 12px; color: var(--gold); margin-top: 4px; font-weight: 600; }
-        .daily-card-back { background: linear-gradient(135deg, #1f1f35, #2a2a3e); transform: rotateY(180deg); border-color: var(--gold); gap: 6px; }
-        .daily-card-back .card-image { width: 85%; height: auto; max-height: 70%; object-fit: cover; border-radius: 12px; }
-        .daily-card-back .reward-amount { font-size: 20px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 8px rgba(251,191,36,0.4); }
-        .daily-card-back .reward-label { font-size: 11px; color: var(--success); font-weight: 600; }
+        
+        /* ✅ ОТКРЫТАЯ СТОРОНА - НАГРАДА */
+        .daily-card-back { background: linear-gradient(135deg, #1f1f35, #2a2a3e); transform: rotateY(180deg); border-color: var(--gold); gap: 6px; padding: 12px; }
+        .daily-card-back .reward-coin { width: 70px; height: 70px; object-fit: contain; border-radius: 8px; animation: coinBounce 0.6s ease-out; }
+        @keyframes coinBounce { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+        .daily-card-back .reward-amount { font-size: 26px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 8px rgba(251,191,36,0.4); }
+        .daily-card-back .reward-label { font-size: 12px; color: var(--success); font-weight: 600; }
         .daily-streak-info { text-align: center; margin-bottom: 12px; font-size: 15px; color: var(--sec); background: var(--card); border-radius: 12px; padding: 10px; border: 1px solid var(--border); }
         .daily-streak-info span { color: var(--gold); font-weight: 700; font-size: 18px; }
 
@@ -219,7 +223,7 @@
     <div id="splashScreen" class="splash-screen"><div class="splash-content"><div class="splash-title">Echidna Naklz</div><div class="splash-banner"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-banner.png" alt="Echidna Naklz"></div><div class="splash-rules"><h3>📜 Как играть</h3><ul><li>Создай комнату или присоединись к существующей</li><li>Выбери ставку от 10 до 1000 Spike</li><li>Выбери один из трёх ходов: Камень, Ножницы или Бумага</li><li>Камень побеждает Ножницы, Ножницы режут Бумагу, Бумага накрывает Камень</li><li>Победитель забирает весь банк</li><li>Зарабатывай Spike и прокачивай Ехидну — покупай новые скины!</li></ul></div><button class="splash-btn" onclick="startGame()">🎮 ИГРАТЬ</button></div></div>
     <div class="container">
         <div id="lobbyScreen"><div class="header"><div class="header-logo"><img src="" id="mainLogoImg" alt="logo"></div><h1>Echidna Naklz</h1><div class="header-sub">Камень • Ножницы • Бумага</div></div><div class="balance-container"><div class="balance-icon"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display='none';this.parentElement.innerHTML='🦔'"></div><div class="balance-info"><div class="balance-amount" id="balanceSpike">0</div><div class="balance-label">Spike</div></div></div><div class="player-stats"><div class="stat-box"><div class="stat-val" id="statWins">0</div><div class="stat-lbl">Побед</div></div><div class="stat-box"><div class="stat-val" id="statGames">0</div><div class="stat-lbl">Игр</div></div><div class="stat-box"><div class="stat-val" id="statSkinName">Обычная</div><div class="stat-lbl">Скин</div><div class="skin-badge" id="statSkinBadge">#1</div></div></div><button class="btn btn-create-room" onclick="openStakeModal()">🦔 СОЗДАТЬ КОМНАТУ</button><div class="section-title">Мои комнаты</div><div id="myRoomsList"><div class="loader"><div class="spinner"></div></div></div><div class="section-title"><span>Доступные комнаты</span><input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск по нику..." oninput="filterRooms()"></div><div id="roomsList"><div class="loader"><div class="spinner"></div></div></div></div>
-        <div id="tasksScreen" class="hidden"><div class="header"><h2>📋 Ежедневные награды</h2><div class="header-sub">Открывай по одной карточке каждый день!</div></div><div class="daily-streak-info">🔥 День <span id="dailyStreakNum">1</span> из 9</div><div class="daily-grid" id="dailyCardsGrid"></div><div class="daily-streak-info" style="margin-top:12px;font-size:11px;color:var(--sec);">⚠️ Пропуск дня сбрасывает прогресс</div></div>
+        <div id="tasksScreen" class="hidden"><div class="header"><h2>📋 Ежедневные награды</h2><div class="header-sub">Открывай по одной карточке каждый день!</div></div><div class="daily-streak-info">🔥 День <span id="dailyStreakNum">1</span> из 9</div><div class="daily-grid" id="dailyCardsGrid"></div><div class="daily-streak-info" style="margin-top:12px;font-size:11px;color:var(--sec);">⚠️ Пропуск дня сбрасывает все карточки</div></div>
         <div id="statsScreen" class="hidden"><div class="stats-header"><h2>📊 Статистика</h2><div class="subtitle">Твоя игровая история</div></div><div class="stats-cards"><div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value" id="statsWinRate">0%</div><div class="stat-label">Побед</div></div><div class="stat-card"><div class="stat-icon">✊</div><div class="stat-value" id="statsFavMove">-</div><div class="stat-label">Любимый ход</div></div><div class="stat-card"><div class="stat-icon">🦔</div><div class="stat-value" id="statsTotalSpike">0 Spike</div><div class="stat-label">Выиграно Spike</div></div></div><div class="section-title">🎮 Последние игры</div><div class="games-table"><div class="games-table-header"><span>Соперник</span><span>Ставка</span><span>Результат</span><span>Ход</span></div><div id="gamesTableBody"><div class="loader" style="padding:20px;"><div class="spinner"></div></div></div></div></div>
         <div id="gameScreen" class="hidden"><div class="header"><h2>⚔️ Битва!</h2></div><div class="game-players"><div class="player-wrapper"><div class="player-avatar" id="playerAvatar"></div><div class="player-stats-small" id="playerStats"></div></div><div class="thinking-echidna-wrapper"><div class="thinking-echidna"><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-thinking.png" alt="Thinking" onerror="this.style.display='none';this.parentElement.innerHTML='🤔'"></div></div><div class="player-wrapper"><div class="player-avatar" id="opponentAvatar"></div><div class="player-stats-small" id="opponentStats"></div></div></div><div class="game-stakes"><div class="stake-line">💰 Ставка: <span id="stakeAmount" class="stake-value">10</span> Spike</div><div class="stake-line">🏆 Ты получишь: <span id="winAmount" class="stake-win">20</span> Spike</div></div><div class="status-box"><div id="statusMessage"><div class="spinner"></div></div><div class="timer-text" id="timerText">30s</div><div class="timer-bar-container" id="timerBarContainer"><div class="timer-bar" id="timerBar"></div></div></div><div class="choices"><button class="choice-btn" onclick="makeMove('rock')"><img src="move-rock.png" alt="Камень"><span>Камень</span></button><button class="choice-btn" onclick="makeMove('scissors')"><img src="move-scissors.png" alt="Ножницы"><span>Ножницы</span></button><button class="choice-btn" onclick="makeMove('paper')"><img src="move-paper.png" alt="Бумага"><span>Бумага</span></button></div></div>
         <div id="skinsScreen" class="hidden"><div class="header"><h2>🎨 Скины</h2><div class="header-sub">Покупай и меняй скины за Spike</div></div><div id="skinsList"></div></div>
@@ -261,64 +265,124 @@ function formatCompactNumber(num){if(num===null||num===undefined)return'0';const
 function disableBottomNav(){document.getElementById('bottomNav')?.classList.add('disabled');}
 function enableBottomNav(){document.getElementById('bottomNav')?.classList.remove('disabled');}
 
-// ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ С КАРТИНКАМИ ============
-function getDailyData(){try{const s=localStorage.getItem('echidna_daily_v2');if(s)return JSON.parse(s);}catch(e){}return{streak:0,lastClaimDate:null,collectedCards:[]};}
-function saveDailyData(data){try{localStorage.setItem('echidna_daily_v2',JSON.stringify(data));}catch(e){}}
+// ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ (СТРОГО ОДНА В ДЕНЬ) ============
+function getDailyData(){try{const s=localStorage.getItem('echidna_daily_v3');if(s)return JSON.parse(s);}catch(e){}return{streak:0,lastClaimDate:null,collectedCards:[]};}
+function saveDailyData(data){try{localStorage.setItem('echidna_daily_v3',JSON.stringify(data));}catch(e){}}
 function getTodayDate(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function getDailyReward(day){return(day+1)*100;}
 
 function claimDailyCard(cardIndex){
     const today=getTodayDate();
     let data=getDailyData();
-    if(data.collectedCards.includes(cardIndex))return;
-    const y=new Date();y.setDate(y.getDate()-1);
-    const ys=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
-    let cs=data.streak||0;
-    if(data.lastClaimDate!==today&&data.lastClaimDate!==ys){cs=0;data.collectedCards=[];}
-    if(cardIndex!==cs){if(cardIndex<cs)return;alert('Открывайте карточки по порядку! Следующая: День '+(cs+1));return;}
+    
+    // ✅ ПРОВЕРКА: не открыта ли уже сегодня карточка
+    if(data.lastClaimDate===today){
+        alert('Вы уже открыли карточку сегодня! Возвращайтесь завтра.');
+        return;
+    }
+    
+    // ✅ ПРОВЕРКА: не пропущен ли день
+    const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+    const yesterdayStr=yesterday.getFullYear()+'-'+String(yesterday.getMonth()+1).padStart(2,'0')+'-'+String(yesterday.getDate()).padStart(2,'0');
+    
+    // Если последний заход был НЕ вчера и НЕ сегодня - сбрасываем всё
+    if(data.lastClaimDate!==today&&data.lastClaimDate!==yesterdayStr&&data.lastClaimDate!==null){
+        data.streak=0;
+        data.collectedCards=[];
+    }
+    
+    // ✅ ПРОВЕРКА: открываем только следующую по порядку
+    if(cardIndex!==data.streak){
+        alert('Открывайте карточки по порядку! Следующая: День '+(data.streak+1));
+        return;
+    }
+    
+    // ✅ ВЫДАЁМ НАГРАДУ
     const reward=getDailyReward(cardIndex);
     currentBalance+=reward;
-    data.streak=cs+1;
+    data.streak=cardIndex+1;
     data.lastClaimDate=today;
     data.collectedCards.push(cardIndex);
     saveDailyData(data);
     updateBalanceDisplay();
+    
+    // Анимация переворота
     const cardEl=document.querySelector(`.daily-card[data-index="${cardIndex}"] .daily-card-inner`);
     if(cardEl)cardEl.classList.add('flipped');
-    setTimeout(()=>{renderDailyCards();},700);
-    setTimeout(()=>{alert('✅ +'+reward+' Spike получено!');},800);
+    
+    setTimeout(()=>{
+        renderDailyCards();
+        alert('✅ +'+reward+' Spike получено!');
+    },700);
 }
 
 function renderDailyCards(){
     const grid=document.getElementById('dailyCardsGrid');
     const streakNum=document.getElementById('dailyStreakNum');
     if(!grid||!streakNum)return;
+    
     const data=getDailyData();
     const today=getTodayDate();
-    const y=new Date();y.setDate(y.getDate()-1);
-    const ys=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
-    let cs=data.streak||0;
-    if(data.lastClaimDate!==today&&data.lastClaimDate!==ys){cs=0;data.collectedCards=[];data.streak=0;saveDailyData(data);}
-    streakNum.textContent=Math.min(cs+1,9);
+    const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+    const yesterdayStr=yesterday.getFullYear()+'-'+String(yesterday.getMonth()+1).padStart(2,'0')+'-'+String(yesterday.getDate()).padStart(2,'0');
+    
+    // Сброс при пропуске дня
+    if(data.lastClaimDate!==today&&data.lastClaimDate!==yesterdayStr&&data.lastClaimDate!==null){
+        data.streak=0;
+        data.collectedCards=[];
+        saveDailyData(data);
+    }
+    
+    streakNum.textContent=Math.min((data.streak||0)+1,9);
     grid.innerHTML='';
+    
     for(let i=0;i<9;i++){
         const reward=getDailyReward(i);
         const isCollected=data.collectedCards.includes(i);
-        const isToday=(i===cs&&!isCollected);
-        const isLocked=i>cs&&!isCollected;
-        const wrapper=document.createElement('div');wrapper.className='daily-card';wrapper.setAttribute('data-index',String(i));
-        const inner=document.createElement('div');inner.className='daily-card-inner';if(isCollected)inner.classList.add('flipped');
-        const front=document.createElement('div');front.className='daily-card-front';
-        if(isCollected)front.classList.add('collected');else if(isToday)front.classList.add('today');else if(isLocked)front.classList.add('locked');
-        front.innerHTML='<div class="day-number">'+(isCollected?'✓':(i+1))+'</div><div class="day-label">День '+(i+1)+'</div>'+(isToday?'<div class="day-reward-hint">+'+reward+' 🦔</div>':'');
-        // ✅ ИСПОЛЬЗУЕМ ВАШИ КАРТИНКИ ИЗ GITHUB
-        const back=document.createElement('div');back.className='daily-card-back';
+        // ✅ Только ОДНА карточка доступна — следующая после собранных
+        const isToday=(i===data.streak&&!isCollected&&data.lastClaimDate!==today);
+        const isLocked=!isCollected&&!isToday;
+        
+        const wrapper=document.createElement('div');
+        wrapper.className='daily-card';
+        wrapper.setAttribute('data-index',String(i));
+        
+        const inner=document.createElement('div');
+        inner.className='daily-card-inner';
+        if(isCollected)inner.classList.add('flipped');
+        
+        // ✅ ЗАКРЫТАЯ СТОРОНА (РУБАШКА) — КАРТИНКА НА ВСЮ КАРТОЧКУ
+        const front=document.createElement('div');
+        front.className='daily-card-front';
+        if(isCollected)front.classList.add('collected');
+        else if(isToday)front.classList.add('today');
+        else if(isLocked)front.classList.add('locked');
+        
+        // Картинка-рубашка на весь фронт
         const cardImgUrl='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/daily-card-'+(i+1)+'.png';
-        back.innerHTML='<img class="card-image" src="'+cardImgUrl+'" alt="Card '+(i+1)+'" onerror="this.style.display=\'none\'">'+
+        front.innerHTML='<img class="card-cover" src="'+cardImgUrl+'" alt="Card '+(i+1)+'" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<div class=\\\'day-number-overlay\\\'>'+(i+1)+'</div>\'">'+
+            '<div class="day-number-overlay">'+(isCollected?'✓':'#'+(i+1))+'</div>';
+        
+        // ✅ ОТКРЫТАЯ СТОРОНА — НАГРАДА
+        const back=document.createElement('div');
+        back.className='daily-card-back';
+        back.innerHTML='<img class="reward-coin" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display=\'none\'">'+
             '<div class="reward-amount">+'+(isCollected?reward:'???')+'</div>'+
             '<div class="reward-label">Spike</div>';
-        inner.appendChild(front);inner.appendChild(back);wrapper.appendChild(inner);
-        if(isToday)wrapper.addEventListener('click',function(){if(!inner.classList.contains('flipped'))claimDailyCard(i);});
+        
+        inner.appendChild(front);
+        inner.appendChild(back);
+        wrapper.appendChild(inner);
+        
+        // ✅ Только сегодняшнюю НЕоткрытую карточку можно открыть
+        if(isToday){
+            wrapper.addEventListener('click',function(){
+                if(!inner.classList.contains('flipped')){
+                    claimDailyCard(i);
+                }
+            });
+        }
+        
         grid.appendChild(wrapper);
     }
 }
@@ -339,30 +403,12 @@ function forceExitToLobby(){isGameFinished=true;currentRoom=null;if(pollInterval
 async function updateStats(){try{if(!MY_ID||MY_ID===999999)return;const d=await db('users','GET',null,`?select=wins,losses&telegram_id=eq.${MY_ID}`,false);const w=d[0]?.wins||0,l=d[0]?.losses||0;currentWins=w;document.getElementById('statWins').textContent=w;document.getElementById('statGames').textContent=w+l;document.getElementById('statSkinName').textContent=getSkinNameById(currentSkin);document.getElementById('statSkinBadge').textContent='#'+(SKINS.findIndex(s=>s.id===currentSkin)+1);document.getElementById('mainLogoImg').src=getSkinImg(currentSkin);}catch(e){}}
 async function updateBalanceDisplay(){try{if(!MY_ID||MY_ID===999999)return;const g=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=100`,false);const gl=Array.isArray(g)?g:[];let b=0;gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win')b+=a;else if(g.result==='lose')b-=a;});currentBalance=Math.round(b);const el=document.getElementById('balanceSpike');if(el){el.textContent=formatCompactNumber(currentBalance);el.style.color=currentBalance<0?'var(--error)':currentBalance>0?'var(--success)':'var(--gold)';}}catch(e){}}
 
-// ============ СКИНЫ (ИСПРАВЛЕНО ВЫЧИТАНИЕ БАЛАНСА) ============
+// ============ СКИНЫ ============
 function renderSkins(){const c=document.getElementById('skinsList');if(!c)return;c.innerHTML='';SKINS.forEach((s,i)=>{const owned=isSkinOwned(s.id),eq=currentSkin===s.id,canBuy=!owned&&currentBalance>=s.price;const el=document.createElement('div');el.className=`room-card ${eq?'equipped':''}`;el.onclick=()=>openSkinModal(s);let btn='';if(eq)btn=`<button class="room-btn equipped">Надето</button>`;else if(owned)btn=`<button class="room-btn join" onclick="event.stopPropagation();equipSkin('${s.id}')">Надеть</button>`;else btn=`<button class="room-btn buy" onclick="event.stopPropagation();buySkin('${s.id}')" ${!canBuy?'disabled':''}>${formatCompactNumber(s.price)} Spike</button>`;el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--sec);">#${i+1}</div><div class="room-icon skin-room-icon"><img src="${s.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinNameById(s.id)}</div>${!owned?`<div class="skin-price">💰 ${formatCompactNumber(s.price)} Spike</div>`:`<div class="skin-price" style="color:var(--success);">✅ Куплено</div>`}</div><div class="room-actions">${btn}</div>`;c.appendChild(el);});}
 function openSkinModal(s){currentModalSkin=s;disableBottomNav();const m=document.getElementById('skinModal');document.getElementById('modalImg').src=s.img;document.getElementById('modalTitle').textContent=getSkinNameById(s.id);document.getElementById('modalDesc').textContent='';const pe=document.getElementById('modalPrice'),be=document.getElementById('modalBtn');if(currentSkin===s.id){pe.textContent='✅ Надето';be.textContent='Надето';be.className='skin-modal-btn equipped';be.disabled=true;}else if(isSkinOwned(s.id)){pe.textContent='✅ Куплено';be.textContent='Надеть';be.className='skin-modal-btn equip';be.disabled=false;}else{pe.textContent='💰 '+formatCompactNumber(s.price)+' Spike';be.textContent=currentBalance>=s.price?'Купить - '+formatCompactNumber(s.price)+' Spike':'Нужно ещё '+formatCompactNumber(s.price-currentBalance)+' Spike';be.className='skin-modal-btn buy';be.disabled=currentBalance<s.price;}m.classList.remove('hidden');}
 function closeSkinModal(e){if(!e||e.target.id==='skinModal'||e.target.className==='skin-modal-close'){document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}}
 function handleSkinAction(){if(!currentModalSkin)return;if(currentSkin===currentModalSkin.id)return;if(isSkinOwned(currentModalSkin.id))equipSkin(currentModalSkin.id);else buySkin(currentModalSkin.id);}
-// ✅ ИСПРАВЛЕНО: вычитание баланса при покупке + сохранение в историю
-function buySkin(sid){
-    if(isSkinOwned(sid))return;
-    const p=getSkinPrice(sid);
-    if(currentBalance<p){alert('Недостаточно Spike!');return;}
-    // ✅ Вычитаем баланс
-    currentBalance-=p;
-    // ✅ Добавляем в купленные
-    ownedSkins.push(sid);
-    saveOwnedSkins();
-    // ✅ Сохраняем трату в историю игр (как проигрыш)
-    saveGameHistory('lose','rock').then(()=>{
-        updateBalanceDisplay();
-        renderSkins();
-        const s=SKINS.find(s=>s.id===sid);
-        if(s)openSkinModal(s);
-        alert(`✅ Скин "${getSkinNameById(sid)}" куплен за ${formatCompactNumber(p)} Spike!`);
-    });
-}
+function buySkin(sid){if(isSkinOwned(sid))return;const p=getSkinPrice(sid);if(currentBalance<p){alert('Недостаточно Spike!');return;}currentBalance-=p;ownedSkins.push(sid);saveOwnedSkins();saveGameHistory('lose','rock',p).then(()=>{updateBalanceDisplay();renderSkins();const s=SKINS.find(s=>s.id===sid);if(s)openSkinModal(s);alert(`✅ Скин "${getSkinNameById(sid)}" куплен за ${formatCompactNumber(p)} Spike!`);});}
 function equipSkin(id){if(!isSkinOwned(id))return;currentSkin=id;try{localStorage.setItem('echidna_selected_skin',id);}catch(e){}updateStats();renderSkins();document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}
 
 // ============ СТАВКИ ============
@@ -390,20 +436,7 @@ function startTimer(st){if(window._timerInterval)clearInterval(window._timerInte
 async function handleTimeout(){if(!currentRoom||isGameFinished)return;const myCol=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(!currentRoom[myCol]){isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}await db('rooms','PATCH',{status:'finished'},`?id=eq.${currentRoom.id}`);const oid=String(currentRoom.creator_tg_id)===String(MY_ID)?currentRoom.opponent_tg_id:currentRoom.creator_tg_id;db('users','GET',null,`?telegram_id=eq.${oid}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${oid}`)).catch(console.warn);db('users','PATCH',{losses:(currentWins||0)+1},`?telegram_id=eq.${MY_ID}`).catch(console.warn);document.getElementById('statusMessage').innerHTML='<div style="color:var(--error);font-size:18px;">😢 Время вышло!</div>';updateStats();updateBalanceDisplay();setTimeout(()=>forceExitToLobby(),3000);}}
 function startPolling(){if(pollInterval)clearInterval(pollInterval);if(!currentRoom)return;isGameFinished=false;let oj=false;pollInterval=setInterval(async()=>{if(!currentRoom||isGameFinished)return;try{const res=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);const room=res[0];if(!room)return;if(room.opponent_tg_id&&!oj){playSound('join');oj=true;}currentRoom=room;updateGameStatus(room);renderPlayerStats();if(room.creator_choice&&room.opponent_choice&&room.status!=='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;await showRevealAnimation(room);return;}if(room.status==='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;showGameResult(room);return;}}catch(e){console.warn('Poll error:',e);}},2000);}
 async function makeMove(choice){if(!currentRoom){alert('❌ Комната не найдена');return;}if(!currentRoom.opponent_tg_id){alert('⚠️ Игра не активна');return;}const col=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(currentRoom[col])return;document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent='✅ Ход записан';window._timerRunning=false;if(window._timerInterval)clearInterval(window._timerInterval);document.getElementById('timerText')?.classList.remove('active');document.getElementById('timerBarContainer').style.display='none';try{await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);currentRoom[col]=choice;}catch(e){alert('Ошибка: '+e.message);document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);}}
-// ✅ saveGameHistory теперь сохраняет покупку скинов
-async function saveGameHistory(rs,pm,customStake=null){
-    let roomStake=customStake;
-    if(!roomStake&&currentRoom)roomStake=currentRoom.stake;
-    if(!roomStake)roomStake=getSkinPrice(currentModalSkin?.id)||10000;
-    const isCr=currentRoom?String(currentRoom.creator_tg_id)===String(MY_ID):true;
-    const on=currentRoom?(isCr?currentRoom.opponent_username:currentRoom.creator_username):'Skin Shop';
-    let es;
-    if(rs==='win')es=roomStake;
-    else if(rs==='lose')es=-roomStake;
-    else es=0;
-    const hd={player_id:MY_ID,opponent_name:on||'unknown',stake:es,player_move:pm||'rock',result:rs,played_at:new Date().toISOString()};
-    try{await db('game_history','POST',[hd]);}catch(e){console.error('Save history error:',e);}
-}
+async function saveGameHistory(rs,pm,customStake=null){let roomStake=customStake;if(!roomStake&&currentRoom)roomStake=currentRoom.stake;if(!roomStake)roomStake=getSkinPrice(currentModalSkin?.id)||10000;const isCr=currentRoom?String(currentRoom.creator_tg_id)===String(MY_ID):true;const on=currentRoom?(isCr?currentRoom.opponent_username:currentRoom.creator_username):'Skin Shop';let es;if(rs==='win')es=roomStake;else if(rs==='lose')es=-roomStake;else es=0;const hd={player_id:MY_ID,opponent_name:on||'unknown',stake:es,player_move:pm||'rock',result:rs,played_at:new Date().toISOString()};try{await db('game_history','POST',[hd]);}catch(e){console.error('Save history error:',e);}}
 async function showRevealAnimation(room){const overlay=document.getElementById('revealOverlay'),confetti=document.getElementById('confettiContainer');const isCr=String(room.creator_tg_id)===String(MY_ID);const myMove=isCr?room.creator_choice:room.opponent_choice,oppMove=isCr?room.opponent_choice:room.creator_choice;document.getElementById('revealPlayer1Label').textContent='Вы';document.getElementById('revealPlayer2Label').textContent='Соперник';document.getElementById('card1Img').src=moveImages[myMove];document.getElementById('card1Name').textContent=myMove==='rock'?'Камень':myMove==='scissors'?'Ножницы':'Бумага';document.getElementById('card2Img').src=moveImages[oppMove];document.getElementById('card2Name').textContent=oppMove==='rock'?'Камень':oppMove==='scissors'?'Ножницы':'Бумага';overlay.classList.remove('hidden');confetti.classList.add('hidden');confetti.innerHTML='';document.getElementById('card1').classList.remove('flipped');document.getElementById('card2').classList.remove('flipped');const resultEl=document.getElementById('revealResult');resultEl.className='reveal-result';resultEl.textContent='';document.getElementById('revealCountdown').textContent='';const emDiv=document.getElementById('revealEmotion'),emImg=document.getElementById('emotionImg');emDiv.classList.add('hidden');emImg.src='';await sleep(500);document.getElementById('card1').classList.add('flipped');playSound('flip');await sleep(1000);document.getElementById('card2').classList.add('flipped');playSound('flip');await sleep(800);const result=calculateWinner(room),msg=result.msg;const isWin=msg.includes('Победа'),isDraw=msg.includes('Ничья');resultEl.textContent=msg;resultEl.className=`reveal-result show ${isWin?'victory':isDraw?'draw':'defeat'}`;emDiv.classList.remove('hidden');if(isWin){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';playSound('win');createConfetti();}else if(!isDraw){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';playSound('lose');}else{emDiv.classList.add('hidden');}let rfh='draw';if(result.winnerId){rfh=(result.winnerId===MY_ID)?'win':'lose';}await saveGameHistory(rfh,myMove);let cd=3;const cdEl=document.getElementById('revealCountdown');cdEl.textContent=cd;const ci=setInterval(()=>{cd--;if(cd>0)cdEl.textContent=cd;else{clearInterval(ci);overlay.classList.add('hidden');confetti.classList.add('hidden');updateStats();updateBalanceDisplay();forceExitToLobby();}},1000);await db('rooms','PATCH',{status:'finished'},`?id=eq.${room.id}`);const loserId=String(result.winnerId)===String(room.creator_tg_id)?room.opponent_tg_id:room.creator_tg_id;if(result.winnerId)db('users','GET',null,`?telegram_id=eq.${result.winnerId}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${result.winnerId}`)).catch(console.warn);if(loserId)db('users','GET',null,`?telegram_id=eq.${loserId}&select=losses`,false).then(d=>db('users','PATCH',{losses:(d[0]?.losses||0)+1},`?telegram_id=eq.${loserId}`)).catch(console.warn);}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function createConfetti(){const c=document.getElementById('confettiContainer');c.classList.remove('hidden');c.innerHTML='';const cols=['#6366f1','#10b981','#fbbf24','#ef4444','#8b5cf6','#f59e0b'];for(let i=0;i<50;i++){const cf=document.createElement('div');cf.className='confetti';cf.style.left=Math.random()*100+'%';cf.style.backgroundColor=cols[Math.floor(Math.random()*cols.length)];cf.style.animationDelay=Math.random()*2+'s';cf.style.animationDuration=(2+Math.random()*2)+'s';cf.style.width=(5+Math.random()*10)+'px';cf.style.height=(5+Math.random()*10)+'px';cf.style.borderRadius=Math.random()>0.5?'50%':'0';c.appendChild(cf);}}
