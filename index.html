@@ -36,10 +36,11 @@
         .skin-badge-small { display: inline-block; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; margin-top: 4px; }
         
         /* СТЕКЛЯННЫЕ КНОПКИ */
-        .btn-create, .btn-open-rooms { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border: none; border-radius: 16px; color: #fff; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; }
+        .btn-create, .btn-open-rooms, .btn-rematch { width: 100%; padding: 18px; font-size: 18px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border: none; border-radius: 16px; color: #fff; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; }
         .btn-create { background: linear-gradient(135deg, rgba(16,185,129,0.9), rgba(5,150,105,0.9)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
         .btn-open-rooms { background: rgba(99,102,241,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(99,102,241,0.5); color: var(--primary); font-size: 16px; font-weight: 700; text-transform: none; }
-        .btn-create:active, .btn-open-rooms:active { transform: scale(0.97); opacity: 0.8; }
+        .btn-rematch { background: linear-gradient(135deg, rgba(245,158,11,0.9), rgba(217,119,6,0.9)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); font-size: 16px; text-transform: none; margin-top: 10px; }
+        .btn-create:active, .btn-open-rooms:active, .btn-rematch:active { transform: scale(0.97); opacity: 0.8; }
         .btn-create.loading { opacity: 0.6; pointer-events: none; }
         
         /* ЭКРАН КОМНАТ */
@@ -369,6 +370,7 @@
                 <button class="choice-btn" onclick="makeMove('scissors')"><img src="move-scissors.png" alt="Ножницы"><span>Ножницы</span></button>
                 <button class="choice-btn" onclick="makeMove('paper')"><img src="move-paper.png" alt="Бумага"><span>Бумага</span></button>
             </div>
+            <button class="btn-rematch hidden" id="rematchBtn" onclick="rematch()">🔄 Сыграть ещё</button>
         </div>
         
         <div id="skinsScreen" class="hidden">
@@ -396,6 +398,16 @@
         // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
         var moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
         var isCreatingRoom = false; // Блокировка двойного создания комнаты
+        var lastStake = 10; // Для кнопки "Сыграть ещё"
+        var lastOpponentId = null; // Для реванша
+        
+        function vibrate() {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            } else if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
         
         function setLanguage(lang) {
             document.querySelectorAll('.lang-mini-btn').forEach(function(b) {
@@ -456,7 +468,7 @@
         var MY_PHOTO_URL = user.photo_url || null;
         var MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
 
-        // Сохраняем хеш пользователя для проверки подлинности (простая защита)
+        // Сохраняем хеш пользователя для проверки подлинности
         var USER_HASH = btoa(MY_ID + 'echidna_secret_salt_2024');
 
         var SKINS = [
@@ -599,6 +611,7 @@
         var isGameFinished = false;
         var currentWins = 0;
         var currentBalance = 0;
+        var currentUserBalance = 0; // Кэшированный баланс из таблицы users
         window.roomExpiry = {};
         window._lastStatsUpdate = 0;
 
@@ -717,6 +730,36 @@
             }
         }
 
+        // ============ УПРАВЛЕНИЕ БАЛАНСОМ В БД ============
+        async function updateUserBalance(changeAmount) {
+            try {
+                // Получаем текущий баланс пользователя
+                var userData = await db('users', 'GET', null, '?select=current_balance&telegram_id=eq.' + MY_ID, false);
+                var currentBalanceVal = (userData && userData[0] && userData[0].current_balance) ? userData[0].current_balance : 0;
+                var newBalance = currentBalanceVal + changeAmount;
+                
+                // Обновляем баланс в БД
+                await db('users', 'PATCH', { current_balance: newBalance }, '?telegram_id=eq.' + MY_ID);
+                currentUserBalance = newBalance;
+                return newBalance;
+            } catch(e) {
+                console.error('Update balance error:', e);
+                return null;
+            }
+        }
+        
+        async function getUserBalance() {
+            try {
+                var userData = await db('users', 'GET', null, '?select=current_balance&telegram_id=eq.' + MY_ID, false);
+                var balance = (userData && userData[0] && userData[0].current_balance) ? userData[0].current_balance : 0;
+                currentUserBalance = balance;
+                return balance;
+            } catch(e) {
+                console.error('Get balance error:', e);
+                return 0;
+            }
+        }
+
         // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
         async function loadDailyDataFromDB() {
             try {
@@ -814,6 +857,8 @@
             
             var reward = getDailyReward(cardIndex);
             
+            // Обновляем баланс в БД
+            await updateUserBalance(reward);
             currentBalance += reward;
             
             data.streak = cardIndex + 1;
@@ -955,7 +1000,7 @@
             try {
                 var existing = await db('users', 'GET', null, '?telegram_id=eq.' + userId + '&limit=1');
                 if (!existing || existing.length === 0) {
-                    await db('users', 'POST', [{ telegram_id: userId, username: username || 'User_' + userId, wins: 0, losses: 0, draws: 0 }]);
+                    await db('users', 'POST', [{ telegram_id: userId, username: username || 'User_' + userId, wins: 0, losses: 0, draws: 0, current_balance: 0 }]);
                 }
             } catch(e) {
                 console.error('Failed to ensure user exists:', e);
@@ -1032,6 +1077,44 @@
             updateBalanceDisplay();
             showScreen('lobby');
         }
+        
+        function rematch() {
+            if (lastStake) {
+                closeStakeModal();
+                confirmStakeWithValue(lastStake);
+            }
+        }
+        
+        async function confirmStakeWithValue(stake) {
+            if (isCreatingRoom) {
+                alert('Подождите, комната уже создается...');
+                return;
+            }
+            
+            var canCreate = await canCreateRoom();
+            if (!canCreate) return;
+            
+            if (currentBalance < stake) { 
+                alert('Недостаточно средств!'); 
+                return;
+            }
+            
+            isCreatingRoom = true;
+            var btn = document.getElementById('createRoomBtn');
+            
+            try {
+                await ensureUserExists(MY_ID, user.username);
+                var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: stake, status: 'waiting', room_password: null }], '', true);
+                currentRoom = room;
+                showGameScreen();
+                startPolling();
+                loadRooms();
+            } catch(e) { 
+                alert('Ошибка: ' + e.message); 
+            } finally {
+                isCreatingRoom = false;
+            }
+        }
 
         async function updateStats() {
             try {
@@ -1052,16 +1135,9 @@
         async function updateBalanceDisplay() {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
-                var games = await db('game_history', 'GET', null, '?player_id=eq.' + MY_ID + '&order=played_at.desc&limit=100', false);
-                var gamesList = Array.isArray(games) ? games : [];
-                var balance = 0;
-                gamesList.forEach(function(game) {
-                    var absVal = Math.abs(game.stake || 0);
-                    if (game.result === 'win') balance += absVal;
-                    else if (game.result === 'lose') balance -= absVal;
-                    // При ничьей баланс не меняется
-                });
-                currentBalance = Math.round(balance);
+                // Используем кэшированный баланс из таблицы users
+                var balance = await getUserBalance();
+                currentBalance = balance;
                 var el = document.getElementById('balanceSpike');
                 if (el) {
                     el.textContent = formatCompactNumber(currentBalance);
@@ -1159,6 +1235,8 @@
             
             console.log('[SKINS] Buying skin:', skinId, 'price:', price);
             
+            // Обновляем баланс в БД
+            await updateUserBalance(-price);
             currentBalance -= price;
             
             ownedSkins.push(skinId);
@@ -1274,6 +1352,7 @@
                 await ensureUserExists(MY_ID, user.username);
                 var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: rawPassword || null }], '', true);
                 currentRoom = room;
+                lastStake = finalStake;
                 showGameScreen();
                 startPolling();
                 loadRooms();
@@ -1412,7 +1491,16 @@
                 var roomData = await db('rooms', 'GET', null, '?id=eq.' + roomId, false);
                 if (!roomData || !roomData.length) throw new Error('Комната занята');
                 var room = roomData[0];
-                if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
+                
+                // Защита от входа в свою комнату
+                if (Number(room.creator_tg_id) === MY_ID) {
+                    alert('❌ Нельзя войти в собственную комнату!');
+                    btnElement.disabled = false;
+                    btnElement.textContent = 'Войти';
+                    return;
+                }
+                
+                if (Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
                 if (room.room_password) {
                     var pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:');
                     if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = 'Войти'; return; }
@@ -1420,8 +1508,15 @@
                 await ensureUserExists(MY_ID, user.username);
                 var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
                 if (!res) throw new Error('Ошибка');
-                currentRoom = res; showGameScreen(); startPolling(); loadRooms();
+                currentRoom = res;
+                lastStake = res.stake;
+                lastOpponentId = res.creator_tg_id;
+                showGameScreen(); 
+                startPolling(); 
+                loadRooms();
                 closeRoomsScreen();
+                vibrate();
+                playSound('join');
             } catch(e) { alert('Ошибка: ' + e.message); if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } }
         }
 
@@ -1468,6 +1563,10 @@
 
         function showGameScreen() {
             closeRoomsScreen();
+            // Скрываем кнопку реванша при входе в новую игру
+            var rematchBtn = document.getElementById('rematchBtn');
+            if (rematchBtn) rematchBtn.classList.add('hidden');
+            
             ['lobbyScreen', 'statsScreen', 'skinsScreen', 'leaderboardScreen', 'tasksScreen'].forEach(function(id) {
                 document.getElementById(id).classList.add('hidden');
             });
@@ -1536,7 +1635,7 @@
 
         function startTimer(startTime) {
             if (window._timerInterval) clearInterval(window._timerInterval);
-            var timeLimit = 45000; // Увеличено до 45 секунд
+            var timeLimit = 45000;
             var timerBar = document.getElementById('timerBar');
             var timerText = document.getElementById('timerText');
             
@@ -1583,6 +1682,7 @@
                     if (!room) return;
                     if (room.opponent_tg_id && !opponentJoined) { 
                         opponentJoined = true;
+                        vibrate();
                         playSound('join');
                     }
                     currentRoom = room;
@@ -1615,6 +1715,7 @@
             try {
                 await db('rooms', 'PATCH', { [col]: choice }, '?id=eq.' + currentRoom.id);
                 currentRoom[col] = choice;
+                vibrate();
             } catch(e) { alert('Ошибка: ' + e.message); document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = false; }); }
         }
 
@@ -1688,13 +1789,22 @@
             
             var resultForHistory = 'draw';
             var historyStake = 0;
+            var balanceChange = 0;
+            
             if (result.winnerId) {
                 resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
                 historyStake = (result.winnerId === MY_ID) ? room.stake : -room.stake;
+                balanceChange = (result.winnerId === MY_ID) ? room.stake : -room.stake;
             } else {
-                // При ничьей возвращаем ставку - записываем нулевую транзакцию
-                historyStake = 0;
+                // При ничье баланс не меняется
+                balanceChange = 0;
             }
+            
+            // Обновляем баланс в БД
+            if (balanceChange !== 0) {
+                await updateUserBalance(balanceChange);
+            }
+            
             await saveGameHistory(resultForHistory, myMove, Math.abs(historyStake));
             
             var countdown = 3;
@@ -1707,7 +1817,15 @@
                 else {
                     clearInterval(countdownInterval);
                     overlay.classList.add('hidden'); confetti.classList.add('hidden');
-                    updateStats(); updateBalanceDisplay(); forceExitToLobby();
+                    updateStats(); updateBalanceDisplay(); 
+                    
+                    // Показываем кнопку "Сыграть ещё"
+                    var rematchBtn = document.getElementById('rematchBtn');
+                    if (rematchBtn && !isDraw) {
+                        rematchBtn.classList.remove('hidden');
+                    }
+                    
+                    forceExitToLobby();
                 }
             }, 1000);
             
@@ -1771,34 +1889,12 @@
             var c = document.getElementById('leaderboardList');
             if (!c) return;
             try {
-                var allUsers = await db('users', 'GET', null, '?select=telegram_id,username,wins,losses&order=wins.desc.nullslast&limit=50');
+                var allUsers = await db('users', 'GET', null, '?select=telegram_id,username,wins,losses,current_balance&order=current_balance.desc.nullslast&limit=50');
                 var usersList = Array.isArray(allUsers) ? allUsers : [];
-                var leaderboardData = [];
-                
-                for (var j = 0; j < usersList.length; j++) {
-                    var u = usersList[j];
-                    var games = await db('game_history', 'GET', null, '?player_id=eq.' + u.telegram_id + '&order=played_at.desc&limit=50', false);
-                    var gamesList = Array.isArray(games) ? games : [];
-                    var balance = 0;
-                    gamesList.forEach(function(game) {
-                        var absVal = Math.abs(game.stake || 0);
-                        if (game.result === 'win') balance += absVal;
-                        else if (game.result === 'lose') balance -= absVal;
-                    });
-                    leaderboardData.push({
-                        telegram_id: u.telegram_id,
-                        username: u.username,
-                        wins: u.wins || 0,
-                        balance: Math.round(balance)
-                    });
-                }
-                
-                leaderboardData.sort(function(a, b) { return b.balance - a.balance; });
                 c.innerHTML = '';
-                var top20 = leaderboardData.slice(0, 20);
                 
-                top20.forEach(function(u, i) {
-                    var sk = SKINS[Math.min(Math.floor(Math.abs(u.balance) / 100000), 7)] || SKINS[0];
+                usersList.forEach(function(u, i) {
+                    var sk = SKINS[Math.min(Math.floor(Math.abs(u.current_balance || 0) / 100000), 7)] || SKINS[0];
                     var name = u.username || 'User_' + String(u.telegram_id).slice(-4);
                     var isMe = Number(u.telegram_id) === MY_ID;
                     var el = document.createElement('div');
@@ -1810,33 +1906,11 @@
                         '<div class="room-info"><div class="room-stake">@' + name + '</div></div>' +
                         '</div>' +
                         '<div class="leaderboard-right">' +
-                        '<img class="lb-coin-icon" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt=""> ' + formatCompactNumber(u.balance) +
+                        '<img class="lb-coin-icon" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt=""> ' + formatCompactNumber(u.current_balance || 0) +
                         '</div>' +
                         '</div>';
                     c.appendChild(el);
                 });
-                
-                var myRank = leaderboardData.findIndex(function(u) { return Number(u.telegram_id) === MY_ID; }) + 1;
-                var myData = leaderboardData.find(function(u) { return Number(u.telegram_id) === MY_ID; });
-                
-                if (myRank > 20 && myData) {
-                    var ms = SKINS[Math.min(Math.floor(Math.abs(myData.balance) / 100000), 7)] || SKINS[0];
-                    var myName = user.username || 'User_' + String(MY_ID).slice(-4);
-                    var el = document.createElement('div');
-                    el.className = 'room-card my-room';
-                    el.style.border = '1px dashed var(--gold)';
-                    el.innerHTML = '<div class="leaderboard-row">' +
-                        '<div class="leaderboard-left">' +
-                        '<div style="font-weight:700;width:30px;color:var(--gold);">' + myRank + '</div>' +
-                        '<div class="room-icon"><img src="' + ms.img + '" alt=""></div>' +
-                        '<div class="room-info"><div class="room-stake">@' + myName + ' <span style="color:var(--success);font-size:10px;">(Вы)</span></div></div>' +
-                        '</div>' +
-                        '<div class="leaderboard-right">' +
-                        '<img class="lb-coin-icon" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt=""> ' + formatCompactNumber(myData.balance) +
-                        '</div>' +
-                        '</div>';
-                    c.appendChild(el);
-                }
             } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">' + e.message + '</div>'; }
         }
 
