@@ -578,6 +578,112 @@
         function disableBottomNav() { document.getElementById('bottomNav').classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav').classList.remove('disabled'); }
 
+        // ============ ЗВУКИ ============
+        var audioCtx = null;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        
+        function playSound(type) {
+            initAudio();
+            var now = audioCtx.currentTime;
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (type === 'join') {
+                // Звук вступления в комнату
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.15);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'flip') {
+                // Звук переворота карточки (шелест)
+                var bufferSize = audioCtx.sampleRate * 0.15;
+                var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                var data = buffer.getChannelData(0);
+                for (var i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                var noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                var filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 2000;
+                filter.Q.value = 0.5;
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                noise.start(now);
+            } else if (type === 'win') {
+                // Звук победы
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                osc.frequency.setValueAtTime(783.99, now + 0.2);
+                osc.frequency.setValueAtTime(1046.5, now + 0.3);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.6);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } else if (type === 'lose') {
+                // Звук поражения
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(280, now);
+                osc.frequency.linearRampToValueAtTime(140, now + 0.5);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            } else if (type === 'flipDaily') {
+                // Звук для ежедневных карточек (такой же как flip)
+                var bufferSize2 = audioCtx.sampleRate * 0.12;
+                var buffer2 = audioCtx.createBuffer(1, bufferSize2, audioCtx.sampleRate);
+                var data2 = buffer2.getChannelData(0);
+                for (var i = 0; i < bufferSize2; i++) {
+                    data2[i] = Math.random() * 2 - 1;
+                }
+                var noise2 = audioCtx.createBufferSource();
+                noise2.buffer = buffer2;
+                var filter2 = audioCtx.createBiquadFilter();
+                filter2.type = 'bandpass';
+                filter2.frequency.value = 2200;
+                filter2.Q.value = 0.6;
+                noise2.connect(filter2);
+                filter2.connect(gain);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                noise2.start(now);
+            }
+        }
+
+        // ============ ОГРАНИЧЕНИЕ КОМНАТ ============
+        async function canCreateRoom() {
+            try {
+                var myRooms = await db('rooms', 'GET', null, '?creator_tg_id=eq.' + MY_ID + '&status=neq.finished&limit=10');
+                var activeRooms = Array.isArray(myRooms) ? myRooms.filter(function(r) { return r.status !== 'finished'; }) : [];
+                if (activeRooms.length >= 5) {
+                    alert('❌ У вас уже есть 5 активных комнат! Дождитесь их завершения (5 минут) или отмените созданные.');
+                    return false;
+                }
+                return true;
+            } catch(e) {
+                console.error('Check rooms limit error:', e);
+                return true;
+            }
+        }
+
         // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
         async function loadDailyDataFromDB() {
             try {
@@ -684,7 +790,10 @@
             updateBalanceDisplay();
             
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
-            if (cardEl) cardEl.classList.add('flipped');
+            if (cardEl) {
+                cardEl.classList.add('flipped');
+                playSound('flipDaily');
+            }
             
             setTimeout(async function() {
                 await renderDailyCards();
@@ -760,55 +869,6 @@
                 }
                 
                 grid.appendChild(wrapper);
-            }
-        }
-
-        // ============ АУДИО ============
-        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            var now = audioCtx.currentTime;
-            var osc = audioCtx.createOscillator();
-            var gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            if (type === 'join') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'flip') {
-                var bufferSize = audioCtx.sampleRate * 0.12;
-                var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-                var data = buffer.getChannelData(0);
-                for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                var noise = audioCtx.createBufferSource();
-                noise.buffer = buffer;
-                var filter = audioCtx.createBiquadFilter();
-                filter.type = 'bandpass'; filter.frequency.value = 2500; filter.Q.value = 0.8;
-                noise.connect(filter); filter.connect(gain);
-                gain.gain.setValueAtTime(0.12, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-                noise.start(now);
-            } else if (type === 'win') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.setValueAtTime(659.25, now + 0.1);
-                osc.frequency.setValueAtTime(783.99, now + 0.2);
-                osc.frequency.setValueAtTime(1046.5, now + 0.3);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
-                osc.start(now); osc.stop(now + 0.5);
-            } else if (type === 'lose') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(280, now);
-                osc.frequency.linearRampToValueAtTime(140, now + 0.4);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
             }
         }
 
@@ -1143,6 +1203,10 @@
         }
 
         async function confirmStake() {
+            // Проверка лимита комнат
+            var canCreate = await canCreateRoom();
+            if (!canCreate) return;
+            
             var inputVal = document.getElementById('stakeInput').value;
             var finalStake = selectedStake;
             if (inputVal) {
@@ -1456,7 +1520,10 @@
                     var res = await db('rooms', 'GET', null, '?id=eq.' + currentRoom.id);
                     var room = res[0];
                     if (!room) return;
-                    if (room.opponent_tg_id && !opponentJoined) { playSound('join'); opponentJoined = true; }
+                    if (room.opponent_tg_id && !opponentJoined) { 
+                        opponentJoined = true;
+                        playSound('join');
+                    }
                     currentRoom = room;
                     updateGameStatus(room);
                     renderPlayerStats();
