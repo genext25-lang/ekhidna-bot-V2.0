@@ -391,59 +391,73 @@
         // ============ ЗАГРУЗКА СКИНОВ ИЗ SUPABASE ============
         async function loadSkinsFromDB() {
             try {
-                if (!MY_ID || MY_ID === 999999) return;
+                if (!MY_ID || MY_ID === 999999) return false;
                 
-                // Получаем данные о скинах пользователя из БД
+                console.log('[SKINS] Loading from DB for player:', MY_ID);
+                
                 var result = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
                 
                 if (result && result.length > 0) {
                     var userSkinData = result[0];
+                    console.log('[SKINS] Data from DB:', userSkinData);
                     
-                    // Загружаем owned skins
                     if (userSkinData.owned_skins) {
                         try {
                             var loadedOwned = JSON.parse(userSkinData.owned_skins);
                             if (Array.isArray(loadedOwned) && loadedOwned.length > 0) {
                                 ownedSkins = loadedOwned;
                                 if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
+                                console.log('[SKINS] Loaded owned skins:', ownedSkins);
                             }
                         } catch(e) { console.warn('Parse owned skins error:', e); }
                     }
                     
-                    // Загружаем текущий скин
                     if (userSkinData.current_skin) {
                         currentSkin = userSkinData.current_skin;
+                        console.log('[SKINS] Loaded current skin:', currentSkin);
                     }
                     
-                    // Сохраняем в localStorage как кэш
                     try {
                         localStorage.setItem('echidna_owned_skins_v2', JSON.stringify(ownedSkins));
                         localStorage.setItem('echidna_selected_skin', currentSkin);
+                        console.log('[SKINS] Saved to localStorage cache');
                     } catch(e) {}
+                    
+                    return true;
                 } else {
-                    // Если в БД нет записи, создаём новую
+                    console.log('[SKINS] No data in DB, will create new record');
                     await saveSkinsToDB();
+                    return false;
                 }
             } catch(e) {
-                console.error('Failed to load skins from DB:', e);
-                // Fallback на localStorage
+                console.error('[SKINS] Failed to load skins from DB:', e);
                 try {
                     var s = localStorage.getItem('echidna_owned_skins_v2');
-                    if (s) ownedSkins = JSON.parse(s);
-                    if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
+                    if (s) {
+                        ownedSkins = JSON.parse(s);
+                        if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
+                        console.log('[SKINS] Fallback loaded owned from localStorage:', ownedSkins);
+                    }
                     
                     var savedSkin = localStorage.getItem('echidna_selected_skin');
-                    if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
+                    if (savedSkin && isSkinOwned(savedSkin)) {
+                        currentSkin = savedSkin;
+                        console.log('[SKINS] Fallback loaded current skin from localStorage:', currentSkin);
+                    }
                 } catch(le) { console.warn('LocalStorage fallback error:', le); }
+                return false;
             }
         }
         
         // ============ СОХРАНЕНИЕ СКИНОВ В SUPABASE ============
         async function saveSkinsToDB() {
             try {
-                if (!MY_ID || MY_ID === 999999) return;
+                if (!MY_ID || MY_ID === 999999) return false;
                 
-                // Проверяем, есть ли запись
+                console.log('[SKINS] Saving to DB for player:', MY_ID);
+                console.log('[SKINS] ownedSkins:', ownedSkins);
+                console.log('[SKINS] currentSkin:', currentSkin);
+                
                 var existing = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
                 
                 var payload = {
@@ -454,14 +468,18 @@
                 };
                 
                 if (existing && existing.length > 0) {
-                    // Обновляем существующую запись
+                    console.log('[SKINS] Updating existing record');
                     await db('user_skins', 'PATCH', payload, '?player_id=eq.' + MY_ID);
                 } else {
-                    // Создаём новую запись
+                    console.log('[SKINS] Creating new record');
                     await db('user_skins', 'POST', [payload]);
                 }
+                
+                console.log('[SKINS] Successfully saved to DB');
+                return true;
             } catch(e) {
-                console.error('Failed to save skins to DB:', e);
+                console.error('[SKINS] Failed to save skins to DB:', e);
+                return false;
             }
         }
         
@@ -591,13 +609,11 @@
                 data.collectedCards = [];
             }
             
-            // Важное исправление: проверяем, что streak не больше 0 и cardIndex соответствует streak
             if (data.streak !== cardIndex) {
                 alert('Открывайте карточки по порядку! Следующая: #' + (data.streak + 1));
                 return;
             }
             
-            // Выдаём награду
             var reward = getDailyReward(cardIndex);
             currentBalance += reward;
             data.streak = cardIndex + 1;
@@ -972,17 +988,18 @@
             var price = getSkinPrice(skinId);
             if (currentBalance < price) { alert('Недостаточно Spike!'); return; }
             
-            // Обновляем баланс
+            console.log('[SKINS] Buying skin:', skinId, 'price:', price);
+            
             currentBalance -= price;
             
-            // Добавляем скин в owned
             ownedSkins.push(skinId);
             saveOwnedSkinsLocally();
             
-            // Сохраняем в Supabase
-            await saveSkinsToDB();
+            var saved = await saveSkinsToDB();
+            if (!saved) {
+                console.warn('[SKINS] Could not save to DB, but skin purchased locally');
+            }
             
-            // Сохраняем транзакцию в историю
             await saveGameHistory('lose', 'rock', price);
             
             await updateBalanceDisplay();
@@ -995,11 +1012,16 @@
 
         async function equipSkin(id) {
             if (!isSkinOwned(id)) return;
+            
+            console.log('[SKINS] Equipping skin:', id);
+            
             currentSkin = id;
             try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
             
-            // Сохраняем в Supabase
-            await saveSkinsToDB();
+            var saved = await saveSkinsToDB();
+            if (!saved) {
+                console.warn('[SKINS] Could not save to DB, but skin equipped locally');
+            }
             
             updateStats();
             renderSkins();
@@ -1683,10 +1705,8 @@
 
         // ============ ИНИЦИАЛИЗАЦИЯ ============
         window.addEventListener('load', async function() {
-            // Загружаем скины из Supabase
             await loadSkinsFromDB();
             
-            // Загружаем локальные скины если нужно (для совместимости)
             loadOwnedSkinsLocally();
             var savedSkin = localStorage.getItem('echidna_selected_skin');
             if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
