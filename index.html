@@ -256,6 +256,22 @@
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
         .loading-overlay.active { display: flex; }
         .loading-text { color: var(--gold); font-size: 16px; font-weight: 600; }
+        
+        /* Анимация получения монет */
+        @keyframes coinFly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            50% { transform: translate(-20px, -40px) scale(1.3); opacity: 0.9; }
+            100% { transform: translate(-40px, -80px) scale(0.5); opacity: 0; }
+        }
+        .coin-animation {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 10001;
+            animation: coinFly 0.8s ease-out forwards;
+        }
+        .coin-animation img { width: 100%; height: 100%; object-fit: contain; }
     </style>
 </head>
 <body>
@@ -398,8 +414,10 @@
         // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
         var moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
         var isCreatingRoom = false;
+        var isRematching = false;
         var lastStake = 10;
         var lastOpponentId = null;
+        var coinAnimationTimeout = null;
         
         function vibrate() {
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
@@ -407,6 +425,21 @@
             } else if (navigator.vibrate) {
                 navigator.vibrate(50);
             }
+        }
+        
+        function showCoinAnimation(amount) {
+            var balanceEl = document.getElementById('balanceSpike');
+            if (!balanceEl) return;
+            var rect = balanceEl.getBoundingClientRect();
+            var startX = window.innerWidth - 80;
+            var startY = rect.top + 20;
+            var coin = document.createElement('div');
+            coin.className = 'coin-animation';
+            coin.style.left = startX + 'px';
+            coin.style.top = startY + 'px';
+            coin.innerHTML = '<img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="+">';
+            document.body.appendChild(coin);
+            setTimeout(function() { if (coin && coin.remove) coin.remove(); }, 800);
         }
         
         function setLanguage(lang) {
@@ -428,10 +461,13 @@
             var textEl = overlay.querySelector('.loading-text');
             if (textEl) textEl.textContent = message || 'Загрузка...';
             overlay.classList.add('active');
+            if (coinAnimationTimeout) clearTimeout(coinAnimationTimeout);
+            coinAnimationTimeout = setTimeout(function() { hideLoading(); }, 10000);
         }
         
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.remove('active');
+            if (coinAnimationTimeout) { clearTimeout(coinAnimationTimeout); coinAnimationTimeout = null; }
         }
         
         function startGame() {
@@ -511,9 +547,7 @@
                             }
                         } catch(e) { console.warn('Parse owned skins error:', e); }
                     }
-                    if (userSkinData.current_skin) {
-                        currentSkin = userSkinData.current_skin;
-                    }
+                    if (userSkinData.current_skin) currentSkin = userSkinData.current_skin;
                     try {
                         localStorage.setItem('echidna_owned_skins_v2', JSON.stringify(ownedSkins));
                         localStorage.setItem('echidna_selected_skin', currentSkin);
@@ -532,9 +566,7 @@
                         if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
                     }
                     var savedSkin = localStorage.getItem('echidna_selected_skin');
-                    if (savedSkin && isSkinOwned(savedSkin)) {
-                        currentSkin = savedSkin;
-                    }
+                    if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
                 } catch(le) { console.warn('LocalStorage fallback error:', le); }
                 return false;
             }
@@ -550,11 +582,8 @@
                     current_skin: currentSkin,
                     updated_at: new Date().toISOString()
                 };
-                if (existing && existing.length > 0) {
-                    await db('user_skins', 'PATCH', payload, '?player_id=eq.' + MY_ID);
-                } else {
-                    await db('user_skins', 'POST', [payload]);
-                }
+                if (existing && existing.length > 0) await db('user_skins', 'PATCH', payload, '?player_id=eq.' + MY_ID);
+                else await db('user_skins', 'POST', [payload]);
                 return true;
             } catch(e) {
                 console.error('[SKINS] Failed to save skins to DB:', e);
@@ -602,12 +631,8 @@
         var audioCtx = null;
         
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
         }
         
         function playSound(type) {
@@ -617,30 +642,23 @@
             var gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             if (type === 'join') {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(523.25, now);
                 osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.15);
                 gain.gain.setValueAtTime(0.15, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                osc.start(now);
-                osc.stop(now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
             } else if (type === 'flip') {
                 var bufferSize = audioCtx.sampleRate * 0.15;
                 var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 var data = buffer.getChannelData(0);
-                for (var i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
+                for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
                 var noise = audioCtx.createBufferSource();
                 noise.buffer = buffer;
                 var filter = audioCtx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.value = 2000;
-                filter.Q.value = 0.5;
-                noise.connect(filter);
-                filter.connect(gain);
+                filter.type = 'bandpass'; filter.frequency.value = 2000; filter.Q.value = 0.5;
+                noise.connect(filter); filter.connect(gain);
                 gain.gain.setValueAtTime(0.2, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
                 noise.start(now);
@@ -652,31 +670,24 @@
                 osc.frequency.setValueAtTime(1046.5, now + 0.3);
                 gain.gain.setValueAtTime(0.15, now);
                 gain.gain.linearRampToValueAtTime(0.001, now + 0.6);
-                osc.start(now);
-                osc.stop(now + 0.6);
+                osc.start(now); osc.stop(now + 0.6);
             } else if (type === 'lose') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(280, now);
                 osc.frequency.linearRampToValueAtTime(140, now + 0.5);
                 gain.gain.setValueAtTime(0.12, now);
                 gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
             } else if (type === 'flipDaily') {
                 var bufferSize2 = audioCtx.sampleRate * 0.12;
                 var buffer2 = audioCtx.createBuffer(1, bufferSize2, audioCtx.sampleRate);
                 var data2 = buffer2.getChannelData(0);
-                for (var i = 0; i < bufferSize2; i++) {
-                    data2[i] = Math.random() * 2 - 1;
-                }
+                for (var i = 0; i < bufferSize2; i++) data2[i] = Math.random() * 2 - 1;
                 var noise2 = audioCtx.createBufferSource();
                 noise2.buffer = buffer2;
                 var filter2 = audioCtx.createBiquadFilter();
-                filter2.type = 'bandpass';
-                filter2.frequency.value = 2200;
-                filter2.Q.value = 0.6;
-                noise2.connect(filter2);
-                filter2.connect(gain);
+                filter2.type = 'bandpass'; filter2.frequency.value = 2200; filter2.Q.value = 0.6;
+                noise2.connect(filter2); filter2.connect(gain);
                 gain.gain.setValueAtTime(0.18, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
                 noise2.start(now);
@@ -692,10 +703,7 @@
                     return false;
                 }
                 return true;
-            } catch(e) {
-                console.error('Check rooms limit error:', e);
-                return true;
-            }
+            } catch(e) { console.error('Check rooms limit error:', e); return true; }
         }
 
         async function updateUserBalance(changeAmount) {
@@ -705,11 +713,9 @@
                 var newBalance = currentBalanceVal + changeAmount;
                 await db('users', 'PATCH', { current_balance: newBalance }, '?telegram_id=eq.' + MY_ID);
                 currentUserBalance = newBalance;
+                if (changeAmount > 0) showCoinAnimation(changeAmount);
                 return newBalance;
-            } catch(e) {
-                console.error('Update balance error:', e);
-                return null;
-            }
+            } catch(e) { console.error('Update balance error:', e); return null; }
         }
         
         async function getUserBalance() {
@@ -718,10 +724,7 @@
                 var balance = (userData && userData[0] && userData[0].current_balance) ? userData[0].current_balance : 0;
                 currentUserBalance = balance;
                 return balance;
-            } catch(e) {
-                console.error('Get balance error:', e);
-                return 0;
-            }
+            } catch(e) { console.error('Get balance error:', e); return 0; }
         }
 
         async function loadDailyDataFromDB() {
@@ -729,90 +732,41 @@
                 if (!MY_ID || MY_ID === 999999) return null;
                 var result = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
                 if (result && result.length > 0) {
-                    return {
-                        streak: result[0].streak || 0,
-                        lastClaimDate: result[0].last_claim_date || null,
-                        collectedCards: result[0].collected_cards || []
-                    };
+                    return { streak: result[0].streak || 0, lastClaimDate: result[0].last_claim_date || null, collectedCards: result[0].collected_cards || [] };
                 }
                 return null;
-            } catch(e) {
-                console.error('Failed to load daily data from DB:', e);
-                return null;
-            }
+            } catch(e) { console.error('Failed to load daily data from DB:', e); return null; }
         }
         
         async function saveDailyDataToDB(data) {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
                 var existing = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
-                var payload = {
-                    player_id: MY_ID,
-                    streak: data.streak || 0,
-                    last_claim_date: data.lastClaimDate || null,
-                    collected_cards: data.collectedCards || [],
-                    updated_at: new Date().toISOString()
-                };
-                if (existing && existing.length > 0) {
-                    await db('daily_tasks', 'PATCH', payload, '?player_id=eq.' + MY_ID);
-                } else {
-                    await db('daily_tasks', 'POST', [payload]);
-                }
-            } catch(e) {
-                console.error('Failed to save daily data to DB:', e);
-            }
+                var payload = { player_id: MY_ID, streak: data.streak || 0, last_claim_date: data.lastClaimDate || null, collected_cards: data.collectedCards || [], updated_at: new Date().toISOString() };
+                if (existing && existing.length > 0) await db('daily_tasks', 'PATCH', payload, '?player_id=eq.' + MY_ID);
+                else await db('daily_tasks', 'POST', [payload]);
+            } catch(e) { console.error('Failed to save daily data to DB:', e); }
         }
         
         async function getDailyData() {
             var dbData = await loadDailyDataFromDB();
-            if (dbData) {
-                try { localStorage.setItem('echidna_daily_v5', JSON.stringify(dbData)); } catch(e) {}
-                return dbData;
-            }
-            try {
-                var s = localStorage.getItem('echidna_daily_v5');
-                if (s) return JSON.parse(s);
-            } catch(e) {}
+            if (dbData) { try { localStorage.setItem('echidna_daily_v5', JSON.stringify(dbData)); } catch(e) {} return dbData; }
+            try { var s = localStorage.getItem('echidna_daily_v5'); if (s) return JSON.parse(s); } catch(e) {}
             return { streak: 0, lastClaimDate: null, collectedCards: [] };
         }
         
-        function saveDailyData(data) {
-            try { localStorage.setItem('echidna_daily_v5', JSON.stringify(data)); } catch(e) {}
-            saveDailyDataToDB(data);
-        }
-        
-        function getTodayDate() {
-            var d = new Date();
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        }
-        
-        function getDailyReward(day) {
-            return (day + 1) * 100;
-        }
+        function saveDailyData(data) { try { localStorage.setItem('echidna_daily_v5', JSON.stringify(data)); } catch(e) {} saveDailyDataToDB(data); }
+        function getTodayDate() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+        function getDailyReward(day) { return (day + 1) * 100; }
 
         async function claimDailyCard(cardIndex) {
             var today = getTodayDate();
             var data = await getDailyData();
-            
-            if (data.lastClaimDate === today) {
-                alert('Вы уже открыли карточку сегодня! Возвращайтесь завтра.');
-                return;
-            }
-            
-            var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
+            if (data.lastClaimDate === today) { alert('Вы уже открыли карточку сегодня! Возвращайтесь завтра.'); return; }
+            var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
             var yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
-            
-            if (data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr && data.lastClaimDate !== null) {
-                data.streak = 0;
-                data.collectedCards = [];
-            }
-            
-            if (data.streak !== cardIndex) {
-                alert('Открывайте карточки по порядку! Следующая: #' + (data.streak + 1));
-                return;
-            }
-            
+            if (data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr && data.lastClaimDate !== null) { data.streak = 0; data.collectedCards = []; }
+            if (data.streak !== cardIndex) { alert('Открывайте карточки по порядку! Следующая: #' + (data.streak + 1)); return; }
             var reward = getDailyReward(cardIndex);
             await updateUserBalance(reward);
             currentBalance += reward;
@@ -822,84 +776,51 @@
             data.collectedCards.push(cardIndex);
             saveDailyData(data);
             await updateBalanceDisplay();
-            
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
-            if (cardEl) {
-                cardEl.classList.add('flipped');
-                playSound('flipDaily');
-            }
-            
-            setTimeout(async function() {
-                await renderDailyCards();
-                alert('✅ +' + reward + ' Spike получено!');
-            }, 700);
+            if (cardEl) { cardEl.classList.add('flipped'); playSound('flipDaily'); }
+            setTimeout(async function() { await renderDailyCards(); alert('✅ +' + reward + ' Spike получено!'); }, 700);
         }
 
         async function renderDailyCards() {
             var grid = document.getElementById('dailyCardsGrid');
             var streakNum = document.getElementById('dailyStreakNum');
             if (!grid || !streakNum) return;
-            
             var data = await getDailyData();
             var today = getTodayDate();
-            var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
+            var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
             var yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
-            
-            if (data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr && data.lastClaimDate !== null) {
-                data.streak = 0;
-                data.collectedCards = [];
-                saveDailyData(data);
-            }
-            
+            if (data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr && data.lastClaimDate !== null) { data.streak = 0; data.collectedCards = []; saveDailyData(data); }
             streakNum.textContent = data.streak || 0;
             grid.innerHTML = '';
-            
             for (var i = 0; i < 9; i++) {
                 var reward = getDailyReward(i);
                 var isCollected = data.collectedCards && data.collectedCards.indexOf(i) !== -1;
                 var isToday = (i === data.streak && !isCollected && data.lastClaimDate !== today);
                 var isLocked = !isCollected && !isToday;
-                
                 var wrapper = document.createElement('div');
                 wrapper.className = 'daily-card';
                 wrapper.setAttribute('data-index', String(i));
-                
                 var inner = document.createElement('div');
                 inner.className = 'daily-card-inner';
                 if (isCollected) inner.classList.add('flipped');
-                
                 var front = document.createElement('div');
                 front.className = 'daily-card-front';
                 if (isCollected) front.classList.add('collected');
                 else if (isToday) front.classList.add('today');
-                
                 var cardImgUrl = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/daily-card-' + (i + 1) + '.png';
                 var lockIcon = isLocked ? ' 🔒' : '';
-                
                 front.innerHTML = '<img class="card-cover" src="' + cardImgUrl + '" alt="Card ' + (i + 1) + '" onerror="this.style.display=\'none\'">' +
                     '<div class="card-overlay"><div class="day-badge">' + (isCollected ? '✓' : ('#' + (i + 1))) + lockIcon + '</div></div>';
-                
                 var back = document.createElement('div');
                 back.className = 'daily-card-back';
                 back.innerHTML = '<img class="reward-coin" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display=\'none\'">' +
                     '<div class="reward-amount">+' + reward + '</div>';
-                
                 inner.appendChild(front);
                 inner.appendChild(back);
                 wrapper.appendChild(inner);
-                
                 if (isToday) {
-                    wrapper.addEventListener('click', (function(index) {
-                        return function() {
-                            var innerEl = wrapper.querySelector('.daily-card-inner');
-                            if (!innerEl.classList.contains('flipped')) {
-                                claimDailyCard(index);
-                            }
-                        };
-                    })(i));
+                    wrapper.addEventListener('click', (function(index) { return function() { var innerEl = wrapper.querySelector('.daily-card-inner'); if (!innerEl.classList.contains('flipped')) { claimDailyCard(index); } }; })(i));
                 }
-                
                 grid.appendChild(wrapper);
             }
         }
@@ -908,37 +829,18 @@
             payload = payload || null;
             filters = filters || '';
             single = single || false;
-            
             var url = SUPABASE_URL + '/rest/v1/' + table + filters;
-            var headers = {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                'Content-Type': 'application/json',
-                'X-User-Id': String(MY_ID),
-                'X-User-Hash': USER_HASH
-            };
-            
+            var headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'X-User-Id': String(MY_ID), 'X-User-Hash': USER_HASH };
             if (method === 'POST') headers['Prefer'] = 'return=representation';
             else if (method === 'DELETE') headers['Prefer'] = 'return=minimal';
             else if (method === 'PATCH') headers['Prefer'] = 'return=representation';
-            
             try {
-                var response = await fetch(url, {
-                    method: method,
-                    headers: headers,
-                    body: payload ? JSON.stringify(payload) : null
-                });
-                if (!response.ok) {
-                    var errorText = await response.text();
-                    throw new Error(response.status + ' ' + errorText);
-                }
+                var response = await fetch(url, { method: method, headers: headers, body: payload ? JSON.stringify(payload) : null });
+                if (!response.ok) { var errorText = await response.text(); throw new Error(response.status + ' ' + errorText); }
                 if (method === 'DELETE') return true;
                 var responseData = await response.json();
                 return single && Array.isArray(responseData) ? responseData[0] : responseData;
-            } catch(e) {
-                console.error('[DB ERROR]', e);
-                throw e;
-            }
+            } catch(e) { console.error('[DB ERROR]', e); throw e; }
         }
 
         var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -950,39 +852,25 @@
                 if (!existing || existing.length === 0) {
                     await db('users', 'POST', [{ telegram_id: userId, username: username || 'User_' + userId, wins: 0, losses: 0, draws: 0, current_balance: 0 }]);
                 }
-            } catch(e) {
-                console.error('Failed to ensure user exists:', e);
-            }
+            } catch(e) { console.error('Failed to ensure user exists:', e); }
         }
         
         function renderAvatar(elementId, photoUrl, username) {
             var el = document.getElementById(elementId);
             if (!el) return;
-            if (photoUrl) {
-                el.innerHTML = '<img src="' + photoUrl + '" alt="' + (username || 'User') + '" onerror="this.parentElement.innerHTML=\'' + (username ? username.charAt(0).toUpperCase() : '?') + '\'">';
-            } else {
-                el.innerHTML = username ? username.charAt(0).toUpperCase() : '?';
-            }
+            if (photoUrl) el.innerHTML = '<img src="' + photoUrl + '" alt="' + (username || 'User') + '" onerror="this.parentElement.innerHTML=\'' + (username ? username.charAt(0).toUpperCase() : '?') + '\'">';
+            else el.innerHTML = username ? username.charAt(0).toUpperCase() : '?';
         }
 
         function showScreen(name) {
             var screens = ['lobbyScreen', 'statsScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen', 'tasksScreen'];
-            screens.forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
-            
+            screens.forEach(function(id) { var el = document.getElementById(id); if (el) el.classList.add('hidden'); });
             var target = document.getElementById(name + 'Screen');
             if (target) target.classList.remove('hidden');
-            
             var navOrder = ['lobby', 'tasks', 'stats', 'skins', 'leaderboard'];
-            document.querySelectorAll('.nav-btn').forEach(function(b, i) {
-                b.classList.toggle('active', navOrder[i] === name);
-            });
-            
+            document.querySelectorAll('.nav-btn').forEach(function(b, i) { b.classList.toggle('active', navOrder[i] === name); });
             if (name === 'lobby') {
-                currentRoom = null;
-                isGameFinished = false;
+                currentRoom = null; isGameFinished = false;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 lobbyRefreshInterval = setInterval(loadRooms, 3000);
@@ -1005,12 +893,7 @@
             if (name === 'skins') renderSkins();
         }
         
-        function updateHeroImage() {
-            var heroImg = document.getElementById('heroEchidnaImg');
-            if (heroImg) {
-                heroImg.src = getSkinImg(currentSkin);
-            }
-        }
+        function updateHeroImage() { var heroImg = document.getElementById('heroEchidnaImg'); if (heroImg) heroImg.src = getSkinImg(currentSkin); }
 
         function forceExitToLobby() {
             isGameFinished = true;
@@ -1025,23 +908,24 @@
         }
         
         function rematch() {
-            if (lastStake) {
-                closeStakeModal();
-                confirmStakeWithValue(lastStake);
-            }
+            if (isRematching) { alert('Подождите, комната уже создается...'); return; }
+            if (!lastStake) { alert('Нет данных для реванша'); return; }
+            if (currentBalance < lastStake) { alert('Недостаточно средств для реванша!'); return; }
+            isRematching = true;
+            var rematchBtn = document.getElementById('rematchBtn');
+            if (rematchBtn) { rematchBtn.disabled = true; rematchBtn.textContent = '⏳ СОЗДАНИЕ...'; }
+            confirmStakeWithValue(lastStake).finally(function() {
+                isRematching = false;
+                if (rematchBtn) { rematchBtn.disabled = false; rematchBtn.textContent = '🔄 Сыграть ещё'; }
+            });
         }
         
         async function confirmStakeWithValue(stake) {
-            if (isCreatingRoom) {
-                alert('Подождите, комната уже создается...');
-                return;
-            }
+            if (isCreatingRoom) { alert('Подождите, комната уже создается...'); return; }
             var canCreate = await canCreateRoom();
             if (!canCreate) return;
-            if (currentBalance < stake) { 
-                alert('Недостаточно средств!'); 
-                return;
-            }
+            var currentBalanceCheck = await getUserBalance();
+            if (currentBalanceCheck < stake) { alert('Недостаточно средств!'); return; }
             isCreatingRoom = true;
             try {
                 await ensureUserExists(MY_ID, user.username);
@@ -1050,11 +934,9 @@
                 showGameScreen();
                 startPolling();
                 loadRooms();
-            } catch(e) { 
-                alert('Ошибка: ' + e.message); 
-            } finally {
-                isCreatingRoom = false;
-            }
+                return room;
+            } catch(e) { alert('Ошибка: ' + e.message); throw e; }
+            finally { isCreatingRoom = false; }
         }
 
         async function updateStats() {
@@ -1090,29 +972,20 @@
             var c = document.getElementById('skinsList');
             if (!c) return;
             c.innerHTML = '';
-            
             SKINS.forEach(function(s, i) {
                 var owned = isSkinOwned(s.id);
                 var equipped = currentSkin === s.id;
                 var canBuy = !owned && currentBalance >= s.price;
-                
                 var el = document.createElement('div');
                 el.className = 'room-card' + (equipped ? ' equipped' : '');
                 el.onclick = function() { openSkinModal(s); };
-                
                 var btnHtml = '';
-                if (equipped) {
-                    btnHtml = '<button class="room-btn equipped">Надето</button>';
-                } else if (owned) {
-                    btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();equipSkin(\'' + s.id + '\')">Надеть</button>';
-                } else {
-                    if (canBuy) {
-                        btnHtml = '<button class="room-btn buy" onclick="event.stopPropagation();buySkin(\'' + s.id + '\')">' + formatCompactNumber(s.price) + ' Spike</button>';
-                    } else {
-                        btnHtml = '<button class="room-btn buy-disabled" disabled>' + formatCompactNumber(s.price) + ' Spike</button>';
-                    }
+                if (equipped) btnHtml = '<button class="room-btn equipped">Надето</button>';
+                else if (owned) btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();equipSkin(\'' + s.id + '\')">Надеть</button>';
+                else {
+                    if (canBuy) btnHtml = '<button class="room-btn buy" onclick="event.stopPropagation();buySkin(\'' + s.id + '\')">' + formatCompactNumber(s.price) + ' Spike</button>';
+                    else btnHtml = '<button class="room-btn buy-disabled" disabled>' + formatCompactNumber(s.price) + ' Spike</button>';
                 }
-                
                 el.innerHTML = '<div style="font-weight:700;width:30px;color:var(--sec);">#' + (i + 1) + '</div>' +
                     '<div class="room-icon skin-room-icon"><img src="' + s.img + '" alt=""></div>' +
                     '<div class="room-info"><div class="skin-card-name">' + getSkinNameById(s.id) + '</div>' +
@@ -1131,46 +1004,25 @@
             document.getElementById('modalDesc').textContent = '';
             var priceEl = document.getElementById('modalPrice');
             var btnEl = document.getElementById('modalBtn');
-            
             if (currentSkin === s.id) {
-                priceEl.textContent = '✅ Надето';
-                btnEl.textContent = 'Надето';
-                btnEl.className = 'skin-modal-btn equipped';
-                btnEl.disabled = true;
+                priceEl.textContent = '✅ Надето'; btnEl.textContent = 'Надето'; btnEl.className = 'skin-modal-btn equipped'; btnEl.disabled = true;
             } else if (isSkinOwned(s.id)) {
-                priceEl.textContent = '✅ Куплено';
-                btnEl.textContent = 'Надеть';
-                btnEl.className = 'skin-modal-btn equip';
-                btnEl.disabled = false;
+                priceEl.textContent = '✅ Куплено'; btnEl.textContent = 'Надеть'; btnEl.className = 'skin-modal-btn equip'; btnEl.disabled = false;
             } else {
                 priceEl.textContent = '💰 ' + formatCompactNumber(s.price) + ' Spike';
                 btnEl.textContent = currentBalance >= s.price ? 'Купить - ' + formatCompactNumber(s.price) + ' Spike' : 'Нужно ещё ' + formatCompactNumber(s.price - currentBalance) + ' Spike';
-                btnEl.className = 'skin-modal-btn buy';
-                btnEl.disabled = currentBalance < s.price;
+                btnEl.className = 'skin-modal-btn buy'; btnEl.disabled = currentBalance < s.price;
             }
             m.classList.remove('hidden');
         }
 
-        function closeSkinModal(e) {
-            if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') {
-                document.getElementById('skinModal').classList.add('hidden');
-                currentModalSkin = null;
-                enableBottomNav();
-            }
-        }
-
-        function handleSkinAction() {
-            if (!currentModalSkin) return;
-            if (currentSkin === currentModalSkin.id) return;
-            if (isSkinOwned(currentModalSkin.id)) equipSkin(currentModalSkin.id);
-            else buySkin(currentModalSkin.id);
-        }
+        function closeSkinModal(e) { if (!e || e.target.id === 'skinModal' || e.target.className === 'skin-modal-close') { document.getElementById('skinModal').classList.add('hidden'); currentModalSkin = null; enableBottomNav(); } }
+        function handleSkinAction() { if (!currentModalSkin) return; if (currentSkin === currentModalSkin.id) return; if (isSkinOwned(currentModalSkin.id)) equipSkin(currentModalSkin.id); else buySkin(currentModalSkin.id); }
 
         async function buySkin(skinId) {
             if (isSkinOwned(skinId)) return;
             var price = getSkinPrice(skinId);
             if (currentBalance < price) { alert('Недостаточно Spike!'); return; }
-            
             await updateUserBalance(-price);
             currentBalance -= price;
             ownedSkins.push(skinId);
@@ -1179,7 +1031,6 @@
             await saveGameHistory('lose', 'rock', price);
             await updateBalanceDisplay();
             renderSkins();
-            
             var s = SKINS.find(function(s) { return s.id === skinId; });
             if (s) openSkinModal(s);
             alert('✅ Скин "' + getSkinNameById(skinId) + '" куплен за ' + formatCompactNumber(price) + ' Spike!');
@@ -1212,55 +1063,25 @@
             document.getElementById('stakeModal').classList.remove('hidden');
         }
 
-        function closeStakeModal(e) {
-            if (!e || e.target.id === 'stakeModal' || e.target.className === 'skin-modal-close') {
-                document.getElementById('stakeModal').classList.add('hidden');
-                enableBottomNav();
-            }
-        }
-
-        function selectStakePreset(value, btn) {
-            selectedStake = value;
-            document.getElementById('stakeInput').value = '';
-            document.getElementById('stakeError').textContent = '';
-            document.querySelectorAll('.stake-preset-btn').forEach(function(b) { b.classList.remove('selected'); });
-            if (btn) btn.classList.add('selected');
-        }
-
-        function onStakeInput() {
-            var val = parseInt(document.getElementById('stakeInput').value);
-            document.getElementById('stakeError').textContent = '';
-            document.querySelectorAll('.stake-preset-btn').forEach(function(b) { b.classList.remove('selected'); });
-            if (isNaN(val)) { selectedStake = 10; return; }
-            if (val < 10) { document.getElementById('stakeError').textContent = 'Мин: 10 Spike'; selectedStake = 10; }
-            else if (val > 1000) { document.getElementById('stakeError').textContent = 'Макс: 1000 Spike'; selectedStake = 1000; }
-            else { selectedStake = Math.round(val / 10) * 10; }
-        }
+        function closeStakeModal(e) { if (!e || e.target.id === 'stakeModal' || e.target.className === 'skin-modal-close') { document.getElementById('stakeModal').classList.add('hidden'); enableBottomNav(); } }
+        function selectStakePreset(value, btn) { selectedStake = value; document.getElementById('stakeInput').value = ''; document.getElementById('stakeError').textContent = ''; document.querySelectorAll('.stake-preset-btn').forEach(function(b) { b.classList.remove('selected'); }); if (btn) btn.classList.add('selected'); }
+        function onStakeInput() { var val = parseInt(document.getElementById('stakeInput').value); document.getElementById('stakeError').textContent = ''; document.querySelectorAll('.stake-preset-btn').forEach(function(b) { b.classList.remove('selected'); }); if (isNaN(val)) { selectedStake = 10; return; } if (val < 10) { document.getElementById('stakeError').textContent = 'Мин: 10 Spike'; selectedStake = 10; } else if (val > 1000) { document.getElementById('stakeError').textContent = 'Макс: 1000 Spike'; selectedStake = 1000; } else { selectedStake = Math.round(val / 10) * 10; } }
 
         async function confirmStake() {
-            if (isCreatingRoom) {
-                alert('Подождите, комната уже создается...');
-                return;
-            }
+            if (isCreatingRoom) { alert('Подождите, комната уже создается...'); return; }
             var canCreate = await canCreateRoom();
             if (!canCreate) return;
             var inputVal = document.getElementById('stakeInput').value;
             var finalStake = selectedStake;
-            if (inputVal) {
-                var parsed = parseInt(inputVal);
-                if (parsed < 10 || parsed > 1000 || isNaN(parsed)) { document.getElementById('stakeError').textContent = 'Введи от 10 до 1000'; return; }
-                finalStake = Math.round(parsed / 10) * 10;
-            }
-            if (currentBalance < finalStake) { document.getElementById('stakeError').textContent = 'Недостаточно средств!'; return; }
+            if (inputVal) { var parsed = parseInt(inputVal); if (parsed < 10 || parsed > 1000 || isNaN(parsed)) { document.getElementById('stakeError').textContent = 'Введи от 10 до 1000'; return; } finalStake = Math.round(parsed / 10) * 10; }
+            var currentBalanceCheck = await getUserBalance();
+            if (currentBalanceCheck < finalStake) { document.getElementById('stakeError').textContent = 'Недостаточно средств!'; return; }
             var rawPassword = document.getElementById('roomPassword').value.trim();
             if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; return; }
             closeStakeModal();
             isCreatingRoom = true;
             var btn = document.getElementById('createRoomBtn');
-            if (btn) {
-                btn.classList.add('loading');
-                btn.textContent = '⏳ СОЗДАНИЕ...';
-            }
+            if (btn) { btn.classList.add('loading'); btn.textContent = '⏳ СОЗДАНИЕ...'; }
             try {
                 await ensureUserExists(MY_ID, user.username);
                 var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: rawPassword || null }], '', true);
@@ -1269,46 +1090,18 @@
                 showGameScreen();
                 startPolling();
                 loadRooms();
-            } catch(e) { 
-                alert('Ошибка: ' + e.message); 
-            } finally {
-                isCreatingRoom = false;
-                if (btn) {
-                    btn.classList.remove('loading');
-                    btn.textContent = '🚪 СОЗДАТЬ КОМНАТУ';
-                }
-            }
+            } catch(e) { alert('Ошибка: ' + e.message); }
+            finally { isCreatingRoom = false; if (btn) { btn.classList.remove('loading'); btn.textContent = '🚪 СОЗДАТЬ КОМНАТУ'; } }
         }
 
-        function formatCountdown(ms) {
-            if (ms <= 0) return "00:00";
-            var totalSeconds = Math.floor(ms / 1000);
-            var minutes = Math.floor(totalSeconds / 60);
-            var seconds = totalSeconds % 60;
-            return (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
-        }
+        function formatCountdown(ms) { if (ms <= 0) return "00:00"; var totalSeconds = Math.floor(ms / 1000); var minutes = Math.floor(totalSeconds / 60); var seconds = totalSeconds % 60; return (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds; }
 
-        setInterval(function() {
-            var now = Date.now();
-            document.querySelectorAll('.room-timer').forEach(function(el) {
-                var roomId = el.dataset.roomId;
-                if (roomId && window.roomExpiry[roomId]) {
-                    var remaining = window.roomExpiry[roomId] - now;
-                    el.textContent = formatCountdown(remaining);
-                    if (remaining <= 60000) el.classList.add('urgent');
-                    else el.classList.remove('urgent');
-                    if (remaining <= 0) { el.textContent = '⌛ Истекло'; el.style.color = 'var(--error)'; }
-                }
-            });
-        }, 1000);
+        setInterval(function() { var now = Date.now(); document.querySelectorAll('.room-timer').forEach(function(el) { var roomId = el.dataset.roomId; if (roomId && window.roomExpiry[roomId]) { var remaining = window.roomExpiry[roomId] - now; el.textContent = formatCountdown(remaining); if (remaining <= 60000) el.classList.add('urgent'); else el.classList.remove('urgent'); if (remaining <= 0) { el.textContent = '⌛ Истекло'; el.style.color = 'var(--error)'; } } }); }, 1000);
 
         function formatStakeDisplay(room) { return (room.stake || 0) + ' Spike'; }
 
         async function loadRooms() {
-            if (!MY_ID || MY_ID === 999999) {
-                document.getElementById('myRoomsList').innerHTML = '<div style="color:var(--error);padding:15px;">⚠️ Пользователь не найден</div>';
-                return;
-            }
+            if (!MY_ID || MY_ID === 999999) { document.getElementById('myRoomsList').innerHTML = '<div style="color:var(--error);padding:15px;">⚠️ Пользователь не найден</div>'; return; }
             try {
                 var my = await db('rooms', 'GET', null, '?creator_tg_id=eq.' + MY_ID + '&status=neq.finished&order=created_at.desc&limit=10');
                 var all = await db('rooms', 'GET', null, '?status=neq.finished&order=created_at.desc&limit=50');
@@ -1324,10 +1117,7 @@
             var c = document.getElementById(id);
             if (!c) return;
             c.innerHTML = '';
-            if (!rooms || rooms.length === 0) {
-                c.innerHTML = '<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>';
-                return;
-            }
+            if (!rooms || rooms.length === 0) { c.innerHTML = '<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>'; return; }
             rooms.forEach(function(r, i) {
                 try {
                     var trulyMine = Number(r.creator_tg_id) === MY_ID;
@@ -1335,24 +1125,19 @@
                     var isFinished = r.status === 'finished';
                     var isPlaying = r.status === 'playing';
                     var isWaiting = r.status === 'waiting';
-                    
                     var el = document.createElement('div');
                     el.className = 'room-card' + (trulyMine ? ' my-room' : '') + (isPlaying ? ' playing' : '');
                     if (trulyMine || isOpponent) { el.onclick = function() { resumeRoom(r.id); }; el.style.cursor = 'pointer'; }
-                    
                     var badgeHtml = '', btnHtml = '', timerHtml = '';
                     var hasPassword = r.room_password && r.room_password.length > 0;
                     var lockIcon = hasPassword ? '<span class="lock-icon">🔒</span>' : '';
-                    
                     if (isWaiting) {
                         badgeHtml = '<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">ЖДЁТ</span>';
                         if (!window.roomExpiry[r.id]) window.roomExpiry[r.id] = Date.now() + 5 * 60 * 1000;
                         var remaining = window.roomExpiry[r.id] - Date.now();
                         timerHtml = '<span class="room-timer' + (remaining <= 60000 ? ' urgent' : '') + '" data-room-id="' + r.id + '">' + formatCountdown(remaining) + '</span>';
                     }
-                    
                     var stakeDisplay = formatStakeDisplay(r);
-                    
                     if (trulyMine) {
                         if (isPlaying) btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();resumeRoom(\'' + r.id + '\')">🔄 Вернуться</button>';
                         var cancelBtn = !isFinished ? '<button class="room-btn cancel" onclick="event.stopPropagation();cancelRoom(\'' + r.id + '\')">✕</button>' : '';
@@ -1385,12 +1170,7 @@
             try {
                 await db('rooms', 'DELETE', null, '?id=eq.' + roomId);
                 delete window.roomExpiry[roomId];
-                if (currentRoom && currentRoom.id === roomId) {
-                    currentRoom = null; isGameFinished = true;
-                    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                    if (window._timerInterval) clearInterval(window._timerInterval);
-                    window._timerRunning = false;
-                }
+                if (currentRoom && currentRoom.id === roomId) { currentRoom = null; isGameFinished = true; if (pollInterval) { clearInterval(pollInterval); pollInterval = null; } if (window._timerInterval) clearInterval(window._timerInterval); window._timerRunning = false; }
                 loadRooms();
             } catch(e) { console.warn('Cancel room warning:', e); loadRooms(); }
         }
@@ -1402,29 +1182,13 @@
                 var roomData = await db('rooms', 'GET', null, '?id=eq.' + roomId, false);
                 if (!roomData || !roomData.length) throw new Error('Комната занята');
                 var room = roomData[0];
-                if (Number(room.creator_tg_id) === MY_ID) {
-                    alert('❌ Нельзя войти в собственную комнату!');
-                    btnElement.disabled = false;
-                    btnElement.textContent = 'Войти';
-                    return;
-                }
+                if (Number(room.creator_tg_id) === MY_ID) { alert('❌ Нельзя войти в собственную комнату!'); btnElement.disabled = false; btnElement.textContent = 'Войти'; return; }
                 if (Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
-                if (room.room_password) {
-                    var pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:');
-                    if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = 'Войти'; return; }
-                }
+                if (room.room_password) { var pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:'); if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = 'Войти'; return; } }
                 await ensureUserExists(MY_ID, user.username);
                 var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
                 if (!res) throw new Error('Ошибка');
-                currentRoom = res;
-                lastStake = res.stake;
-                lastOpponentId = res.creator_tg_id;
-                showGameScreen(); 
-                startPolling(); 
-                loadRooms();
-                closeRoomsScreen();
-                vibrate();
-                playSound('join');
+                currentRoom = res; lastStake = res.stake; lastOpponentId = res.creator_tg_id; showGameScreen(); startPolling(); loadRooms(); closeRoomsScreen(); vibrate(); playSound('join');
             } catch(e) { alert('Ошибка: ' + e.message); if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } }
         }
 
@@ -1436,7 +1200,6 @@
                 var creatorId = roomData.creator_tg_id;
                 var opponentId = roomData.opponent_tg_id;
                 var isCreator = String(creatorId) === String(MY_ID);
-                
                 if (isCreator) {
                     renderAvatar('playerAvatar', MY_PHOTO_URL, user.username || '?');
                     if (opponentId) renderAvatar('opponentAvatar', null, roomData.opponent_username || '?');
@@ -1444,25 +1207,20 @@
                     renderAvatar('opponentAvatar', MY_PHOTO_URL, user.username || '?');
                     if (creatorId) renderAvatar('playerAvatar', null, roomData.creator_username || '?');
                 }
-                
                 if (!creatorId || !opponentId) {
                     document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--sec)">⏳ Ожидание...</span>';
                     document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span>✅ 0</span><br><span>❌ 0</span>';
                     return;
                 }
-                
                 var now = Date.now();
                 if (now - window._lastStatsUpdate < 2000) return;
                 window._lastStatsUpdate = now;
-                
                 var results = await Promise.allSettled([
                     db('users', 'GET', null, '?select=wins,losses&telegram_id=eq.' + String(creatorId), false),
                     db('users', 'GET', null, '?select=wins,losses&telegram_id=eq.' + String(opponentId), false)
                 ]);
-                
                 var cData = (results[0].status === 'fulfilled' && results[0].value && results[0].value[0]) ? results[0].value[0] : { wins: 0, losses: 0 };
                 var oData = (results[1].status === 'fulfilled' && results[1].value && results[1].value[0]) ? results[1].value[0] : { wins: 0, losses: 0 };
-                
                 document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span style="color:var(--success)">✅ ' + (cData.wins || 0) + '</span><br><span style="color:var(--error)">❌ ' + (cData.losses || 0) + '</span>';
                 document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--success)">✅ ' + (oData.wins || 0) + '</span><br><span style="color:var(--error)">❌ ' + (oData.losses || 0) + '</span>';
             } catch(e) { console.warn('Stats load error:', e); }
@@ -1472,29 +1230,15 @@
             closeRoomsScreen();
             var rematchBtn = document.getElementById('rematchBtn');
             if (rematchBtn) rematchBtn.classList.add('hidden');
-            
-            ['lobbyScreen', 'statsScreen', 'skinsScreen', 'leaderboardScreen', 'tasksScreen'].forEach(function(id) {
-                document.getElementById(id).classList.add('hidden');
-            });
+            ['lobbyScreen', 'statsScreen', 'skinsScreen', 'leaderboardScreen', 'tasksScreen'].forEach(function(id) { document.getElementById(id).classList.add('hidden'); });
             document.getElementById('gameScreen').classList.remove('hidden');
-            
             if (!currentRoom) { document.getElementById('statusMessage').textContent = '❌ Комната не найдена'; return; }
-            
             var isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             var myCol = isCreator ? 'creator_choice' : 'opponent_choice';
             var choices = document.querySelectorAll('.choice-btn');
-            
-            if (currentRoom[myCol] && currentRoom[myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice']) {
-                choices.forEach(function(b) { b.disabled = true; });
-                document.getElementById('statusMessage').textContent = '⏳ Итоги...';
-            } else if (currentRoom[myCol]) {
-                choices.forEach(function(b) { b.disabled = true; });
-                document.getElementById('statusMessage').textContent = '✅ Ход записан';
-            } else {
-                choices.forEach(function(b) { b.disabled = false; });
-                document.getElementById('statusMessage').innerHTML = '<div class="spinner"></div>';
-            }
-            
+            if (currentRoom[myCol] && currentRoom[myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice']) { choices.forEach(function(b) { b.disabled = true; }); document.getElementById('statusMessage').textContent = '⏳ Итоги...'; }
+            else if (currentRoom[myCol]) { choices.forEach(function(b) { b.disabled = true; }); document.getElementById('statusMessage').textContent = '✅ Ход записан'; }
+            else { choices.forEach(function(b) { b.disabled = false; }); document.getElementById('statusMessage').innerHTML = '<div class="spinner"></div>'; }
             isGameFinished = false; window._timerRunning = false;
             var stake = currentRoom.stake || 10;
             document.getElementById('stakeAmount').textContent = stake + ' Spike';
@@ -1511,31 +1255,12 @@
             var timerBar = document.getElementById('timerBar');
             var isCreator = String(room.creator_tg_id) === String(MY_ID);
             var myCol = isCreator ? 'creator_choice' : 'opponent_choice';
-            
-            if (room[myCol] && room[myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice']) {
-                msgEl.textContent = '⏳ Итоги...';
-                timerText.classList.remove('active');
-                timerBarContainer.style.display = 'none';
-                window._timerRunning = false;
-                if (window._timerInterval) clearInterval(window._timerInterval);
-                return;
-            }
-            
-            timerText.classList.remove('active');
-            timerBarContainer.style.display = 'none';
-            timerBar.style.width = '100%';
-            timerBar.classList.remove('urgent');
-            
-            if (room.status === 'waiting') {
-                msgEl.textContent = '⏳ Ждём соперника...';
-            } else if (room.status === 'playing') {
+            if (room[myCol] && room[myCol === 'creator_choice' ? 'opponent_choice' : 'creator_choice']) { msgEl.textContent = '⏳ Итоги...'; timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; window._timerRunning = false; if (window._timerInterval) clearInterval(window._timerInterval); return; }
+            timerText.classList.remove('active'); timerBarContainer.style.display = 'none'; timerBar.style.width = '100%'; timerBar.classList.remove('urgent');
+            if (room.status === 'waiting') msgEl.textContent = '⏳ Ждём соперника...';
+            else if (room.status === 'playing') {
                 if (room[myCol]) { msgEl.textContent = '✅ Ход записан'; window._timerRunning = false; }
-                else {
-                    msgEl.innerHTML = '<span style="color:var(--error)">⚠️ Ваш ход!</span>';
-                    timerText.classList.add('active');
-                    timerBarContainer.style.display = 'block';
-                    if (!window._timerRunning) { window._timerRunning = true; window._timerStart = Date.now(); startTimer(window._timerStart); }
-                }
+                else { msgEl.innerHTML = '<span style="color:var(--error)">⚠️ Ваш ход!</span>'; timerText.classList.add('active'); timerBarContainer.style.display = 'block'; if (!window._timerRunning) { window._timerRunning = true; window._timerStart = Date.now(); startTimer(window._timerStart); } }
             } else { msgEl.textContent = '🏁 Игра окончена'; window._timerRunning = false; }
         }
 
@@ -1544,7 +1269,6 @@
             var timeLimit = 45000;
             var timerBar = document.getElementById('timerBar');
             var timerText = document.getElementById('timerText');
-            
             window._timerInterval = setInterval(function() {
                 if (!window._timerRunning) return clearInterval(window._timerInterval);
                 var elapsed = Date.now() - startTime;
@@ -1564,9 +1288,7 @@
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                 await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + currentRoom.id);
                 var opponentId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
-                db('users', 'GET', null, '?telegram_id=eq.' + opponentId + '&select=wins', false).then(function(d) {
-                    return db('users', 'PATCH', { wins: ((d[0] && d[0].wins) || 0) + 1 }, '?telegram_id=eq.' + opponentId);
-                }).catch(console.warn);
+                db('users', 'GET', null, '?telegram_id=eq.' + opponentId + '&select=wins', false).then(function(d) { return db('users', 'PATCH', { wins: ((d[0] && d[0].wins) || 0) + 1 }, '?telegram_id=eq.' + opponentId); }).catch(console.warn);
                 db('users', 'PATCH', { losses: (currentWins || 0) + 1 }, '?telegram_id=eq.' + MY_ID).catch(console.warn);
                 document.getElementById('statusMessage').innerHTML = '<div style="color:var(--error);font-size:18px;">😢 Время вышло!</div>';
                 updateStats(); updateBalanceDisplay();
@@ -1579,30 +1301,18 @@
             if (!currentRoom) return;
             isGameFinished = false;
             var opponentJoined = false;
-            
             pollInterval = setInterval(async function() {
                 if (!currentRoom || isGameFinished) return;
                 try {
                     var res = await db('rooms', 'GET', null, '?id=eq.' + currentRoom.id);
                     var room = res[0];
                     if (!room) return;
-                    if (room.opponent_tg_id && !opponentJoined) { 
-                        opponentJoined = true;
-                        vibrate();
-                        playSound('join');
-                    }
+                    if (room.opponent_tg_id && !opponentJoined) { opponentJoined = true; vibrate(); playSound('join'); }
                     currentRoom = room;
                     updateGameStatus(room);
                     renderPlayerStats();
-                    
-                    if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
-                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null;
-                        await showRevealAnimation(room); return;
-                    }
-                    if (room.status === 'finished') {
-                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null;
-                        showGameResult(room); return;
-                    }
+                    if (room.creator_choice && room.opponent_choice && room.status !== 'finished') { isGameFinished = true; clearInterval(pollInterval); pollInterval = null; await showRevealAnimation(room); return; }
+                    if (room.status === 'finished') { isGameFinished = true; clearInterval(pollInterval); pollInterval = null; showGameResult(room); return; }
                 } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
         }
@@ -1635,15 +1345,7 @@
             if (resultStr === 'win') encodedStake = roomStake;
             else if (resultStr === 'lose') encodedStake = -roomStake;
             else encodedStake = 0;
-            
-            var historyData = {
-                player_id: MY_ID,
-                opponent_name: opponentName || 'unknown',
-                stake: encodedStake,
-                player_move: playerMove || 'rock',
-                result: resultStr,
-                played_at: new Date().toISOString()
-            };
+            var historyData = { player_id: MY_ID, opponent_name: opponentName || 'unknown', stake: encodedStake, player_move: playerMove || 'rock', result: resultStr, played_at: new Date().toISOString() };
             try { await db('game_history', 'POST', [historyData]); } catch(e) { console.error('Save history error:', e); }
         }
 
@@ -1653,14 +1355,12 @@
             var isCreator = String(room.creator_tg_id) === String(MY_ID);
             var myMove = isCreator ? room.creator_choice : room.opponent_choice;
             var oppMove = isCreator ? room.opponent_choice : room.creator_choice;
-            
             document.getElementById('revealPlayer1Label').textContent = 'Вы';
             document.getElementById('revealPlayer2Label').textContent = 'Соперник';
             document.getElementById('card1Img').src = moveImages[myMove];
             document.getElementById('card1Name').textContent = myMove === 'rock' ? 'Камень' : myMove === 'scissors' ? 'Ножницы' : 'Бумага';
             document.getElementById('card2Img').src = moveImages[oppMove];
             document.getElementById('card2Name').textContent = oppMove === 'rock' ? 'Камень' : oppMove === 'scissors' ? 'Ножницы' : 'Бумага';
-            
             overlay.classList.remove('hidden'); confetti.classList.add('hidden'); confetti.innerHTML = '';
             document.getElementById('card1').classList.remove('flipped'); document.getElementById('card2').classList.remove('flipped');
             var resultEl = document.getElementById('revealResult');
@@ -1669,79 +1369,45 @@
             var emDiv = document.getElementById('revealEmotion');
             var emImg = document.getElementById('emotionImg');
             emDiv.classList.add('hidden'); emImg.src = '';
-            
             await sleep(500);
             document.getElementById('card1').classList.add('flipped'); playSound('flip');
             await sleep(1000);
             document.getElementById('card2').classList.add('flipped'); playSound('flip');
             await sleep(800);
-            
             var result = calculateWinner(room);
             var msg = result.msg;
             var isWin = msg.indexOf('Победа') !== -1;
             var isDraw = msg.indexOf('Ничья') !== -1;
-            
             resultEl.textContent = msg;
             resultEl.className = 'reveal-result show ' + (isWin ? 'victory' : isDraw ? 'draw' : 'defeat');
             emDiv.classList.remove('hidden');
-            
-            if (isWin) {
-                emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';
-                playSound('win'); createConfetti();
-            } else if (!isDraw) {
-                emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';
-                playSound('lose');
-            } else { emDiv.classList.add('hidden'); }
-            
+            if (isWin) { emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png'; playSound('win'); createConfetti(); }
+            else if (!isDraw) { emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png'; playSound('lose'); }
+            else { emDiv.classList.add('hidden'); }
             var resultForHistory = 'draw';
             var balanceChange = 0;
-            
-            if (result.winnerId) {
-                resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
-                balanceChange = (result.winnerId === MY_ID) ? room.stake : -room.stake;
-            }
-            
-            if (balanceChange !== 0) {
-                await updateUserBalance(balanceChange);
-            }
-            
+            if (result.winnerId) { resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose'; balanceChange = (result.winnerId === MY_ID) ? room.stake : -room.stake; }
+            if (balanceChange !== 0) await updateUserBalance(balanceChange);
             await saveGameHistory(resultForHistory, myMove, Math.abs(balanceChange));
-            
             var countdown = 3;
             var countdownEl = document.getElementById('revealCountdown');
             countdownEl.textContent = countdown;
-            
             var countdownInterval = setInterval(function() {
                 countdown--;
                 if (countdown > 0) { countdownEl.textContent = countdown; }
                 else {
                     clearInterval(countdownInterval);
                     overlay.classList.add('hidden'); confetti.classList.add('hidden');
-                    updateStats(); updateBalanceDisplay(); 
-                    
+                    updateStats(); updateBalanceDisplay();
                     var rematchBtn = document.getElementById('rematchBtn');
-                    if (rematchBtn && !isDraw) {
-                        rematchBtn.classList.remove('hidden');
-                    }
-                    
+                    if (rematchBtn && !isDraw) rematchBtn.classList.remove('hidden');
                     forceExitToLobby();
                 }
             }, 1000);
-            
             await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + room.id);
-            
             var loserId = null;
-            if (result.winnerId) {
-                loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
-                db('users', 'GET', null, '?telegram_id=eq.' + result.winnerId + '&select=wins', false).then(function(d) {
-                    return db('users', 'PATCH', { wins: ((d[0] && d[0].wins) || 0) + 1 }, '?telegram_id=eq.' + result.winnerId);
-                }).catch(console.warn);
-            }
-            if (loserId) {
-                db('users', 'GET', null, '?telegram_id=eq.' + loserId + '&select=losses', false).then(function(d) {
-                    return db('users', 'PATCH', { losses: ((d[0] && d[0].losses) || 0) + 1 }, '?telegram_id=eq.' + loserId);
-                }).catch(console.warn);
-            }
+            if (result.winnerId) { loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id; db('users', 'GET', null, '?telegram_id=eq.' + result.winnerId + '&select=wins', false).then(function(d) { return db('users', 'PATCH', { wins: ((d[0] && d[0].wins) || 0) + 1 }, '?telegram_id=eq.' + result.winnerId); }).catch(console.warn); }
+            if (loserId) { db('users', 'GET', null, '?telegram_id=eq.' + loserId + '&select=losses', false).then(function(d) { return db('users', 'PATCH', { losses: ((d[0] && d[0].losses) || 0) + 1 }, '?telegram_id=eq.' + loserId); }).catch(console.warn); }
         }
 
         function sleep(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); }
@@ -1764,12 +1430,7 @@
             }
         }
 
-        function showGameResult(room) {
-            var msg = calculateWinner(room).msg;
-            document.getElementById('statusMessage').innerHTML = '<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">' + msg + '</div>';
-            updateStats(); updateBalanceDisplay();
-            setTimeout(function() { forceExitToLobby(); }, 3000);
-        }
+        function showGameResult(room) { var msg = calculateWinner(room).msg; document.getElementById('statusMessage').innerHTML = '<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">' + msg + '</div>'; updateStats(); updateBalanceDisplay(); setTimeout(function() { forceExitToLobby(); }, 3000); }
 
         function calculateWinner(room) {
             var c1 = room.creator_choice, c2 = room.opponent_choice;
@@ -1790,7 +1451,6 @@
                 var allUsers = await db('users', 'GET', null, '?select=telegram_id,username,wins,losses,current_balance&order=current_balance.desc.nullslast&limit=50');
                 var usersList = Array.isArray(allUsers) ? allUsers : [];
                 c.innerHTML = '';
-                
                 usersList.forEach(function(u, i) {
                     var sk = SKINS[Math.min(Math.floor(Math.abs(u.current_balance || 0) / 100000), 7)] || SKINS[0];
                     var name = u.username || 'User_' + String(u.telegram_id).slice(-4);
@@ -1816,45 +1476,24 @@
             if (!MY_ID || MY_ID === 999999) return;
             var tableBody = document.getElementById('gamesTableBody');
             tableBody.innerHTML = '<div class="loader" style="padding:20px;"><div class="spinner"></div></div>';
-            
             try {
                 var games = await db('game_history', 'GET', null, '?player_id=eq.' + MY_ID + '&order=played_at.desc&limit=20', false);
                 var gamesList = Array.isArray(games) ? games : [];
-                
-                if (gamesList.length === 0) {
-                    tableBody.innerHTML = '<div class="games-empty"><div>Пока нет игр</div></div>';
-                    document.getElementById('statsWinRate').textContent = '0%';
-                    document.getElementById('statsFavMove').textContent = '-';
-                    document.getElementById('statsTotalSpike').textContent = '0 Spike';
-                    return;
-                }
-                
+                if (gamesList.length === 0) { tableBody.innerHTML = '<div class="games-empty"><div>Пока нет игр</div></div>'; document.getElementById('statsWinRate').textContent = '0%'; document.getElementById('statsFavMove').textContent = '-'; document.getElementById('statsTotalSpike').textContent = '0 Spike'; return; }
                 var wins = 0, losses = 0, draws = 0, totalSpike = 0;
                 var moveCounts = { rock: 0, scissors: 0, paper: 0 };
-                
-                gamesList.forEach(function(game) {
-                    var absVal = Math.abs(game.stake || 0);
-                    if (game.result === 'win') { wins++; totalSpike += absVal; }
-                    else if (game.result === 'lose') { losses++; totalSpike -= absVal; }
-                    else { draws++; }
-                    if (game.player_move && moveCounts[game.player_move] !== undefined) moveCounts[game.player_move]++;
-                });
-                
+                gamesList.forEach(function(game) { var absVal = Math.abs(game.stake || 0); if (game.result === 'win') { wins++; totalSpike += absVal; } else if (game.result === 'lose') { losses++; totalSpike -= absVal; } else { draws++; } if (game.player_move && moveCounts[game.player_move] !== undefined) moveCounts[game.player_move]++; });
                 var totalGames = wins + losses + draws;
                 var winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
                 var maxMoves = Object.entries(moveCounts).sort(function(a, b) { return b[1] - a[1]; });
                 var favMove = maxMoves[0] && maxMoves[0][1] > 0 ? maxMoves[0][0] : null;
                 var moveEmojis = { rock: '🪨', scissors: '✂️', paper: '📄' };
                 var moveNames = { rock: 'Камень', scissors: 'Ножницы', paper: 'Бумага' };
-                
                 document.getElementById('statsWinRate').textContent = winRate + '%';
                 document.getElementById('statsFavMove').textContent = favMove ? (moveEmojis[favMove] + ' ' + moveNames[favMove]) : '-';
-                
                 var spikeEl = document.getElementById('statsTotalSpike');
                 spikeEl.textContent = formatCompactNumber(Math.round(totalSpike)) + ' Spike';
-                if (totalSpike < 0) spikeEl.classList.add('negative');
-                else spikeEl.classList.remove('negative');
-                
+                if (totalSpike < 0) spikeEl.classList.add('negative'); else spikeEl.classList.remove('negative');
                 var rowsHtml = '';
                 gamesList.slice(0, 20).forEach(function(game) {
                     var opponentName = game.opponent_name || '???';
@@ -1867,44 +1506,23 @@
                     else moveEmoji = moveEmojis[game.player_move] || '';
                     var absVal = Math.abs(game.stake || 0);
                     var stakeDisplay = game.stake === 0 ? '0' : formatCompactNumber(absVal) + ' Spike';
-                    
                     rowsHtml += '<div class="game-row"><span class="game-opponent">' + escapeHtml(opponentName) + '</span>' +
                         '<span class="game-stake">' + stakeDisplay + '</span>' +
                         '<span class="game-result ' + resultClass + '">' + resultText + '</span>' +
                         '<div class="game-move">' + moveEmoji + '</div></div>';
                 });
-                
                 tableBody.innerHTML = rowsHtml;
-            } catch(e) {
-                console.error('Load stats error:', e);
-                tableBody.innerHTML = '<div class="games-empty"><div>Ошибка загрузки</div></div>';
-            }
+            } catch(e) { console.error('Load stats error:', e); tableBody.innerHTML = '<div class="games-empty"><div>Ошибка загрузки</div></div>'; }
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
-        function filterRooms() {
-            var query = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('#roomsList .room-card').forEach(function(el) {
-                var creatorText = (el.querySelector('.room-creator') && el.querySelector('.room-creator').textContent || '').toLowerCase();
-                el.style.display = creatorText.indexOf(query) !== -1 ? 'flex' : 'none';
-            });
-        }
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+        function filterRooms() { var query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('#roomsList .room-card').forEach(function(el) { var creatorText = (el.querySelector('.room-creator') && el.querySelector('.room-creator').textContent || '').toLowerCase(); el.style.display = creatorText.indexOf(query) !== -1 ? 'flex' : 'none'; }); }
 
         window.addEventListener('load', async function() {
             await loadSkinsFromDB();
             loadOwnedSkinsLocally();
             var savedSkin = localStorage.getItem('echidna_selected_skin');
             if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
-            
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.expand();
                 window.Telegram.WebApp.setHeaderColor('#0a0a1a');
