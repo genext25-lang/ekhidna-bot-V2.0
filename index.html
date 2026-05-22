@@ -23,7 +23,7 @@
         .daily-card { aspect-ratio: 0.85; perspective: 1000px; cursor: pointer; }
         .daily-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         .daily-card-inner.flipped { transform: rotateY(180deg); }
-        .daily-card-front, .daily-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); font-weight: 700; padding: 12px 8px; box-sizing: border-box; }
+        .daily-card-front, .daily-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); font-weight: 700; padding: 8px; box-sizing: border-box; }
         .daily-card-front { background: var(--card); color: var(--sec); font-size: 18px; }
         .daily-card-front.locked { opacity: 0.35; cursor: not-allowed; background: rgba(10,10,26,0.4); border-style: dashed; }
         .daily-card-front.today { border-color: var(--gold); box-shadow: 0 0 20px rgba(251,191,36,0.6); animation: cardPulse 1.5s ease-in-out infinite; cursor: pointer; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05)); }
@@ -35,12 +35,10 @@
         .daily-card-front.collected .day-number { color: var(--success); }
         .daily-card-front .day-label { font-size: 10px; text-transform: uppercase; color: var(--sec); letter-spacing: 0.5px; }
         .daily-card-front .day-reward-hint { font-size: 12px; color: var(--gold); margin-top: 4px; font-weight: 600; }
-        .daily-card-back { background: linear-gradient(135deg, #1f1f35, #2a2a3e); transform: rotateY(180deg); border-color: var(--gold); gap: 8px; }
-        /* ✅ МОНЕТКА БЕЗ СКРУГЛЕНИЯ */
-        .daily-card-back .reward-coin { width: 70px; height: 70px; object-fit: contain; border-radius: 8px; animation: coinBounce 0.6s ease-out; }
-        @keyframes coinBounce { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
-        .daily-card-back .reward-amount { font-size: 26px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 8px rgba(251,191,36,0.4); }
-        .daily-card-back .reward-label { font-size: 12px; color: var(--success); font-weight: 600; }
+        .daily-card-back { background: linear-gradient(135deg, #1f1f35, #2a2a3e); transform: rotateY(180deg); border-color: var(--gold); gap: 6px; }
+        .daily-card-back .card-image { width: 85%; height: auto; max-height: 70%; object-fit: cover; border-radius: 12px; }
+        .daily-card-back .reward-amount { font-size: 20px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 8px rgba(251,191,36,0.4); }
+        .daily-card-back .reward-label { font-size: 11px; color: var(--success); font-weight: 600; }
         .daily-streak-info { text-align: center; margin-bottom: 12px; font-size: 15px; color: var(--sec); background: var(--card); border-radius: 12px; padding: 10px; border: 1px solid var(--border); }
         .daily-streak-info span { color: var(--gold); font-weight: 700; font-size: 18px; }
 
@@ -234,14 +232,12 @@
     <div class="bottom-nav" id="bottomNav"><button class="nav-btn active" onclick="showScreen('lobby')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Лобби</span></button><button class="nav-btn" onclick="showScreen('tasks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg><span>Задания</span></button><button class="nav-btn" onclick="showScreen('stats')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span>Статистика</span></button><button class="nav-btn" onclick="showScreen('skins')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg><span>Скины</span></button><button class="nav-btn" onclick="showScreen('leaderboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10c1 0 2 .5 2 2v3c0 1-1 2-2 2H7c-1 0-2-1-2-2V6c0-1.5 1-2 2-2zM6 11h12"/></svg><span>Рейтинг</span></button></div>
 
 <script>
-// ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
 const moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
 function setLanguage(lang){document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===lang));}
 function startGame(){document.getElementById('splashScreen')?.classList.add('hidden');if(window.Telegram?.WebApp){Telegram.WebApp.expand();Telegram.WebApp.setHeaderColor('#0a0a1a');Telegram.WebApp.setBackgroundColor('#0a0a1a');}showScreen('lobby');}
 
 const SUPABASE_URL='https://tejndwtckdvueufqhitu.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlam5kd3Rja2R2dWV1ZnFoaXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjY5MjcsImV4cCI6MjA5MzgwMjkyN30.tDP9B-nWPMsuANJ4JiASs0UYgJqJZtm9Sj3jUs13l9c';
-
 function getCurrentUser(){if(window.Telegram?.WebApp?.initDataUnsafe?.user)return window.Telegram.WebApp.initDataUnsafe.user;try{const p=new URLSearchParams(window.location.search.substring(1)+'&'+window.location.hash.substring(1));const td=p.get('tgWebAppData');if(td){const dp=new URLSearchParams(decodeURIComponent(td));const uj=dp.get('user');if(uj)return JSON.parse(decodeURIComponent(uj));}}catch(e){}return{id:Math.floor(Math.random()*1000000),username:'Guest'};}
 const user=getCurrentUser();
 const MY_ID=Number(user.id);
@@ -255,8 +251,8 @@ function getSkinNameById(id){return skinNames[id]||id;}
 function getSkinPrice(id){const s=SKINS.find(s=>s.id===id);return s?s.price:0;}
 function getSkinImg(id){const s=SKINS.find(s=>s.id===id);return s?s.img:'';}
 function isSkinOwned(id){return ownedSkins.includes(id);}
-function loadOwnedSkins(){try{const s=localStorage.getItem('echidna_owned_skins');if(s)ownedSkins=JSON.parse(s);if(!ownedSkins.includes('default'))ownedSkins.unshift('default');}catch(e){}}
-function saveOwnedSkins(){try{localStorage.setItem('echidna_owned_skins',JSON.stringify(ownedSkins));}catch(e){}}
+function loadOwnedSkins(){try{const s=localStorage.getItem('echidna_owned_skins_v2');if(s)ownedSkins=JSON.parse(s);if(!ownedSkins.includes('default'))ownedSkins.unshift('default');}catch(e){}}
+function saveOwnedSkins(){try{localStorage.setItem('echidna_owned_skins_v2',JSON.stringify(ownedSkins));}catch(e){}}
 
 let selectedStake=10,currentRoom=null,pollInterval=null,lobbyRefreshInterval=null,isGameFinished=false;
 let currentWins=0,currentBalance=0;window.roomExpiry={};window._lastStatsUpdate=0;
@@ -265,7 +261,7 @@ function formatCompactNumber(num){if(num===null||num===undefined)return'0';const
 function disableBottomNav(){document.getElementById('bottomNav')?.classList.add('disabled');}
 function enableBottomNav(){document.getElementById('bottomNav')?.classList.remove('disabled');}
 
-// ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
+// ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ С КАРТИНКАМИ ============
 function getDailyData(){try{const s=localStorage.getItem('echidna_daily_v2');if(s)return JSON.parse(s);}catch(e){}return{streak:0,lastClaimDate:null,collectedCards:[]};}
 function saveDailyData(data){try{localStorage.setItem('echidna_daily_v2',JSON.stringify(data));}catch(e){}}
 function getTodayDate(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -289,7 +285,8 @@ function claimDailyCard(cardIndex){
     updateBalanceDisplay();
     const cardEl=document.querySelector(`.daily-card[data-index="${cardIndex}"] .daily-card-inner`);
     if(cardEl)cardEl.classList.add('flipped');
-    setTimeout(()=>{renderDailyCards();alert('✅ +'+reward+' Spike получено!');},700);
+    setTimeout(()=>{renderDailyCards();},700);
+    setTimeout(()=>{alert('✅ +'+reward+' Spike получено!');},800);
 }
 
 function renderDailyCards(){
@@ -314,8 +311,12 @@ function renderDailyCards(){
         const front=document.createElement('div');front.className='daily-card-front';
         if(isCollected)front.classList.add('collected');else if(isToday)front.classList.add('today');else if(isLocked)front.classList.add('locked');
         front.innerHTML='<div class="day-number">'+(isCollected?'✓':(i+1))+'</div><div class="day-label">День '+(i+1)+'</div>'+(isToday?'<div class="day-reward-hint">+'+reward+' 🦔</div>':'');
+        // ✅ ИСПОЛЬЗУЕМ ВАШИ КАРТИНКИ ИЗ GITHUB
         const back=document.createElement('div');back.className='daily-card-back';
-        back.innerHTML='<img class="reward-coin" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display=\'none\'"><div class="reward-amount">+'+reward+'</div><div class="reward-label">Spike</div>';
+        const cardImgUrl='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/daily-card-'+(i+1)+'.png';
+        back.innerHTML='<img class="card-image" src="'+cardImgUrl+'" alt="Card '+(i+1)+'" onerror="this.style.display=\'none\'">'+
+            '<div class="reward-amount">+'+(isCollected?reward:'???')+'</div>'+
+            '<div class="reward-label">Spike</div>';
         inner.appendChild(front);inner.appendChild(back);wrapper.appendChild(inner);
         if(isToday)wrapper.addEventListener('click',function(){if(!inner.classList.contains('flipped'))claimDailyCard(i);});
         grid.appendChild(wrapper);
@@ -338,12 +339,30 @@ function forceExitToLobby(){isGameFinished=true;currentRoom=null;if(pollInterval
 async function updateStats(){try{if(!MY_ID||MY_ID===999999)return;const d=await db('users','GET',null,`?select=wins,losses&telegram_id=eq.${MY_ID}`,false);const w=d[0]?.wins||0,l=d[0]?.losses||0;currentWins=w;document.getElementById('statWins').textContent=w;document.getElementById('statGames').textContent=w+l;document.getElementById('statSkinName').textContent=getSkinNameById(currentSkin);document.getElementById('statSkinBadge').textContent='#'+(SKINS.findIndex(s=>s.id===currentSkin)+1);document.getElementById('mainLogoImg').src=getSkinImg(currentSkin);}catch(e){}}
 async function updateBalanceDisplay(){try{if(!MY_ID||MY_ID===999999)return;const g=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=100`,false);const gl=Array.isArray(g)?g:[];let b=0;gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win')b+=a;else if(g.result==='lose')b-=a;});currentBalance=Math.round(b);const el=document.getElementById('balanceSpike');if(el){el.textContent=formatCompactNumber(currentBalance);el.style.color=currentBalance<0?'var(--error)':currentBalance>0?'var(--success)':'var(--gold)';}}catch(e){}}
 
-// ============ СКИНЫ ============
+// ============ СКИНЫ (ИСПРАВЛЕНО ВЫЧИТАНИЕ БАЛАНСА) ============
 function renderSkins(){const c=document.getElementById('skinsList');if(!c)return;c.innerHTML='';SKINS.forEach((s,i)=>{const owned=isSkinOwned(s.id),eq=currentSkin===s.id,canBuy=!owned&&currentBalance>=s.price;const el=document.createElement('div');el.className=`room-card ${eq?'equipped':''}`;el.onclick=()=>openSkinModal(s);let btn='';if(eq)btn=`<button class="room-btn equipped">Надето</button>`;else if(owned)btn=`<button class="room-btn join" onclick="event.stopPropagation();equipSkin('${s.id}')">Надеть</button>`;else btn=`<button class="room-btn buy" onclick="event.stopPropagation();buySkin('${s.id}')" ${!canBuy?'disabled':''}>${formatCompactNumber(s.price)} Spike</button>`;el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--sec);">#${i+1}</div><div class="room-icon skin-room-icon"><img src="${s.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinNameById(s.id)}</div>${!owned?`<div class="skin-price">💰 ${formatCompactNumber(s.price)} Spike</div>`:`<div class="skin-price" style="color:var(--success);">✅ Куплено</div>`}</div><div class="room-actions">${btn}</div>`;c.appendChild(el);});}
 function openSkinModal(s){currentModalSkin=s;disableBottomNav();const m=document.getElementById('skinModal');document.getElementById('modalImg').src=s.img;document.getElementById('modalTitle').textContent=getSkinNameById(s.id);document.getElementById('modalDesc').textContent='';const pe=document.getElementById('modalPrice'),be=document.getElementById('modalBtn');if(currentSkin===s.id){pe.textContent='✅ Надето';be.textContent='Надето';be.className='skin-modal-btn equipped';be.disabled=true;}else if(isSkinOwned(s.id)){pe.textContent='✅ Куплено';be.textContent='Надеть';be.className='skin-modal-btn equip';be.disabled=false;}else{pe.textContent='💰 '+formatCompactNumber(s.price)+' Spike';be.textContent=currentBalance>=s.price?'Купить - '+formatCompactNumber(s.price)+' Spike':'Нужно ещё '+formatCompactNumber(s.price-currentBalance)+' Spike';be.className='skin-modal-btn buy';be.disabled=currentBalance<s.price;}m.classList.remove('hidden');}
 function closeSkinModal(e){if(!e||e.target.id==='skinModal'||e.target.className==='skin-modal-close'){document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}}
 function handleSkinAction(){if(!currentModalSkin)return;if(currentSkin===currentModalSkin.id)return;if(isSkinOwned(currentModalSkin.id))equipSkin(currentModalSkin.id);else buySkin(currentModalSkin.id);}
-function buySkin(sid){if(isSkinOwned(sid))return;const p=getSkinPrice(sid);if(currentBalance<p){alert('Недостаточно Spike!');return;}currentBalance-=p;ownedSkins.push(sid);saveOwnedSkins();updateBalanceDisplay();renderSkins();const s=SKINS.find(s=>s.id===sid);if(s)openSkinModal(s);alert(`✅ Скин "${getSkinNameById(sid)}" куплен!`);}
+// ✅ ИСПРАВЛЕНО: вычитание баланса при покупке + сохранение в историю
+function buySkin(sid){
+    if(isSkinOwned(sid))return;
+    const p=getSkinPrice(sid);
+    if(currentBalance<p){alert('Недостаточно Spike!');return;}
+    // ✅ Вычитаем баланс
+    currentBalance-=p;
+    // ✅ Добавляем в купленные
+    ownedSkins.push(sid);
+    saveOwnedSkins();
+    // ✅ Сохраняем трату в историю игр (как проигрыш)
+    saveGameHistory('lose','rock').then(()=>{
+        updateBalanceDisplay();
+        renderSkins();
+        const s=SKINS.find(s=>s.id===sid);
+        if(s)openSkinModal(s);
+        alert(`✅ Скин "${getSkinNameById(sid)}" куплен за ${formatCompactNumber(p)} Spike!`);
+    });
+}
 function equipSkin(id){if(!isSkinOwned(id))return;currentSkin=id;try{localStorage.setItem('echidna_selected_skin',id);}catch(e){}updateStats();renderSkins();document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}
 
 // ============ СТАВКИ ============
@@ -371,17 +390,27 @@ function startTimer(st){if(window._timerInterval)clearInterval(window._timerInte
 async function handleTimeout(){if(!currentRoom||isGameFinished)return;const myCol=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(!currentRoom[myCol]){isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}await db('rooms','PATCH',{status:'finished'},`?id=eq.${currentRoom.id}`);const oid=String(currentRoom.creator_tg_id)===String(MY_ID)?currentRoom.opponent_tg_id:currentRoom.creator_tg_id;db('users','GET',null,`?telegram_id=eq.${oid}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${oid}`)).catch(console.warn);db('users','PATCH',{losses:(currentWins||0)+1},`?telegram_id=eq.${MY_ID}`).catch(console.warn);document.getElementById('statusMessage').innerHTML='<div style="color:var(--error);font-size:18px;">😢 Время вышло!</div>';updateStats();updateBalanceDisplay();setTimeout(()=>forceExitToLobby(),3000);}}
 function startPolling(){if(pollInterval)clearInterval(pollInterval);if(!currentRoom)return;isGameFinished=false;let oj=false;pollInterval=setInterval(async()=>{if(!currentRoom||isGameFinished)return;try{const res=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`);const room=res[0];if(!room)return;if(room.opponent_tg_id&&!oj){playSound('join');oj=true;}currentRoom=room;updateGameStatus(room);renderPlayerStats();if(room.creator_choice&&room.opponent_choice&&room.status!=='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;await showRevealAnimation(room);return;}if(room.status==='finished'){isGameFinished=true;clearInterval(pollInterval);pollInterval=null;showGameResult(room);return;}}catch(e){console.warn('Poll error:',e);}},2000);}
 async function makeMove(choice){if(!currentRoom){alert('❌ Комната не найдена');return;}if(!currentRoom.opponent_tg_id){alert('⚠️ Игра не активна');return;}const col=String(currentRoom.creator_tg_id)===String(MY_ID)?'creator_choice':'opponent_choice';if(currentRoom[col])return;document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent='✅ Ход записан';window._timerRunning=false;if(window._timerInterval)clearInterval(window._timerInterval);document.getElementById('timerText')?.classList.remove('active');document.getElementById('timerBarContainer').style.display='none';try{await db('rooms','PATCH',{[col]:choice},`?id=eq.${currentRoom.id}`);currentRoom[col]=choice;}catch(e){alert('Ошибка: '+e.message);document.querySelectorAll('.choice-btn').forEach(b=>b.disabled=false);}}
-async function saveGameHistory(rs,pm){if(!currentRoom)return;const isCr=String(currentRoom.creator_tg_id)===String(MY_ID);const on=isCr?currentRoom.opponent_username:currentRoom.creator_username;let es;if(rs==='win')es=currentRoom.stake;else if(rs==='lose')es=-(currentRoom.stake||0);else es=0;const hd={player_id:MY_ID,opponent_name:on||'unknown',stake:es,player_move:pm,result:rs,played_at:new Date().toISOString()};try{await db('game_history','POST',[hd]);}catch(e){}}
+// ✅ saveGameHistory теперь сохраняет покупку скинов
+async function saveGameHistory(rs,pm,customStake=null){
+    let roomStake=customStake;
+    if(!roomStake&&currentRoom)roomStake=currentRoom.stake;
+    if(!roomStake)roomStake=getSkinPrice(currentModalSkin?.id)||10000;
+    const isCr=currentRoom?String(currentRoom.creator_tg_id)===String(MY_ID):true;
+    const on=currentRoom?(isCr?currentRoom.opponent_username:currentRoom.creator_username):'Skin Shop';
+    let es;
+    if(rs==='win')es=roomStake;
+    else if(rs==='lose')es=-roomStake;
+    else es=0;
+    const hd={player_id:MY_ID,opponent_name:on||'unknown',stake:es,player_move:pm||'rock',result:rs,played_at:new Date().toISOString()};
+    try{await db('game_history','POST',[hd]);}catch(e){console.error('Save history error:',e);}
+}
 async function showRevealAnimation(room){const overlay=document.getElementById('revealOverlay'),confetti=document.getElementById('confettiContainer');const isCr=String(room.creator_tg_id)===String(MY_ID);const myMove=isCr?room.creator_choice:room.opponent_choice,oppMove=isCr?room.opponent_choice:room.creator_choice;document.getElementById('revealPlayer1Label').textContent='Вы';document.getElementById('revealPlayer2Label').textContent='Соперник';document.getElementById('card1Img').src=moveImages[myMove];document.getElementById('card1Name').textContent=myMove==='rock'?'Камень':myMove==='scissors'?'Ножницы':'Бумага';document.getElementById('card2Img').src=moveImages[oppMove];document.getElementById('card2Name').textContent=oppMove==='rock'?'Камень':oppMove==='scissors'?'Ножницы':'Бумага';overlay.classList.remove('hidden');confetti.classList.add('hidden');confetti.innerHTML='';document.getElementById('card1').classList.remove('flipped');document.getElementById('card2').classList.remove('flipped');const resultEl=document.getElementById('revealResult');resultEl.className='reveal-result';resultEl.textContent='';document.getElementById('revealCountdown').textContent='';const emDiv=document.getElementById('revealEmotion'),emImg=document.getElementById('emotionImg');emDiv.classList.add('hidden');emImg.src='';await sleep(500);document.getElementById('card1').classList.add('flipped');playSound('flip');await sleep(1000);document.getElementById('card2').classList.add('flipped');playSound('flip');await sleep(800);const result=calculateWinner(room),msg=result.msg;const isWin=msg.includes('Победа'),isDraw=msg.includes('Ничья');resultEl.textContent=msg;resultEl.className=`reveal-result show ${isWin?'victory':isDraw?'draw':'defeat'}`;emDiv.classList.remove('hidden');if(isWin){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';playSound('win');createConfetti();}else if(!isDraw){emImg.src='https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';playSound('lose');}else{emDiv.classList.add('hidden');}let rfh='draw';if(result.winnerId){rfh=(result.winnerId===MY_ID)?'win':'lose';}await saveGameHistory(rfh,myMove);let cd=3;const cdEl=document.getElementById('revealCountdown');cdEl.textContent=cd;const ci=setInterval(()=>{cd--;if(cd>0)cdEl.textContent=cd;else{clearInterval(ci);overlay.classList.add('hidden');confetti.classList.add('hidden');updateStats();updateBalanceDisplay();forceExitToLobby();}},1000);await db('rooms','PATCH',{status:'finished'},`?id=eq.${room.id}`);const loserId=String(result.winnerId)===String(room.creator_tg_id)?room.opponent_tg_id:room.creator_tg_id;if(result.winnerId)db('users','GET',null,`?telegram_id=eq.${result.winnerId}&select=wins`,false).then(d=>db('users','PATCH',{wins:(d[0]?.wins||0)+1},`?telegram_id=eq.${result.winnerId}`)).catch(console.warn);if(loserId)db('users','GET',null,`?telegram_id=eq.${loserId}&select=losses`,false).then(d=>db('users','PATCH',{losses:(d[0]?.losses||0)+1},`?telegram_id=eq.${loserId}`)).catch(console.warn);}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 function createConfetti(){const c=document.getElementById('confettiContainer');c.classList.remove('hidden');c.innerHTML='';const cols=['#6366f1','#10b981','#fbbf24','#ef4444','#8b5cf6','#f59e0b'];for(let i=0;i<50;i++){const cf=document.createElement('div');cf.className='confetti';cf.style.left=Math.random()*100+'%';cf.style.backgroundColor=cols[Math.floor(Math.random()*cols.length)];cf.style.animationDelay=Math.random()*2+'s';cf.style.animationDuration=(2+Math.random()*2)+'s';cf.style.width=(5+Math.random()*10)+'px';cf.style.height=(5+Math.random()*10)+'px';cf.style.borderRadius=Math.random()>0.5?'50%':'0';c.appendChild(cf);}}
 function showGameResult(room){const msg=calculateWinner(room).msg;document.getElementById('statusMessage').innerHTML=`<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">${msg}</div>`;updateStats();updateBalanceDisplay();setTimeout(()=>forceExitToLobby(),3000);}
 function calculateWinner(room){const{c1=room.creator_choice,c2=room.opponent_choice,id1=room.creator_tg_id,id2=room.opponent_tg_id}=room;if(!c1&&!c2)return{msg:'🤝 Ничья!',winnerId:null};if(!c1)return{msg:(MY_ID===id1)?'😢 Поражение':'🏆 Победа!',winnerId:id2};if(!c2)return{msg:(MY_ID===id2)?'😢 Поражение':'🏆 Победа!',winnerId:id1};if(c1===c2)return{msg:'🤝 Ничья!',winnerId:null};const beats={rock:'scissors',scissors:'paper',paper:'rock'};const cw=beats[c1]===c2;return{msg:(cw?(MY_ID===id1):(MY_ID===id2))?'🏆 Победа!':'😢 Поражение',winnerId:cw?id1:id2};}
 
-// ============ РЕЙТИНГ ============
 async function loadLeaderboard(){const c=document.getElementById('leaderboardList');if(!c)return;try{const au=await db('users','GET',null,'?select=telegram_id,username,wins,losses&order=wins.desc.nullslast&limit=50');const ul=Array.isArray(au)?au:[];const ld=[];for(const u of ul){const g=await db('game_history','GET',null,`?player_id=eq.${u.telegram_id}&order=played_at.desc&limit=50`,false);const gl=Array.isArray(g)?g:[];let b=0;gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win')b+=a;else if(g.result==='lose')b-=a;});ld.push({telegram_id:u.telegram_id,username:u.username,wins:u.wins||0,balance:Math.round(b)});}ld.sort((a,b)=>b.balance-a.balance);c.innerHTML='';const t20=ld.slice(0,20);t20.forEach((u,i)=>{const sk=SKINS[Math.min(Math.floor(Math.abs(u.balance)/100000),7)]||SKINS[0];const n=u.username||`User_${String(u.telegram_id).slice(-4)}`;const im=Number(u.telegram_id)===MY_ID;const el=document.createElement('div');el.className=`room-card ${im?'my-room':''}`;el.innerHTML=`<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${sk.img}" alt=""></div><div class="room-info"><div class="room-stake">@${n}</div><div class="lb-stats"><span>🦔 ${formatCompactNumber(u.balance)} Spike</span><span>✅ ${u.wins}</span></div></div>`;c.appendChild(el);});const mr=ld.findIndex(u=>Number(u.telegram_id)===MY_ID)+1;const md=ld.find(u=>Number(u.telegram_id)===MY_ID);if(mr>20&&md){const ms=SKINS[Math.min(Math.floor(Math.abs(md.balance)/100000),7)]||SKINS[0];const mn=user.username||`User_${String(MY_ID).slice(-4)}`;const el=document.createElement('div');el.className='room-card my-room';el.style.border='1px dashed var(--gold)';el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--gold);">${mr}</div><div class="room-icon"><img src="${ms.img}" alt=""></div><div class="room-info"><div class="room-stake">@${mn} <span style="color:var(--success);font-size:10px;">(Вы)</span></div><div class="lb-stats"><span>🦔 ${formatCompactNumber(md.balance)} Spike</span><span>✅ ${md.wins}</span></div></div>`;c.appendChild(el);}}catch(e){c.innerHTML=`<div style="color:red;padding:15px;">${e.message}</div>`;}}
-
-// ============ СТАТИСТИКА ============
 async function loadStats(){if(!MY_ID||MY_ID===999999)return;const tb=document.getElementById('gamesTableBody');tb.innerHTML='<div class="loader" style="padding:20px;"><div class="spinner"></div></div>';try{const g=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`,false);const gl=Array.isArray(g)?g:[];if(gl.length===0){tb.innerHTML='<div class="games-empty"><div>Пока нет игр</div></div>';document.getElementById('statsWinRate').textContent='0%';document.getElementById('statsFavMove').textContent='-';document.getElementById('statsTotalSpike').textContent='0 Spike';return;}let w=0,l=0,d=0,ts=0;const mc={rock:0,scissors:0,paper:0};gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win'){w++;ts+=a;}else if(g.result==='lose'){l++;ts-=a;}else{d++;}if(g.player_move&&mc[g.player_move]!==undefined)mc[g.player_move]++;});const tg=w+l+d;const wr=tg>0?Math.round((w/tg)*100):0;const mm=Object.entries(mc).sort((a,b)=>b[1]-a[1]);const fm=mm[0]&&mm[0][1]>0?mm[0][0]:null;const me={rock:'🪨',scissors:'✂️',paper:'📄'};const mn={rock:'Камень',scissors:'Ножницы',paper:'Бумага'};document.getElementById('statsWinRate').textContent=wr+'%';document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-';const se=document.getElementById('statsTotalSpike');se.textContent=formatCompactNumber(Math.round(ts))+' Spike';if(ts<0)se.classList.add('negative');else se.classList.remove('negative');let rh='';gl.slice(0,20).forEach(g=>{const on=g.opponent_name||'???';const rc=g.result==='win'?'win':g.result==='lose'?'lose':'draw';const rt=g.result==='win'?'Победа':g.result==='lose'?'Поражение':'Ничья';const mve=g.player_move?(me[g.player_move]||''):'';const a=Math.abs(g.stake||0);const sd=g.stake===0?'0':formatCompactNumber(a)+' Spike';rh+=`<div class="game-row"><span class="game-opponent">${escapeHtml(on)}</span><span class="game-stake">${sd}</span><span class="game-result ${rc}">${rt}</span><span class="game-move">${mve}</span></div>`;});tb.innerHTML=rh;}catch(e){tb.innerHTML='<div class="games-empty"><div>Ошибка загрузки</div></div>';}}
 function escapeHtml(s){if(!s)return'';return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);}
 function filterRooms(){const q=document.getElementById('searchInput').value.toLowerCase();document.querySelectorAll('#roomsList .room-card').forEach(el=>{el.style.display=(el.querySelector('.room-creator')?.textContent.toLowerCase()||'').includes(q)?'flex':'none';});}
