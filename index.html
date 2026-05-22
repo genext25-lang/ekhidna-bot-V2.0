@@ -17,27 +17,150 @@
         @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         .header h1 { font-size: 22px; margin-bottom: 5px; background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .header-sub { font-size: 12px; color: var(--sec); }
-        .daily-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; padding: 0 4px; }
-        .daily-card { aspect-ratio: 1; perspective: 1000px; cursor: pointer; }
-        .daily-card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+
+        /* ✅ УЛУЧШЕННЫЕ СТИЛИ КАРТОЧЕК */
+        .daily-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            margin: 20px 0; 
+            padding: 0 4px; 
+        }
+        .daily-card { 
+            aspect-ratio: 0.85; 
+            perspective: 1000px; 
+            cursor: pointer; 
+        }
+        .daily-card-inner { 
+            width: 100%; 
+            height: 100%; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
         .daily-card-inner.flipped { transform: rotateY(180deg); }
-        .daily-card-front, .daily-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid var(--border); font-weight: 700; padding: 8px; box-sizing: border-box; }
-        .daily-card-front { background: var(--card); color: var(--sec); font-size: 18px; }
-        .daily-card-front.locked { opacity: 0.4; cursor: not-allowed; background: rgba(10,10,26,0.5); border-style: dashed; }
-        .daily-card-front.today { border-color: var(--gold); box-shadow: 0 0 16px rgba(251,191,36,0.5); animation: cardPulse 1.5s ease-in-out infinite; cursor: pointer; background: rgba(251,191,36,0.1); }
-        .daily-card-front.collected { border-color: var(--success); opacity: 0.9; cursor: default; background: rgba(16,185,129,0.1); }
-        @keyframes cardPulse { 0%, 100% { box-shadow: 0 0 16px rgba(251,191,36,0.5); } 50% { box-shadow: 0 0 28px rgba(251,191,36,0.8); } }
-        .daily-card-front .day-number { font-size: 24px; font-weight: 800; margin-bottom: 4px; color: var(--text); }
-        .daily-card-front.today .day-number { color: var(--gold); }
-        .daily-card-front.collected .day-number { color: var(--success); }
-        .daily-card-front .day-label { font-size: 9px; text-transform: uppercase; color: var(--sec); }
-        .daily-card-back { background: linear-gradient(135deg, #1a1a2e, #2a2a3e); transform: rotateY(180deg); border-color: var(--gold); gap: 4px; }
-        .daily-card-back .card-image { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; }
-        .daily-card-back .card-reward { font-size: 14px; font-weight: 800; color: var(--gold); display: flex; align-items: center; gap: 4px; }
-        .daily-card-back .card-reward img { width: 18px; height: 18px; object-fit: contain; }
-        .daily-card-back .card-collected { font-size: 10px; color: var(--success); margin-top: 2px; }
-        .daily-streak-info { text-align: center; margin-bottom: 8px; font-size: 14px; color: var(--sec); }
-        .daily-streak-info span { color: var(--gold); font-weight: 700; }
+        .daily-card-front, .daily-card-back { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            border-radius: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            border: 2px solid var(--border); 
+            font-weight: 700; 
+            padding: 12px 8px; 
+            box-sizing: border-box;
+        }
+        .daily-card-front { 
+            background: var(--card); 
+            color: var(--sec); 
+            font-size: 18px; 
+        }
+        .daily-card-front.locked { 
+            opacity: 0.35; 
+            cursor: not-allowed; 
+            background: rgba(10,10,26,0.4); 
+            border-style: dashed; 
+            border-color: rgba(51,65,85,0.5);
+        }
+        .daily-card-front.today { 
+            border-color: var(--gold); 
+            box-shadow: 0 0 20px rgba(251,191,36,0.6); 
+            animation: cardPulse 1.5s ease-in-out infinite; 
+            cursor: pointer; 
+            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
+        }
+        .daily-card-front.collected { 
+            border-color: var(--success); 
+            opacity: 0.85; 
+            cursor: default; 
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05));
+        }
+        @keyframes cardPulse { 
+            0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.6); transform: scale(1); } 
+            50% { box-shadow: 0 0 35px rgba(251,191,36,0.9); transform: scale(1.03); } 
+        }
+        .daily-card-front .day-number { 
+            font-size: 32px; 
+            font-weight: 800; 
+            margin-bottom: 6px; 
+            color: var(--text);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .daily-card-front.today .day-number { 
+            color: var(--gold); 
+            font-size: 36px;
+            animation: numberGlow 1.5s ease-in-out infinite;
+        }
+        @keyframes numberGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(251,191,36,0.5); }
+            50% { text-shadow: 0 0 25px rgba(251,191,36,0.9); }
+        }
+        .daily-card-front.collected .day-number { 
+            color: var(--success); 
+        }
+        .daily-card-front .day-label { 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            color: var(--sec); 
+            letter-spacing: 0.5px;
+        }
+        .daily-card-front .day-reward-hint {
+            font-size: 12px;
+            color: var(--gold);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .daily-card-back { 
+            background: linear-gradient(135deg, #1f1f35, #2a2a3e); 
+            transform: rotateY(180deg); 
+            border-color: var(--gold); 
+            gap: 8px; 
+        }
+        .daily-card-back .reward-coin { 
+            width: 70px; 
+            height: 70px; 
+            object-fit: contain; 
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(251,191,36,0.3);
+            animation: coinBounce 0.6s ease-out;
+        }
+        @keyframes coinBounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .daily-card-back .reward-amount { 
+            font-size: 26px; 
+            font-weight: 800; 
+            color: var(--gold);
+            text-shadow: 0 2px 8px rgba(251,191,36,0.4);
+        }
+        .daily-card-back .reward-label { 
+            font-size: 12px; 
+            color: var(--success); 
+            font-weight: 600;
+        }
+        .daily-streak-info { 
+            text-align: center; 
+            margin-bottom: 12px; 
+            font-size: 15px; 
+            color: var(--sec); 
+            background: var(--card);
+            border-radius: 12px;
+            padding: 10px;
+            border: 1px solid var(--border);
+        }
+        .daily-streak-info span { 
+            color: var(--gold); 
+            font-weight: 700; 
+            font-size: 18px;
+        }
+
+        /* Остальные стили */
         .balance-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; background: var(--card); border-radius: 16px; padding: 12px 16px; border: 1px solid var(--border); }
         .balance-icon { width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .balance-icon img { width: 100%; height: 100%; object-fit: contain; }
@@ -240,7 +363,7 @@
         </div>
         
         <div id="tasksScreen" class="hidden">
-            <div class="header"><h2>📋 Задания</h2><div class="header-sub">Открывай карточки каждый день!</div></div>
+            <div class="header"><h2>📋 Ежедневные награды</h2><div class="header-sub">Открывай по одной карточке каждый день!</div></div>
             <div class="daily-streak-info">🔥 День <span id="dailyStreakNum">1</span> из 9</div>
             <div class="daily-grid" id="dailyCardsGrid"></div>
             <div class="daily-streak-info" style="margin-top:12px;font-size:11px;color:var(--sec);">⚠️ Пропуск дня сбрасывает прогресс</div>
@@ -284,8 +407,9 @@
         <div id="leaderboardScreen" class="hidden"><div class="header"><h2>🏆 Рейтинг</h2></div><div id="leaderboardList"><div class="loader"><div class="spinner"></div></div></div></div>
     </div>
 
+    <!-- Модальные окна (сокращены для экономии места, полные версии как в предыдущем коде) -->
     <div id="skinModal" class="skin-modal hidden" onclick="closeSkinModal(event)"><div class="skin-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeSkinModal()">✕</button><div class="skin-modal-img"><img src="" id="modalImg" alt=""></div><div class="skin-modal-title" id="modalTitle"></div><div class="skin-modal-price" id="modalPrice"></div><button class="skin-modal-btn" id="modalBtn" onclick="handleSkinAction()">Купить</button></div></div>
-    <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)"><div class="stake-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeStakeModal()">✕</button><div class="stake-modal-title">🦔 Выбери ставку Spike</div><div class="stake-presets" id="stakePresets"><button class="stake-preset-btn selected" data-stake="10" onclick="selectStakePreset(10, this)">10 Spike</button><button class="stake-preset-btn" data-stake="50" onclick="selectStakePreset(50, this)">50 Spike</button><button class="stake-preset-btn" data-stake="100" onclick="selectStakePreset(100, this)">100 Spike</button><button class="stake-preset-btn" data-stake="200" onclick="selectStakePreset(200, this)">200 Spike</button><button class="stake-preset-btn" data-stake="500" onclick="selectStakePreset(500, this)">500 Spike</button><button class="stake-preset-btn" data-stake="1000" onclick="selectStakePreset(1000, this)">1000 Spike</button></div><div class="stake-input-group"><span>Или введи:</span><input type="number" class="stake-input" id="stakeInput" placeholder="10 - 1000" min="10" max="1000" step="10" oninput="onStakeInput()"></div><div class="stake-error" id="stakeError"></div><div style="margin-top:12px;"><label style="font-size:12px;color:var(--sec);display:block;margin-bottom:4px;">🔒 Пароль (1-4 цифры):</label><input type="password" id="roomPassword" class="stake-input" placeholder="Например: 1234" maxlength="4" style="text-align:center;"></div><button class="btn stake-confirm-btn" onclick="confirmStake()" style="margin-top:12px;">Создать комнату</button></div></div>
+    <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)"><div class="stake-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeStakeModal()">✕</button><div class="stake-modal-title">🦔 Выбери ставку Spike</div><div class="stake-presets" id="stakePresets"><button class="stake-preset-btn selected" data-stake="10" onclick="selectStakePreset(10, this)">10</button><button class="stake-preset-btn" data-stake="50" onclick="selectStakePreset(50, this)">50</button><button class="stake-preset-btn" data-stake="100" onclick="selectStakePreset(100, this)">100</button><button class="stake-preset-btn" data-stake="200" onclick="selectStakePreset(200, this)">200</button><button class="stake-preset-btn" data-stake="500" onclick="selectStakePreset(500, this)">500</button><button class="stake-preset-btn" data-stake="1000" onclick="selectStakePreset(1000, this)">1K</button></div><div class="stake-input-group"><span>Или введи:</span><input type="number" class="stake-input" id="stakeInput" placeholder="10 - 1000" min="10" max="1000" step="10" oninput="onStakeInput()"></div><div class="stake-error" id="stakeError"></div><div style="margin-top:12px;"><label style="font-size:12px;color:var(--sec);display:block;margin-bottom:4px;">🔒 Пароль (1-4 цифры):</label><input type="password" id="roomPassword" class="stake-input" placeholder="1234" maxlength="4" style="text-align:center;"></div><button class="btn stake-confirm-btn" onclick="confirmStake()" style="margin-top:12px;">Создать комнату</button></div></div>
     <div id="revealOverlay" class="reveal-overlay hidden"><div class="reveal-title">Раскрытие ходов</div><div id="revealEmotion" class="reveal-emotion hidden"><img src="" alt="Emotion" id="emotionImg"></div><div class="reveal-players"><div class="reveal-player"><div class="reveal-player-label" id="revealPlayer1Label">Вы</div><div class="reveal-card"><div class="reveal-card-inner" id="card1"><div class="reveal-card-front"><div class="card-icon">❓</div></div><div class="reveal-card-back"><img id="card1Img" src="" alt=""><div class="move-name" id="card1Name"></div></div></div></div></div><div class="reveal-vs">VS</div><div class="reveal-player"><div class="reveal-player-label" id="revealPlayer2Label">Соперник</div><div class="reveal-card"><div class="reveal-card-inner" id="card2"><div class="reveal-card-front"><div class="card-icon">❓</div></div><div class="reveal-card-back"><img id="card2Img" src="" alt=""><div class="move-name" id="card2Name"></div></div></div></div></div></div><div class="reveal-result" id="revealResult"></div><div class="reveal-countdown" id="revealCountdown"></div></div>
     <div id="confettiContainer" class="confetti-container hidden"></div>
     
@@ -298,6 +422,7 @@
     </div>
 
     <script>
+        // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
         const moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
         function setLanguage(lang) { document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase() === lang)); }
         function startGame() { document.getElementById('splashScreen')?.classList.add('hidden'); if(window.Telegram?.WebApp) { Telegram.WebApp.expand(); Telegram.WebApp.setHeaderColor('#0a0a1a'); Telegram.WebApp.setBackgroundColor('#0a0a1a'); } showScreen('lobby'); }
@@ -342,7 +467,7 @@
         function disableBottomNav() { document.getElementById('bottomNav')?.classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav')?.classList.remove('disabled'); }
 
-        // DAILY TASKS
+        // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
         function getDailyData() { try { const s = localStorage.getItem('echidna_daily_v1'); if(s) return JSON.parse(s); } catch(e) {} return { streak:0, lastClaimDate:null, collectedCards:[] }; }
         function saveDailyData(data) { try { localStorage.setItem('echidna_daily_v1', JSON.stringify(data)); } catch(e) {} }
         function getTodayDate() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -351,58 +476,139 @@
         function claimDailyCard(cardIndex) {
             const today = getTodayDate();
             let data = getDailyData();
-            if(data.collectedCards.includes(cardIndex)) return;
-            const y = new Date(); y.setDate(y.getDate()-1);
-            const ys = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
-            let cs = data.streak;
-            if(data.lastClaimDate !== today && data.lastClaimDate !== ys) { cs=0; data.collectedCards=[]; }
-            if(cardIndex !== cs) { if(cardIndex<cs) return; alert('Открывайте карточки по порядку!'); return; }
+            
+            console.log('claimDailyCard', cardIndex, 'data:', data);
+            
+            // Проверка: уже собрана
+            if(data.collectedCards.includes(cardIndex)) {
+                console.log('Already collected');
+                return;
+            }
+            
+            // Проверка: не пропущен ли день
+            const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+            const ys = yesterday.getFullYear()+'-'+String(yesterday.getMonth()+1).padStart(2,'0')+'-'+String(yesterday.getDate()).padStart(2,'0');
+            
+            let currentStreak = data.streak || 0;
+            if(data.lastClaimDate !== today && data.lastClaimDate !== ys) {
+                console.log('Streak reset');
+                currentStreak = 0;
+                data.collectedCards = [];
+            }
+            
+            // Проверка: строго по порядку
+            if(cardIndex !== currentStreak) {
+                if(cardIndex < currentStreak) {
+                    console.log('Already passed this card');
+                    return;
+                }
+                console.log('Wrong order! Expected:', currentStreak, 'Got:', cardIndex);
+                alert('Открывайте карточки по порядку! Следующая: День ' + (currentStreak + 1));
+                return;
+            }
+            
+            // Выдаём награду
             const reward = getDailyReward(cardIndex);
             currentBalance += reward;
-            data.streak = cs+1;
+            data.streak = currentStreak + 1;
             data.lastClaimDate = today;
             data.collectedCards.push(cardIndex);
+            
+            console.log('Reward:', reward, 'New balance:', currentBalance, 'New streak:', data.streak);
+            
             saveDailyData(data);
             updateBalanceDisplay();
-            renderDailyCards();
+            
+            // Анимация переворота
+            const cardEl = document.querySelector(`.daily-card[data-index="${cardIndex}"] .daily-card-inner`);
+            if(cardEl) {
+                cardEl.classList.add('flipped');
+            }
+            
+            // Обновляем отображение через небольшую задержку
+            setTimeout(() => {
+                renderDailyCards();
+                alert('✅ +' + reward + ' Spike получено!');
+            }, 700);
         }
 
         function renderDailyCards() {
             const grid = document.getElementById('dailyCardsGrid');
             const streakNum = document.getElementById('dailyStreakNum');
             if(!grid || !streakNum) return;
+            
             const data = getDailyData();
             const today = getTodayDate();
-            const y = new Date(); y.setDate(y.getDate()-1);
-            const ys = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
-            let cs = data.streak;
-            if(data.lastClaimDate !== today && data.lastClaimDate !== ys) { cs=0; data.collectedCards=[]; data.streak=0; saveDailyData(data); }
-            streakNum.textContent = Math.min(cs+1,9);
+            const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+            const ys = yesterday.getFullYear()+'-'+String(yesterday.getMonth()+1).padStart(2,'0')+'-'+String(yesterday.getDate()).padStart(2,'0');
+            
+            let currentStreak = data.streak || 0;
+            if(data.lastClaimDate !== today && data.lastClaimDate !== ys) {
+                currentStreak = 0;
+                data.collectedCards = [];
+                data.streak = 0;
+                saveDailyData(data);
+            }
+            
+            streakNum.textContent = Math.min(currentStreak + 1, 9);
             grid.innerHTML = '';
-            for(let i=0;i<9;i++) {
+            
+            for(let i = 0; i < 9; i++) {
                 const reward = getDailyReward(i);
                 const isCollected = data.collectedCards.includes(i);
-                const isToday = i===cs;
-                const isLocked = i>cs;
-                const wrapper = document.createElement('div'); wrapper.className='daily-card'; wrapper.setAttribute('data-index',i);
-                const inner = document.createElement('div'); inner.className='daily-card-inner';
+                const isToday = (i === currentStreak && !isCollected);
+                const isLocked = i > currentStreak && !isCollected;
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'daily-card';
+                wrapper.setAttribute('data-index', String(i));
+                
+                const inner = document.createElement('div');
+                inner.className = 'daily-card-inner';
                 if(isCollected) inner.classList.add('flipped');
-                const front = document.createElement('div'); front.className='daily-card-front';
-                if(isCollected) front.classList.add('collected'); else if(isToday) front.classList.add('today'); else if(isLocked) front.classList.add('locked');
-                front.innerHTML = '<div class="day-number">'+(isCollected?'✓':(i+1))+'</div><div class="day-label">День '+(i+1)+'</div>';
-                const back = document.createElement('div'); back.className='daily-card-back';
-                back.innerHTML = '<div class="card-reward"><span>'+reward+'</span><img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" style="width:18px;height:18px;" onerror="this.style.display=\'none\'"></div><div class="card-collected">✅ +'+reward+' Spike!</div>';
-                inner.appendChild(front); inner.appendChild(back); wrapper.appendChild(inner);
-                if(isToday) wrapper.addEventListener('click', function(){ claimDailyCard(i); });
+                
+                // Передняя сторона
+                const front = document.createElement('div');
+                front.className = 'daily-card-front';
+                if(isCollected) front.classList.add('collected');
+                else if(isToday) front.classList.add('today');
+                else if(isLocked) front.classList.add('locked');
+                
+                front.innerHTML = 
+                    '<div class="day-number">' + (isCollected ? '✓' : (i + 1)) + '</div>' +
+                    '<div class="day-label">День ' + (i + 1) + '</div>' +
+                    (!isCollected && !isLocked ? '<div class="day-reward-hint">+' + reward + ' 🦔</div>' : '');
+                
+                // Задняя сторона с крупной монеткой
+                const back = document.createElement('div');
+                back.className = 'daily-card-back';
+                back.innerHTML = 
+                    '<img class="reward-coin" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display=\'none\'">' +
+                    '<div class="reward-amount">+' + reward + '</div>' +
+                    '<div class="reward-label">Spike</div>';
+                
+                inner.appendChild(front);
+                inner.appendChild(back);
+                wrapper.appendChild(inner);
+                
+                // Только сегодняшнюю неоткрытую карточку можно открыть
+                if(isToday) {
+                    wrapper.addEventListener('click', function() {
+                        if(!inner.classList.contains('flipped')) {
+                            claimDailyCard(i);
+                        }
+                    });
+                }
+                
                 grid.appendChild(wrapper);
             }
         }
 
-        // AUDIO
+        // ============ АУДИО ============
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(t) { if(audioCtx.state==='suspended') audioCtx.resume(); const n=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); if(t==='join'){o.type='sine';o.frequency.setValueAtTime(523.25,n);o.frequency.exponentialRampToValueAtTime(1046.5,n+0.1);g.gain.setValueAtTime(0.1,n);g.gain.exponentialRampToValueAtTime(0.001,n+0.3);o.start(n);o.stop(n+0.3);}else if(t==='flip'){const b=audioCtx.createBuffer(1,audioCtx.sampleRate*0.12,audioCtx.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const ns=audioCtx.createBufferSource();ns.buffer=b;const f=audioCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=2500;f.Q.value=0.8;ns.connect(f);f.connect(g);g.gain.setValueAtTime(0.12,n);g.gain.exponentialRampToValueAtTime(0.001,n+0.12);ns.start(n);}else if(t==='win'){o.type='triangle';o.frequency.setValueAtTime(523.25,n);o.frequency.setValueAtTime(659.25,n+0.1);o.frequency.setValueAtTime(783.99,n+0.2);o.frequency.setValueAtTime(1046.5,n+0.3);g.gain.setValueAtTime(0.1,n);g.gain.linearRampToValueAtTime(0.001,n+0.5);o.start(n);o.stop(n+0.5);}else if(t==='lose'){o.type='sawtooth';o.frequency.setValueAtTime(280,n);o.frequency.linearRampToValueAtTime(140,n+0.4);g.gain.setValueAtTime(0.08,n);g.gain.linearRampToValueAtTime(0.001,n+0.4);o.start(n);o.stop(n+0.4);} }
 
-        // DB
+        // ============ БАЗА ДАННЫХ ============
         async function db(table, method, payload=null, filters='', single=false) {
             const url = `${SUPABASE_URL}/rest/v1/${table}${filters}`;
             const headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' };
@@ -416,6 +622,7 @@
         async function ensureUserExists(uid,uname){try{const e=await db('users','GET',null,`?telegram_id=eq.${uid}&limit=1`);if(!e||e.length===0) await db('users','POST',[{telegram_id:uid,username:uname||`User_${uid}`,wins:0,losses:0}]);}catch(e){}}
         function renderAvatar(elId,photoUrl,username){const el=document.getElementById(elId);if(!el)return;el.innerHTML=photoUrl?`<img src="${photoUrl}" alt="${username||'User'}" onerror="this.parentElement.innerHTML='${username?username.charAt(0).toUpperCase():'?'}'">`:(username?username.charAt(0).toUpperCase():'?');}
 
+        // ============ НАВИГАЦИЯ ============
         function showScreen(name) {
             ['lobbyScreen','statsScreen','gameScreen','skinsScreen','leaderboardScreen','tasksScreen'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
             const target=document.getElementById(name+'Screen');if(target)target.classList.remove('hidden');
@@ -432,6 +639,7 @@
         async function updateStats(){try{if(!MY_ID||MY_ID===999999)return;const d=await db('users','GET',null,`?select=wins,losses&telegram_id=eq.${MY_ID}`,false);const w=d[0]?.wins||0,l=d[0]?.losses||0;currentWins=w;document.getElementById('statWins').textContent=w;document.getElementById('statGames').textContent=w+l;document.getElementById('statSkinName').textContent=getSkinNameById(currentSkin);document.getElementById('statSkinBadge').textContent='#'+(SKINS.findIndex(s=>s.id===currentSkin)+1);document.getElementById('mainLogoImg').src=getSkinImg(currentSkin);}catch(e){}}
         async function updateBalanceDisplay(){try{if(!MY_ID||MY_ID===999999)return;const g=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=100`,false);const gl=Array.isArray(g)?g:[];let b=0;gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win')b+=a;else if(g.result==='lose')b-=a;});currentBalance=Math.round(b);const el=document.getElementById('balanceSpike');if(el){el.textContent=formatCompactNumber(currentBalance);el.style.color=currentBalance<0?'var(--error)':currentBalance>0?'var(--success)':'var(--gold)';}}catch(e){}}
 
+        // ============ СКИНЫ ============
         function renderSkins(){const c=document.getElementById('skinsList');if(!c)return;c.innerHTML='';SKINS.forEach((s,i)=>{const owned=isSkinOwned(s.id),eq=currentSkin===s.id,canBuy=!owned&&currentBalance>=s.price;const el=document.createElement('div');el.className=`room-card ${eq?'equipped':''}`;el.onclick=()=>openSkinModal(s);let btn='';if(eq)btn=`<button class="room-btn equipped">Надето</button>`;else if(owned)btn=`<button class="room-btn join" onclick="event.stopPropagation();equipSkin('${s.id}')">Надеть</button>`;else btn=`<button class="room-btn buy" onclick="event.stopPropagation();buySkin('${s.id}')" ${!canBuy?'disabled':''}>${formatCompactNumber(s.price)} Spike</button>`;el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--sec);">#${i+1}</div><div class="room-icon skin-room-icon"><img src="${s.img}" alt=""></div><div class="room-info"><div class="room-stake">${getSkinNameById(s.id)}</div>${!owned?`<div class="skin-price">💰 ${formatCompactNumber(s.price)} Spike</div>`:`<div class="skin-price" style="color:var(--success);">✅ Куплено</div>`}</div><div class="room-actions">${btn}</div>`;c.appendChild(el);});}
         function openSkinModal(s){currentModalSkin=s;disableBottomNav();const m=document.getElementById('skinModal');document.getElementById('modalImg').src=s.img;document.getElementById('modalTitle').textContent=getSkinNameById(s.id);const pe=document.getElementById('modalPrice'),be=document.getElementById('modalBtn');if(currentSkin===s.id){pe.textContent='✅ Надето';be.textContent='Надето';be.className='skin-modal-btn equipped';be.disabled=true;}else if(isSkinOwned(s.id)){pe.textContent='✅ Куплено';be.textContent='Надеть';be.className='skin-modal-btn equip';be.disabled=false;}else{pe.textContent='💰 '+formatCompactNumber(s.price)+' Spike';be.textContent=currentBalance>=s.price?'Купить - '+formatCompactNumber(s.price)+' Spike':'Нужно ещё '+formatCompactNumber(s.price-currentBalance)+' Spike';be.className='skin-modal-btn buy';be.disabled=currentBalance<s.price;}m.classList.remove('hidden');}
         function closeSkinModal(e){if(!e||e.target.id==='skinModal'||e.target.className==='skin-modal-close'){document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}}
@@ -439,22 +647,24 @@
         function buySkin(sid){if(isSkinOwned(sid))return;const p=getSkinPrice(sid);if(currentBalance<p){alert('Недостаточно Spike!');return;}currentBalance-=p;ownedSkins.push(sid);saveOwnedSkins();updateBalanceDisplay();renderSkins();const s=SKINS.find(s=>s.id===sid);if(s)openSkinModal(s);alert(`✅ Скин "${getSkinNameById(sid)}" куплен!`);}
         function equipSkin(id){if(!isSkinOwned(id))return;currentSkin=id;try{localStorage.setItem('echidna_selected_skin',id);}catch(e){}updateStats();renderSkins();document.getElementById('skinModal')?.classList.add('hidden');currentModalSkin=null;enableBottomNav();}
 
+        // ============ СТАВКИ ============
         function openStakeModal(){if(currentBalance<10){alert('Недостаточно средств!');return;}selectedStake=10;document.getElementById('stakeInput').value='';document.getElementById('stakeError').textContent='';document.getElementById('roomPassword').value='';document.querySelectorAll('.stake-preset-btn').forEach(b=>b.classList.remove('selected'));const db=document.querySelector('.stake-preset-btn[data-stake="10"]');if(db)db.classList.add('selected');const inp=document.getElementById('stakeInput');inp.placeholder='10 - 1000';inp.min=10;inp.max=1000;inp.step=10;disableBottomNav();document.getElementById('stakeModal')?.classList.remove('hidden');}
         function closeStakeModal(e){if(!e||e.target.id==='stakeModal'||e.target.className==='skin-modal-close'){document.getElementById('stakeModal')?.classList.add('hidden');enableBottomNav();}}
         function selectStakePreset(v,b){selectedStake=v;document.getElementById('stakeInput').value='';document.getElementById('stakeError').textContent='';document.querySelectorAll('.stake-preset-btn').forEach(x=>x?.classList?.remove('selected'));if(b)b.classList.add('selected');}
         function onStakeInput(){const v=parseInt(document.getElementById('stakeInput').value);document.getElementById('stakeError').textContent='';document.querySelectorAll('.stake-preset-btn').forEach(b=>b?.classList?.remove('selected'));if(isNaN(v)){selectedStake=10;return;}if(v<10){document.getElementById('stakeError').textContent='Мин: 10 Spike';selectedStake=10;}else if(v>1000){document.getElementById('stakeError').textContent='Макс: 1000 Spike';selectedStake=1000;}else{selectedStake=Math.round(v/10)*10;}}
         async function confirmStake(){const iv=document.getElementById('stakeInput').value;let fs=selectedStake;if(iv){const p=parseInt(iv);if(p<10||p>1000||isNaN(p)){document.getElementById('stakeError').textContent='Введи от 10 до 1000';return;}fs=Math.round(p/10)*10;}if(currentBalance<fs){document.getElementById('stakeError').textContent='Недостаточно средств!';return;}const rp=document.getElementById('roomPassword').value.trim();if(rp&&!/^\d{1,4}$/.test(rp)){document.getElementById('stakeError').textContent='Пароль: 1-4 цифры';return;}closeStakeModal();try{await ensureUserExists(MY_ID,user.username);const room=await db('rooms','POST',[{creator_tg_id:MY_ID,creator_username:user.username,stake:fs,status:'waiting',room_password:rp||null}],'',true);currentRoom=room;showGameScreen();startPolling();loadRooms();}catch(e){alert('Ошибка: '+e.message);}}
 
+        // ============ КОМНАТЫ ============
         function formatCountdown(ms){if(ms<=0)return"00:00";const ts=Math.floor(ms/1000),m=Math.floor(ts/60),s=ts%60;return`${m<10?'0':''}${m}:${s<10?'0':''}${s}`;}
         setInterval(()=>{const now=Date.now();document.querySelectorAll('.room-timer').forEach(el=>{const rid=el.dataset.roomId;if(rid&&window.roomExpiry[rid]){const r=window.roomExpiry[rid]-now;el.textContent=formatCountdown(r);if(r<=60000)el.classList.add('urgent');else el.classList.remove('urgent');if(r<=0){el.textContent='⌛ Истекло';el.style.color='var(--error)';}}});},1000);
         function formatStakeDisplay(room){return`${room.stake||0} Spike`;}
-        
         async function loadRooms(){if(!MY_ID||MY_ID===999999){document.getElementById('myRoomsList').innerHTML='<div style="color:var(--error);padding:15px;">⚠️ Пользователь не найден</div>';return;}try{const my=await db('rooms','GET',null,`?creator_tg_id=eq.${MY_ID}&status=neq.finished&order=created_at.desc&limit=10`);const all=await db('rooms','GET',null,`?status=neq.finished&order=created_at.desc&limit=50`);renderRooms('myRoomsList',Array.isArray(my)?my:[],true);renderRooms('roomsList',(Array.isArray(all)?all:[]).filter(r=>Number(r.creator_tg_id)!==MY_ID),false);}catch(e){document.getElementById('myRoomsList').innerHTML=document.getElementById('roomsList').innerHTML='<div style="color:var(--error);padding:15px;">⚠️ Ошибка загрузки</div>';}}
         function renderRooms(id,rooms,isMy){const c=document.getElementById(id);if(!c)return;c.innerHTML='';if(!rooms||rooms.length===0){c.innerHTML='<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>';return;}rooms.forEach((r,i)=>{try{const tm=Number(r.creator_tg_id)===MY_ID,io=Number(r.opponent_tg_id)===MY_ID,ifn=r.status==='finished',ip=r.status==='playing',iw=r.status==='waiting';const el=document.createElement('div');el.className=`room-card ${tm?'my-room':''} ${ip?'playing':''}`;if(tm||io){el.onclick=()=>resumeRoom(r.id);el.style.cursor='pointer';}let bh='',bth='',th='';const hp=r.room_password&&r.room_password.length>0;let li=hp?'<span class="lock-icon">🔒</span>':'';if(iw){bh='<span style="background:var(--success);color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;">ЖДЁТ</span>';if(!window.roomExpiry[r.id])window.roomExpiry[r.id]=Date.now()+5*60*1000;const rem=window.roomExpiry[r.id]-Date.now();th=`<span class="room-timer ${rem<=60000?'urgent':''}" data-room-id="${r.id}">${formatCountdown(rem)}</span>`;}const sd=formatStakeDisplay(r);if(tm){if(ip)bth=`<button class="room-btn join" onclick="event.stopPropagation();resumeRoom('${r.id}')">🔄 Вернуться</button>`;const cb=!ifn?`<button class="room-btn cancel" onclick="event.stopPropagation();cancelRoom('${r.id}')">✕</button>`:'';el.innerHTML=`<div class="room-icon"><img src="${MY_PHOTO_URL}" alt="You" onerror="this.style.display='none';this.parentElement.innerHTML='${MY_INITIAL}'">${li}</div><div class="room-info"><div class="room-stake">💰 ${sd} ${bh}${th}</div><div class="room-creator">Твоя комната</div></div><div class="room-actions">${bth}${cb}</div>`;}else{bth=`<button class="room-btn join" onclick="event.stopPropagation();joinRoom('${r.id}',this)">Войти</button>`;el.innerHTML=`<div class="room-icon">${r.creator_username?r.creator_username.charAt(0).toUpperCase():'?'}${li}</div><div class="room-info"><div class="room-stake">💰 ${sd} ${bh}${th}</div><div class="room-creator">@${r.creator_username||'Anonymous'}</div></div><div class="room-actions">${bth}</div>`;}c.appendChild(el);}catch(err){console.error(`[ERROR] Render room ${i+1}:`,err);}});}
         async function resumeRoom(rid){try{const room=await db('rooms','GET',null,`?id=eq.${rid}`,true);if(!room){alert('Room not found');loadRooms();return;}currentRoom=room;if(currentRoom.status==='finished'){showGameScreen();showGameResult(currentRoom);return;}showGameScreen();startPolling();}catch(e){alert('Ошибка: '+e.message);}}
         async function cancelRoom(rid){if(!rid)return;try{await db('rooms','DELETE',null,`?id=eq.${rid}`);delete window.roomExpiry[rid];if(currentRoom?.id===rid){currentRoom=null;isGameFinished=true;if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(window._timerInterval)clearInterval(window._timerInterval);window._timerRunning=false;}loadRooms();}catch(e){console.warn('Cancel room warning:',e);loadRooms();}}
         async function joinRoom(rid,btn){if(!btn)return;btn.disabled=true;btn.textContent='⏳';try{const rd=await db('rooms','GET',null,`?id=eq.${rid}`,false);if(!rd||!rd.length)throw new Error('Комната занята');const room=rd[0];if(Number(room.creator_tg_id)===MY_ID||Number(room.opponent_tg_id)===MY_ID){resumeRoom(rid);return;}if(room.room_password){const pwd=prompt('🔒 Комната защищена паролем.\nВведите пароль:');if(pwd!==room.room_password){alert('Неверный пароль!');btn.disabled=false;btn.textContent='Войти';return;}}await ensureUserExists(MY_ID,user.username);const res=await db('rooms','PATCH',{opponent_tg_id:MY_ID,opponent_username:user.username,status:'playing'},`?id=eq.${rid}&status=eq.waiting`,true);if(!res)throw new Error('Ошибка');currentRoom=res;showGameScreen();startPolling();loadRooms();}catch(e){alert('Ошибка: '+e.message);if(btn){btn.disabled=false;btn.textContent='Войти';}}}
 
+        // ============ ИГРА ============
         async function renderPlayerStats(){if(!currentRoom||!currentRoom.id)return;try{const rd=await db('rooms','GET',null,`?id=eq.${currentRoom.id}`,true);if(!rd)return;const cid=rd.creator_tg_id,oid=rd.opponent_tg_id;const isCr=String(cid)===String(MY_ID);if(isCr){renderAvatar('playerAvatar',MY_PHOTO_URL,user.username||'?');if(oid)renderAvatar('opponentAvatar',null,rd.opponent_username||'?');}else{renderAvatar('opponentAvatar',MY_PHOTO_URL,user.username||'?');if(cid)renderAvatar('playerAvatar',null,rd.creator_username||'?');}if(!cid||!oid){document.getElementById(isCr?'opponentStats':'playerStats').innerHTML='<span style="color:var(--sec)">⏳ Ожидание...</span>';document.getElementById(isCr?'playerStats':'opponentStats').innerHTML='<span>✅ 0</span><br><span>❌ 0</span>';return;}const now=Date.now();if(now-window._lastStatsUpdate<2000)return;window._lastStatsUpdate=now;const res=await Promise.allSettled([db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(cid)}`,false),db('users','GET',null,`?select=wins,losses&telegram_id=eq.${String(oid)}`,false)]);const cD=(res[0].status==='fulfilled'&&res[0].value?.[0])?res[0].value[0]:{wins:0,losses:0};const oD=(res[1].status==='fulfilled'&&res[1].value?.[0])?res[1].value[0]:{wins:0,losses:0};document.getElementById(isCr?'playerStats':'opponentStats').innerHTML=`<span style="color:var(--success)">✅ ${cD.wins||0}</span><br><span style="color:var(--error)">❌ ${cD.losses||0}</span>`;document.getElementById(isCr?'opponentStats':'playerStats').innerHTML=`<span style="color:var(--success)">✅ ${oD.wins||0}</span><br><span style="color:var(--error)">❌ ${oD.losses||0}</span>`;}catch(e){}}
         function showGameScreen(){['lobbyScreen','statsScreen','skinsScreen','leaderboardScreen','tasksScreen'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));document.getElementById('gameScreen')?.classList.remove('hidden');if(!currentRoom){document.getElementById('statusMessage').textContent='❌ Комната не найдена';return;}const isCr=String(currentRoom.creator_tg_id)===String(MY_ID),myCol=isCr?'creator_choice':'opponent_choice';const choices=document.querySelectorAll('.choice-btn');if(currentRoom[myCol]&&currentRoom[myCol==='creator_choice'?'opponent_choice':'creator_choice']){choices.forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent='⏳ Итоги...';}else if(currentRoom[myCol]){choices.forEach(b=>b.disabled=true);document.getElementById('statusMessage').textContent='✅ Ход записан';}else{choices.forEach(b=>b.disabled=false);document.getElementById('statusMessage').innerHTML='<div class="spinner"></div>';}isGameFinished=false;window._timerRunning=false;const stake=currentRoom.stake||10;document.getElementById('stakeAmount').textContent=stake+' Spike';document.getElementById('winAmount').textContent=(stake*2)+' Spike';renderPlayerStats();updateGameStatus(currentRoom);}
         function updateGameStatus(room){if(!room||isGameFinished)return;const me=document.getElementById('statusMessage'),tt=document.getElementById('timerText'),tc=document.getElementById('timerBarContainer'),tb=document.getElementById('timerBar');const isCr=String(room.creator_tg_id)===String(MY_ID),myCol=isCr?'creator_choice':'opponent_choice';if(room[myCol]&&room[myCol==='creator_choice'?'opponent_choice':'creator_choice']){me.textContent='⏳ Итоги...';tt.classList.remove('active');tc.style.display='none';window._timerRunning=false;if(window._timerInterval)clearInterval(window._timerInterval);return;}tt.classList.remove('active');tc.style.display='none';tb.style.width='100%';tb.classList.remove('urgent');if(room.status==='waiting')me.textContent='⏳ Ждём соперника...';else if(room.status==='playing'){if(room[myCol]){me.textContent='✅ Ход записан';window._timerRunning=false;}else{me.innerHTML='<span style="color:var(--error)">⚠️ Ваш ход!</span>';tt.classList.add('active');tc.style.display='block';if(!window._timerRunning){window._timerRunning=true;window._timerStart=Date.now();startTimer(window._timerStart);}}}else{me.textContent='🏁 Игра окончена';window._timerRunning=false;}}
@@ -471,7 +681,6 @@
         function calculateWinner(room){const{c1=room.creator_choice,c2=room.opponent_choice,id1=room.creator_tg_id,id2=room.opponent_tg_id}=room;if(!c1&&!c2)return{msg:'🤝 Ничья!',winnerId:null};if(!c1)return{msg:(MY_ID===id1)?'😢 Поражение':'🏆 Победа!',winnerId:id2};if(!c2)return{msg:(MY_ID===id2)?'😢 Поражение':'🏆 Победа!',winnerId:id1};if(c1===c2)return{msg:'🤝 Ничья!',winnerId:null};const beats={rock:'scissors',scissors:'paper',paper:'rock'};const cw=beats[c1]===c2;return{msg:(cw?(MY_ID===id1):(MY_ID===id2))?'🏆 Победа!':'😢 Поражение',winnerId:cw?id1:id2};}
 
         async function loadLeaderboard(){const c=document.getElementById('leaderboardList');if(!c)return;try{const au=await db('users','GET',null,'?select=telegram_id,username,wins,losses&order=wins.desc.nullslast&limit=50');const ul=Array.isArray(au)?au:[];const ld=[];for(const u of ul){const g=await db('game_history','GET',null,`?player_id=eq.${u.telegram_id}&order=played_at.desc&limit=50`,false);const gl=Array.isArray(g)?g:[];let b=0;gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win')b+=a;else if(g.result==='lose')b-=a;});ld.push({telegram_id:u.telegram_id,username:u.username,wins:u.wins||0,balance:Math.round(b)});}ld.sort((a,b)=>b.balance-a.balance);c.innerHTML='';const t20=ld.slice(0,20);t20.forEach((u,i)=>{const sk=SKINS[Math.min(Math.floor(Math.abs(u.balance)/100000),7)]||SKINS[0];const n=u.username||`User_${String(u.telegram_id).slice(-4)}`;const im=Number(u.telegram_id)===MY_ID;const el=document.createElement('div');el.className=`room-card ${im?'my-room':''}`;el.innerHTML=`<div style="font-weight:700;width:30px;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div><div class="room-icon"><img src="${sk.img}" alt=""></div><div class="room-info"><div class="room-stake">@${n}</div><div class="lb-stats"><span>🦔 ${formatCompactNumber(u.balance)} Spike</span><span>✅ ${u.wins}</span></div></div>`;c.appendChild(el);});const mr=ld.findIndex(u=>Number(u.telegram_id)===MY_ID)+1;const md=ld.find(u=>Number(u.telegram_id)===MY_ID);if(mr>20&&md){const ms=SKINS[Math.min(Math.floor(Math.abs(md.balance)/100000),7)]||SKINS[0];const mn=user.username||`User_${String(MY_ID).slice(-4)}`;const el=document.createElement('div');el.className='room-card my-room';el.style.border='1px dashed var(--gold)';el.innerHTML=`<div style="font-weight:700;width:30px;color:var(--gold);">${mr}</div><div class="room-icon"><img src="${ms.img}" alt=""></div><div class="room-info"><div class="room-stake">@${mn} <span style="color:var(--success);font-size:10px;">(Вы)</span></div><div class="lb-stats"><span>🦔 ${formatCompactNumber(md.balance)} Spike</span><span>✅ ${md.wins}</span></div></div>`;c.appendChild(el);}}catch(e){c.innerHTML=`<div style="color:red;padding:15px;">${e.message}</div>`;}}
-
         async function loadStats(){if(!MY_ID||MY_ID===999999)return;const tb=document.getElementById('gamesTableBody');tb.innerHTML='<div class="loader" style="padding:20px;"><div class="spinner"></div></div>';try{const g=await db('game_history','GET',null,`?player_id=eq.${MY_ID}&order=played_at.desc&limit=20`,false);const gl=Array.isArray(g)?g:[];if(gl.length===0){tb.innerHTML='<div class="games-empty"><div>Пока нет игр</div></div>';document.getElementById('statsWinRate').textContent='0%';document.getElementById('statsFavMove').textContent='-';document.getElementById('statsTotalSpike').textContent='0 Spike';return;}let w=0,l=0,d=0,ts=0;const mc={rock:0,scissors:0,paper:0};gl.forEach(g=>{const a=Math.abs(g.stake||0);if(g.result==='win'){w++;ts+=a;}else if(g.result==='lose'){l++;ts-=a;}else{d++;}if(g.player_move&&mc[g.player_move]!==undefined)mc[g.player_move]++;});const tg=w+l+d;const wr=tg>0?Math.round((w/tg)*100):0;const mm=Object.entries(mc).sort((a,b)=>b[1]-a[1]);const fm=mm[0]&&mm[0][1]>0?mm[0][0]:null;const me={rock:'🪨',scissors:'✂️',paper:'📄'};const mn={rock:'Камень',scissors:'Ножницы',paper:'Бумага'};document.getElementById('statsWinRate').textContent=wr+'%';document.getElementById('statsFavMove').textContent=fm?`${me[fm]} ${mn[fm]}`:'-';const se=document.getElementById('statsTotalSpike');se.textContent=formatCompactNumber(Math.round(ts))+' Spike';if(ts<0)se.classList.add('negative');else se.classList.remove('negative');let rh='';gl.slice(0,20).forEach(g=>{const on=g.opponent_name||'???';const rc=g.result==='win'?'win':g.result==='lose'?'lose':'draw';const rt=g.result==='win'?'Победа':g.result==='lose'?'Поражение':'Ничья';const mve=g.player_move?(me[g.player_move]||''):'';const a=Math.abs(g.stake||0);const sd=g.stake===0?'0':formatCompactNumber(a)+' Spike';rh+=`<div class="game-row"><span class="game-opponent">${escapeHtml(on)}</span><span class="game-stake">${sd}</span><span class="game-result ${rc}">${rt}</span><span class="game-move">${mve}</span></div>`;});tb.innerHTML=rh;}catch(e){tb.innerHTML='<div class="games-empty"><div>Ошибка загрузки</div></div>';}}
         function escapeHtml(s){if(!s)return'';return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);}
         function filterRooms(){const q=document.getElementById('searchInput').value.toLowerCase();document.querySelectorAll('#roomsList .room-card').forEach(el=>{el.style.display=(el.querySelector('.room-creator')?.textContent.toLowerCase()||'').includes(q)?'flex':'none';});}
