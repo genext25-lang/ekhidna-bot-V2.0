@@ -388,7 +388,84 @@
         function getSkinImg(id) { var s = SKINS.find(function(s) { return s.id === id; }); return s ? s.img : ''; }
         function isSkinOwned(id) { return ownedSkins.indexOf(id) !== -1; }
         
-        function loadOwnedSkins() {
+        // ============ ЗАГРУЗКА СКИНОВ ИЗ SUPABASE ============
+        async function loadSkinsFromDB() {
+            try {
+                if (!MY_ID || MY_ID === 999999) return;
+                
+                // Получаем данные о скинах пользователя из БД
+                var result = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
+                
+                if (result && result.length > 0) {
+                    var userSkinData = result[0];
+                    
+                    // Загружаем owned skins
+                    if (userSkinData.owned_skins) {
+                        try {
+                            var loadedOwned = JSON.parse(userSkinData.owned_skins);
+                            if (Array.isArray(loadedOwned) && loadedOwned.length > 0) {
+                                ownedSkins = loadedOwned;
+                                if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
+                            }
+                        } catch(e) { console.warn('Parse owned skins error:', e); }
+                    }
+                    
+                    // Загружаем текущий скин
+                    if (userSkinData.current_skin) {
+                        currentSkin = userSkinData.current_skin;
+                    }
+                    
+                    // Сохраняем в localStorage как кэш
+                    try {
+                        localStorage.setItem('echidna_owned_skins_v2', JSON.stringify(ownedSkins));
+                        localStorage.setItem('echidna_selected_skin', currentSkin);
+                    } catch(e) {}
+                } else {
+                    // Если в БД нет записи, создаём новую
+                    await saveSkinsToDB();
+                }
+            } catch(e) {
+                console.error('Failed to load skins from DB:', e);
+                // Fallback на localStorage
+                try {
+                    var s = localStorage.getItem('echidna_owned_skins_v2');
+                    if (s) ownedSkins = JSON.parse(s);
+                    if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
+                    
+                    var savedSkin = localStorage.getItem('echidna_selected_skin');
+                    if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
+                } catch(le) { console.warn('LocalStorage fallback error:', le); }
+            }
+        }
+        
+        // ============ СОХРАНЕНИЕ СКИНОВ В SUPABASE ============
+        async function saveSkinsToDB() {
+            try {
+                if (!MY_ID || MY_ID === 999999) return;
+                
+                // Проверяем, есть ли запись
+                var existing = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
+                
+                var payload = {
+                    player_id: MY_ID,
+                    owned_skins: JSON.stringify(ownedSkins),
+                    current_skin: currentSkin,
+                    updated_at: new Date().toISOString()
+                };
+                
+                if (existing && existing.length > 0) {
+                    // Обновляем существующую запись
+                    await db('user_skins', 'PATCH', payload, '?player_id=eq.' + MY_ID);
+                } else {
+                    // Создаём новую запись
+                    await db('user_skins', 'POST', [payload]);
+                }
+            } catch(e) {
+                console.error('Failed to save skins to DB:', e);
+            }
+        }
+        
+        function loadOwnedSkinsLocally() {
             try {
                 var s = localStorage.getItem('echidna_owned_skins_v2');
                 if (s) ownedSkins = JSON.parse(s);
@@ -396,7 +473,7 @@
             } catch(e) {}
         }
         
-        function saveOwnedSkins() {
+        function saveOwnedSkinsLocally() {
             try { localStorage.setItem('echidna_owned_skins_v2', JSON.stringify(ownedSkins)); } catch(e) {}
         }
 
@@ -424,9 +501,7 @@
         function disableBottomNav() { document.getElementById('bottomNav').classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav').classList.remove('disabled'); }
 
-        // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ (СИНХРОНИЗАЦИЯ ЧЕРЕЗ SUPABASE) ============
-        
-        // ✅ Загрузка данных из Supabase
+        // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
         async function loadDailyDataFromDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return null;
@@ -445,12 +520,10 @@
             }
         }
         
-        // ✅ Сохранение данных в Supabase
         async function saveDailyDataToDB(data) {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
                 
-                // Проверяем, есть ли уже запись
                 var existing = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
                 
                 var payload = {
@@ -462,10 +535,8 @@
                 };
                 
                 if (existing && existing.length > 0) {
-                    // Обновляем существующую запись
                     await db('daily_tasks', 'PATCH', payload, '?player_id=eq.' + MY_ID);
                 } else {
-                    // Создаём новую запись
                     await db('daily_tasks', 'POST', [payload]);
                 }
             } catch(e) {
@@ -473,17 +544,13 @@
             }
         }
         
-        // ✅ Получение данных (сначала из БД, потом из localStorage)
         async function getDailyData() {
-            // Пробуем загрузить из Supabase
             var dbData = await loadDailyDataFromDB();
             if (dbData) {
-                // Сохраняем в localStorage как кэш
                 try { localStorage.setItem('echidna_daily_v5', JSON.stringify(dbData)); } catch(e) {}
                 return dbData;
             }
             
-            // Если БД недоступна - используем localStorage
             try {
                 var s = localStorage.getItem('echidna_daily_v5');
                 if (s) return JSON.parse(s);
@@ -493,7 +560,6 @@
         }
         
         function saveDailyData(data) {
-            // Сохраняем и в localStorage (кэш), и в Supabase
             try { localStorage.setItem('echidna_daily_v5', JSON.stringify(data)); } catch(e) {}
             saveDailyDataToDB(data);
         }
@@ -511,13 +577,11 @@
             var today = getTodayDate();
             var data = await getDailyData();
             
-            // Уже открывали сегодня?
             if (data.lastClaimDate === today) {
                 alert('Вы уже открыли карточку сегодня! Возвращайтесь завтра.');
                 return;
             }
             
-            // Проверка пропуска дня
             var yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             var yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
@@ -527,8 +591,8 @@
                 data.collectedCards = [];
             }
             
-            // Открываем только по порядку
-            if (cardIndex !== data.streak) {
+            // Важное исправление: проверяем, что streak не больше 0 и cardIndex соответствует streak
+            if (data.streak !== cardIndex) {
                 alert('Открывайте карточки по порядку! Следующая: #' + (data.streak + 1));
                 return;
             }
@@ -541,11 +605,9 @@
             if (!data.collectedCards) data.collectedCards = [];
             data.collectedCards.push(cardIndex);
             
-            // ✅ Сохраняем в Supabase и localStorage
             saveDailyData(data);
             updateBalanceDisplay();
             
-            // Анимация переворота
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
             if (cardEl) cardEl.classList.add('flipped');
             
@@ -560,7 +622,6 @@
             var streakNum = document.getElementById('dailyStreakNum');
             if (!grid || !streakNum) return;
             
-            // ✅ Загружаем данные из Supabase
             var data = await getDailyData();
             var today = getTodayDate();
             
@@ -568,7 +629,6 @@
             yesterday.setDate(yesterday.getDate() - 1);
             var yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
             
-            // Сброс при пропуске
             if (data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr && data.lastClaimDate !== null) {
                 data.streak = 0;
                 data.collectedCards = [];
@@ -614,11 +674,14 @@
                 wrapper.appendChild(inner);
                 
                 if (isToday) {
-                    wrapper.addEventListener('click', function() {
-                        if (!inner.classList.contains('flipped')) {
-                            claimDailyCard(i);
-                        }
-                    });
+                    wrapper.addEventListener('click', (function(index) {
+                        return function() {
+                            var innerEl = wrapper.querySelector('.daily-card-inner');
+                            if (!innerEl.classList.contains('flipped')) {
+                                claimDailyCard(index);
+                            }
+                        };
+                    })(i));
                 }
                 
                 grid.appendChild(wrapper);
@@ -800,7 +863,8 @@
                 document.getElementById('statWins').textContent = wins;
                 document.getElementById('statGames').textContent = wins + losses;
                 document.getElementById('statSkinName').textContent = getSkinNameById(currentSkin);
-                document.getElementById('statSkinBadge').textContent = '#' + (SKINS.findIndex(function(s) { return s.id === currentSkin; }) + 1);
+                var skinIndex = SKINS.findIndex(function(s) { return s.id === currentSkin; });
+                document.getElementById('statSkinBadge').textContent = '#' + (skinIndex + 1);
                 document.getElementById('mainLogoImg').src = getSkinImg(currentSkin);
             } catch(e) { console.error(e); }
         }
@@ -903,26 +967,40 @@
             else buySkin(currentModalSkin.id);
         }
 
-        function buySkin(skinId) {
+        async function buySkin(skinId) {
             if (isSkinOwned(skinId)) return;
             var price = getSkinPrice(skinId);
             if (currentBalance < price) { alert('Недостаточно Spike!'); return; }
+            
+            // Обновляем баланс
             currentBalance -= price;
+            
+            // Добавляем скин в owned
             ownedSkins.push(skinId);
-            saveOwnedSkins();
-            saveGameHistory('lose', 'rock', price).then(function() {
-                updateBalanceDisplay();
-                renderSkins();
-                var s = SKINS.find(function(s) { return s.id === skinId; });
-                if (s) openSkinModal(s);
-                alert('✅ Скин "' + getSkinNameById(skinId) + '" куплен за ' + formatCompactNumber(price) + ' Spike!');
-            });
+            saveOwnedSkinsLocally();
+            
+            // Сохраняем в Supabase
+            await saveSkinsToDB();
+            
+            // Сохраняем транзакцию в историю
+            await saveGameHistory('lose', 'rock', price);
+            
+            await updateBalanceDisplay();
+            renderSkins();
+            
+            var s = SKINS.find(function(s) { return s.id === skinId; });
+            if (s) openSkinModal(s);
+            alert('✅ Скин "' + getSkinNameById(skinId) + '" куплен за ' + formatCompactNumber(price) + ' Spike!');
         }
 
-        function equipSkin(id) {
+        async function equipSkin(id) {
             if (!isSkinOwned(id)) return;
             currentSkin = id;
             try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
+            
+            // Сохраняем в Supabase
+            await saveSkinsToDB();
+            
             updateStats();
             renderSkins();
             document.getElementById('skinModal').classList.add('hidden');
@@ -1604,10 +1682,15 @@
         }
 
         // ============ ИНИЦИАЛИЗАЦИЯ ============
-        window.addEventListener('load', function() {
-            loadOwnedSkins();
+        window.addEventListener('load', async function() {
+            // Загружаем скины из Supabase
+            await loadSkinsFromDB();
+            
+            // Загружаем локальные скины если нужно (для совместимости)
+            loadOwnedSkinsLocally();
             var savedSkin = localStorage.getItem('echidna_selected_skin');
             if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
+            
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.expand();
                 window.Telegram.WebApp.setHeaderColor('#0a0a1a');
