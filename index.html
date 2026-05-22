@@ -218,8 +218,7 @@
         <button class="lang-btn active" onclick="setLanguage('ru')">RU</button>
         <button class="lang-btn" onclick="setLanguage('en')">EN</button>
     </div>
-    
-    <!-- ЗАСТАВКА -->
+
     <div id="splashScreen" class="splash-screen">
         <div class="splash-content">
             <div class="splash-title">Echidna Naklz</div>
@@ -241,9 +240,7 @@
         </div>
     </div>
 
-    <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
     <div class="container">
-        <!-- ЛОББИ -->
         <div id="lobbyScreen">
             <div class="header">
                 <div class="header-logo"><img src="" id="mainLogoImg" alt="logo"></div>
@@ -266,7 +263,6 @@
             <div id="roomsList"><div class="loader"><div class="spinner"></div></div></div>
         </div>
         
-        <!-- ЗАДАНИЯ -->
         <div id="tasksScreen" class="hidden">
             <div class="header"><h2>📋 Ежедневные награды</h2><div class="header-sub">Открывай по одной карточке каждый день!</div></div>
             <div class="daily-streak-info">🔥 Открыто: <span id="dailyStreakNum">0</span> из 9</div>
@@ -274,7 +270,6 @@
             <div class="daily-streak-info" style="margin-top:12px;font-size:11px;color:var(--sec);">⚠️ Пропуск дня сбрасывает все карточки</div>
         </div>
         
-        <!-- СТАТИСТИКА -->
         <div id="statsScreen" class="hidden">
             <div class="stats-header"><h2>📊 Статистика</h2><div class="subtitle">Твоя игровая история</div></div>
             <div class="stats-cards">
@@ -286,7 +281,6 @@
             <div class="games-table"><div class="games-table-header"><span>Соперник</span><span>Ставка</span><span>Результат</span><span>Ход</span></div><div id="gamesTableBody"><div class="loader" style="padding:20px;"><div class="spinner"></div></div></div></div>
         </div>
         
-        <!-- ИГРА -->
         <div id="gameScreen" class="hidden">
             <div class="header"><h2>⚔️ Битва!</h2></div>
             <div class="game-players">
@@ -303,23 +297,19 @@
             </div>
         </div>
         
-        <!-- СКИНЫ -->
         <div id="skinsScreen" class="hidden">
             <div class="header"><h2>🎨 Скины</h2><div class="header-sub">Покупай и меняй скины за Spike</div></div>
             <div id="skinsList"></div>
         </div>
         
-        <!-- РЕЙТИНГ -->
         <div id="leaderboardScreen" class="hidden"><div class="header"><h2>🏆 Рейтинг</h2></div><div id="leaderboardList"><div class="loader"><div class="spinner"></div></div></div></div>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="skinModal" class="skin-modal hidden" onclick="closeSkinModal(event)"><div class="skin-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeSkinModal()">✕</button><div class="skin-modal-img"><img src="" id="modalImg" alt=""></div><div class="skin-modal-title" id="modalTitle"></div><div class="skin-modal-price" id="modalPrice"></div><div class="skin-modal-desc" id="modalDesc"></div><button class="skin-modal-btn" id="modalBtn" onclick="handleSkinAction()">Купить</button></div></div>
     <div id="stakeModal" class="stake-modal hidden" onclick="closeStakeModal(event)"><div class="stake-modal-content" onclick="event.stopPropagation()"><button class="skin-modal-close" onclick="closeStakeModal()">✕</button><div class="stake-modal-title">🦔 Выбери ставку Spike</div><div class="stake-presets" id="stakePresets"><button class="stake-preset-btn selected" data-stake="10" onclick="selectStakePreset(10,this)">10</button><button class="stake-preset-btn" data-stake="50" onclick="selectStakePreset(50,this)">50</button><button class="stake-preset-btn" data-stake="100" onclick="selectStakePreset(100,this)">100</button><button class="stake-preset-btn" data-stake="200" onclick="selectStakePreset(200,this)">200</button><button class="stake-preset-btn" data-stake="500" onclick="selectStakePreset(500,this)">500</button><button class="stake-preset-btn" data-stake="1000" onclick="selectStakePreset(1000,this)">1K</button></div><div class="stake-input-group"><span>Или введи:</span><input type="number" class="stake-input" id="stakeInput" placeholder="10 - 1000" min="10" max="1000" step="10" oninput="onStakeInput()"></div><div class="stake-error" id="stakeError"></div><div style="margin-top:12px;"><label style="font-size:12px;color:var(--sec);display:block;margin-bottom:4px;">🔒 Пароль (1-4 цифры):</label><input type="password" id="roomPassword" class="stake-input" placeholder="1234" maxlength="4" style="text-align:center;"></div><button class="btn stake-confirm-btn" onclick="confirmStake()" style="margin-top:12px;">Создать комнату</button></div></div>
     <div id="revealOverlay" class="reveal-overlay hidden"><div class="reveal-title">Раскрытие ходов</div><div id="revealEmotion" class="reveal-emotion hidden"><img src="" alt="Emotion" id="emotionImg"></div><div class="reveal-players"><div class="reveal-player"><div class="reveal-player-label" id="revealPlayer1Label">Вы</div><div class="reveal-card"><div class="reveal-card-inner" id="card1"><div class="reveal-card-front"><div class="card-icon">❓</div></div><div class="reveal-card-back"><img id="card1Img" src="" alt=""><div class="move-name" id="card1Name"></div></div></div></div></div><div class="reveal-vs">VS</div><div class="reveal-player"><div class="reveal-player-label" id="revealPlayer2Label">Соперник</div><div class="reveal-card"><div class="reveal-card-inner" id="card2"><div class="reveal-card-front"><div class="card-icon">❓</div></div><div class="reveal-card-back"><img id="card2Img" src="" alt=""><div class="move-name" id="card2Name"></div></div></div></div></div></div><div class="reveal-result" id="revealResult"></div><div class="reveal-countdown" id="revealCountdown"></div></div>
     <div id="confettiContainer" class="confetti-container hidden"></div>
     
-    <!-- НИЖНЯЯ ПАНЕЛЬ -->
     <div class="bottom-nav" id="bottomNav">
         <button class="nav-btn active" onclick="showScreen('lobby')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Лобби</span></button>
         <button class="nav-btn" onclick="showScreen('tasks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg><span>Задания</span></button>
@@ -330,7 +320,7 @@
 
     <script>
         // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
-        const moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
+        var moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
         
         function setLanguage(lang) {
             document.querySelectorAll('.lang-btn').forEach(function(b) {
@@ -348,8 +338,8 @@
             showScreen('lobby');
         }
 
-        const SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlam5kd3Rja2R2dWV1ZnFoaXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjY5MjcsImV4cCI6MjA5MzgwMjkyN30.tDP9B-nWPMsuANJ4JiASs0UYgJqJZtm9Sj3jUs13l9c';
+        var SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlam5kd3Rja2R2dWV1ZnFoaXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjY5MjcsImV4cCI6MjA5MzgwMjkyN30.tDP9B-nWPMsuANJ4JiASs0UYgJqJZtm9Sj3jUs13l9c';
         
         function getCurrentUser() {
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
@@ -372,7 +362,6 @@
         var MY_PHOTO_URL = user.photo_url || null;
         var MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
 
-        // ============ СКИНЫ ============
         var SKINS = [
             { id: 'default', price: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
             { id: 'socks', price: 10000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-socks.png' },
@@ -385,14 +374,9 @@
         ];
         
         var skinNames = {
-            'default': 'Обычная',
-            'socks': 'В носках',
-            'sporty': 'Спортсмен',
-            'sneakers': 'Кроссовки',
-            'cap': 'Бейсболка',
-            'cool': 'Крутой',
-            'rich': 'Богач',
-            'collector': 'Коллекционер'
+            'default': 'Обычная', 'socks': 'В носках', 'sporty': 'Спортсмен',
+            'sneakers': 'Кроссовки', 'cap': 'Бейсболка', 'cool': 'Крутой',
+            'rich': 'Богач', 'collector': 'Коллекционер'
         };
         
         var ownedSkins = ['default'];
@@ -416,7 +400,6 @@
             try { localStorage.setItem('echidna_owned_skins_v2', JSON.stringify(ownedSkins)); } catch(e) {}
         }
 
-        // ============ ИГРОВЫЕ ПЕРЕМЕННЫЕ ============
         var selectedStake = 10;
         var currentRoom = null;
         var pollInterval = null;
@@ -441,17 +424,78 @@
         function disableBottomNav() { document.getElementById('bottomNav').classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav').classList.remove('disabled'); }
 
-        // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
-        function getDailyData() {
+        // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ (СИНХРОНИЗАЦИЯ ЧЕРЕЗ SUPABASE) ============
+        
+        // ✅ Загрузка данных из Supabase
+        async function loadDailyDataFromDB() {
             try {
-                var s = localStorage.getItem('echidna_daily_v4');
+                if (!MY_ID || MY_ID === 999999) return null;
+                var result = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
+                if (result && result.length > 0) {
+                    return {
+                        streak: result[0].streak || 0,
+                        lastClaimDate: result[0].last_claim_date || null,
+                        collectedCards: result[0].collected_cards || []
+                    };
+                }
+                return null;
+            } catch(e) {
+                console.error('Failed to load daily data from DB:', e);
+                return null;
+            }
+        }
+        
+        // ✅ Сохранение данных в Supabase
+        async function saveDailyDataToDB(data) {
+            try {
+                if (!MY_ID || MY_ID === 999999) return;
+                
+                // Проверяем, есть ли уже запись
+                var existing = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
+                
+                var payload = {
+                    player_id: MY_ID,
+                    streak: data.streak || 0,
+                    last_claim_date: data.lastClaimDate || null,
+                    collected_cards: data.collectedCards || [],
+                    updated_at: new Date().toISOString()
+                };
+                
+                if (existing && existing.length > 0) {
+                    // Обновляем существующую запись
+                    await db('daily_tasks', 'PATCH', payload, '?player_id=eq.' + MY_ID);
+                } else {
+                    // Создаём новую запись
+                    await db('daily_tasks', 'POST', [payload]);
+                }
+            } catch(e) {
+                console.error('Failed to save daily data to DB:', e);
+            }
+        }
+        
+        // ✅ Получение данных (сначала из БД, потом из localStorage)
+        async function getDailyData() {
+            // Пробуем загрузить из Supabase
+            var dbData = await loadDailyDataFromDB();
+            if (dbData) {
+                // Сохраняем в localStorage как кэш
+                try { localStorage.setItem('echidna_daily_v5', JSON.stringify(dbData)); } catch(e) {}
+                return dbData;
+            }
+            
+            // Если БД недоступна - используем localStorage
+            try {
+                var s = localStorage.getItem('echidna_daily_v5');
                 if (s) return JSON.parse(s);
             } catch(e) {}
+            
             return { streak: 0, lastClaimDate: null, collectedCards: [] };
         }
         
         function saveDailyData(data) {
-            try { localStorage.setItem('echidna_daily_v4', JSON.stringify(data)); } catch(e) {}
+            // Сохраняем и в localStorage (кэш), и в Supabase
+            try { localStorage.setItem('echidna_daily_v5', JSON.stringify(data)); } catch(e) {}
+            saveDailyDataToDB(data);
         }
         
         function getTodayDate() {
@@ -463,9 +507,9 @@
             return (day + 1) * 100;
         }
 
-        function claimDailyCard(cardIndex) {
+        async function claimDailyCard(cardIndex) {
             var today = getTodayDate();
-            var data = getDailyData();
+            var data = await getDailyData();
             
             // Уже открывали сегодня?
             if (data.lastClaimDate === today) {
@@ -494,7 +538,10 @@
             currentBalance += reward;
             data.streak = cardIndex + 1;
             data.lastClaimDate = today;
+            if (!data.collectedCards) data.collectedCards = [];
             data.collectedCards.push(cardIndex);
+            
+            // ✅ Сохраняем в Supabase и localStorage
             saveDailyData(data);
             updateBalanceDisplay();
             
@@ -502,18 +549,19 @@
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
             if (cardEl) cardEl.classList.add('flipped');
             
-            setTimeout(function() {
-                renderDailyCards();
+            setTimeout(async function() {
+                await renderDailyCards();
                 alert('✅ +' + reward + ' Spike получено!');
             }, 700);
         }
 
-        function renderDailyCards() {
+        async function renderDailyCards() {
             var grid = document.getElementById('dailyCardsGrid');
             var streakNum = document.getElementById('dailyStreakNum');
             if (!grid || !streakNum) return;
             
-            var data = getDailyData();
+            // ✅ Загружаем данные из Supabase
+            var data = await getDailyData();
             var today = getTodayDate();
             
             var yesterday = new Date();
@@ -527,13 +575,12 @@
                 saveDailyData(data);
             }
             
-            // Правильная нумерация: streak = количество открытых
             streakNum.textContent = data.streak || 0;
             grid.innerHTML = '';
             
             for (var i = 0; i < 9; i++) {
                 var reward = getDailyReward(i);
-                var isCollected = data.collectedCards.indexOf(i) !== -1;
+                var isCollected = data.collectedCards && data.collectedCards.indexOf(i) !== -1;
                 var isToday = (i === data.streak && !isCollected && data.lastClaimDate !== today);
                 var isLocked = !isCollected && !isToday;
                 
@@ -545,7 +592,6 @@
                 inner.className = 'daily-card-inner';
                 if (isCollected) inner.classList.add('flipped');
                 
-                // Передняя сторона (рубашка с картинкой)
                 var front = document.createElement('div');
                 front.className = 'daily-card-front';
                 if (isCollected) front.classList.add('collected');
@@ -557,7 +603,6 @@
                 front.innerHTML = '<img class="card-cover" src="' + cardImgUrl + '" alt="Card ' + (i + 1) + '" onerror="this.style.display=\'none\'">' +
                     '<div class="card-overlay"><div class="day-badge">' + (isCollected ? '✓' : ('#' + (i + 1))) + lockIcon + '</div></div>';
                 
-                // Задняя сторона (награда)
                 var back = document.createElement('div');
                 back.className = 'daily-card-back';
                 back.innerHTML = '<img class="reward-coin" src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="Spike" onerror="this.style.display=\'none\'">' +
@@ -568,7 +613,6 @@
                 inner.appendChild(back);
                 wrapper.appendChild(inner);
                 
-                // Клик только на сегодняшнюю
                 if (isToday) {
                     wrapper.addEventListener('click', function() {
                         if (!inner.classList.contains('flipped')) {
@@ -597,8 +641,7 @@
                 osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.1);
                 gain.gain.setValueAtTime(0.1, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
             } else if (type === 'flip') {
                 var bufferSize = audioCtx.sampleRate * 0.12;
                 var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -607,11 +650,8 @@
                 var noise = audioCtx.createBufferSource();
                 noise.buffer = buffer;
                 var filter = audioCtx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.value = 2500;
-                filter.Q.value = 0.8;
-                noise.connect(filter);
-                filter.connect(gain);
+                filter.type = 'bandpass'; filter.frequency.value = 2500; filter.Q.value = 0.8;
+                noise.connect(filter); filter.connect(gain);
                 gain.gain.setValueAtTime(0.12, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
                 noise.start(now);
@@ -623,16 +663,14 @@
                 osc.frequency.setValueAtTime(1046.5, now + 0.3);
                 gain.gain.setValueAtTime(0.1, now);
                 gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
             } else if (type === 'lose') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(280, now);
                 osc.frequency.linearRampToValueAtTime(140, now + 0.4);
                 gain.gain.setValueAtTime(0.08, now);
                 gain.gain.linearRampToValueAtTime(0.001, now + 0.4);
-                osc.start(now);
-                osc.stop(now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
             }
         }
 
@@ -667,8 +705,8 @@
                 
                 if (method === 'DELETE') return true;
                 
-                var data = await response.json();
-                return single && Array.isArray(data) ? data[0] : data;
+                var responseData = await response.json();
+                return single && Array.isArray(responseData) ? responseData[0] : responseData;
             } catch(e) {
                 console.error('[DB ERROR]', e);
                 throw e;
@@ -676,10 +714,7 @@
         }
 
         var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        if (tg) {
-            tg.ready && tg.ready();
-            tg.expand && tg.expand();
-        }
+        if (tg) { tg.ready && tg.ready(); tg.expand && tg.expand(); }
         
         async function ensureUserExists(userId, username) {
             try {
@@ -729,7 +764,7 @@
                 updateBalanceDisplay();
             } else if (name === 'tasks') {
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                setTimeout(renderDailyCards, 100);
+                setTimeout(function() { renderDailyCards(); }, 100);
             } else if (name === 'stats') {
                 if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 loadStats();
@@ -767,9 +802,7 @@
                 document.getElementById('statSkinName').textContent = getSkinNameById(currentSkin);
                 document.getElementById('statSkinBadge').textContent = '#' + (SKINS.findIndex(function(s) { return s.id === currentSkin; }) + 1);
                 document.getElementById('mainLogoImg').src = getSkinImg(currentSkin);
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         async function updateBalanceDisplay() {
@@ -789,12 +822,10 @@
                     el.textContent = formatCompactNumber(currentBalance);
                     el.style.color = currentBalance < 0 ? 'var(--error)' : currentBalance > 0 ? 'var(--success)' : 'var(--gold)';
                 }
-            } catch(e) {
-                console.error('Balance update error:', e);
-            }
+            } catch(e) { console.error('Balance update error:', e); }
         }
 
-        // ============ СКИНЫ (ОТОБРАЖЕНИЕ) ============
+        // ============ СКИНЫ ============
         function renderSkins() {
             var c = document.getElementById('skinsList');
             if (!c) return;
@@ -820,11 +851,9 @@
                 
                 el.innerHTML = '<div style="font-weight:700;width:30px;color:var(--sec);">#' + (i + 1) + '</div>' +
                     '<div class="room-icon skin-room-icon"><img src="' + s.img + '" alt=""></div>' +
-                    '<div class="room-info">' +
-                        '<div class="room-stake">' + getSkinNameById(s.id) + '</div>' +
-                        (!owned ? '<div class="skin-price">💰 ' + formatCompactNumber(s.price) + ' Spike</div>' : '<div class="skin-price" style="color:var(--success);">✅ Куплено</div>') +
-                    '</div>' +
-                    '<div class="room-actions">' + btnHtml + '</div>';
+                    '<div class="room-info"><div class="room-stake">' + getSkinNameById(s.id) + '</div>' +
+                    (!owned ? '<div class="skin-price">💰 ' + formatCompactNumber(s.price) + ' Spike</div>' : '<div class="skin-price" style="color:var(--success);">✅ Куплено</div>') +
+                    '</div><div class="room-actions">' + btnHtml + '</div>';
                 
                 c.appendChild(el);
             });
@@ -833,12 +862,10 @@
         function openSkinModal(s) {
             currentModalSkin = s;
             disableBottomNav();
-            
             var m = document.getElementById('skinModal');
             document.getElementById('modalImg').src = s.img;
             document.getElementById('modalTitle').textContent = getSkinNameById(s.id);
             document.getElementById('modalDesc').textContent = '';
-            
             var priceEl = document.getElementById('modalPrice');
             var btnEl = document.getElementById('modalBtn');
             
@@ -854,15 +881,10 @@
                 btnEl.disabled = false;
             } else {
                 priceEl.textContent = '💰 ' + formatCompactNumber(s.price) + ' Spike';
-                if (currentBalance >= s.price) {
-                    btnEl.textContent = 'Купить - ' + formatCompactNumber(s.price) + ' Spike';
-                } else {
-                    btnEl.textContent = 'Нужно ещё ' + formatCompactNumber(s.price - currentBalance) + ' Spike';
-                }
+                btnEl.textContent = currentBalance >= s.price ? 'Купить - ' + formatCompactNumber(s.price) + ' Spike' : 'Нужно ещё ' + formatCompactNumber(s.price - currentBalance) + ' Spike';
                 btnEl.className = 'skin-modal-btn buy';
                 btnEl.disabled = currentBalance < s.price;
             }
-            
             m.classList.remove('hidden');
         }
 
@@ -877,26 +899,17 @@
         function handleSkinAction() {
             if (!currentModalSkin) return;
             if (currentSkin === currentModalSkin.id) return;
-            if (isSkinOwned(currentModalSkin.id)) {
-                equipSkin(currentModalSkin.id);
-            } else {
-                buySkin(currentModalSkin.id);
-            }
+            if (isSkinOwned(currentModalSkin.id)) equipSkin(currentModalSkin.id);
+            else buySkin(currentModalSkin.id);
         }
 
         function buySkin(skinId) {
             if (isSkinOwned(skinId)) return;
             var price = getSkinPrice(skinId);
-            if (currentBalance < price) {
-                alert('Недостаточно Spike!');
-                return;
-            }
-            
+            if (currentBalance < price) { alert('Недостаточно Spike!'); return; }
             currentBalance -= price;
             ownedSkins.push(skinId);
             saveOwnedSkins();
-            
-            // Сохраняем в историю
             saveGameHistory('lose', 'rock', price).then(function() {
                 updateBalanceDisplay();
                 renderSkins();
@@ -919,25 +932,16 @@
 
         // ============ СТАВКИ ============
         function openStakeModal() {
-            if (currentBalance < 10) {
-                alert('Недостаточно средств!');
-                return;
-            }
+            if (currentBalance < 10) { alert('Недостаточно средств!'); return; }
             selectedStake = 10;
             document.getElementById('stakeInput').value = '';
             document.getElementById('stakeError').textContent = '';
             document.getElementById('roomPassword').value = '';
-            
             document.querySelectorAll('.stake-preset-btn').forEach(function(b) { b.classList.remove('selected'); });
             var defBtn = document.querySelector('.stake-preset-btn[data-stake="10"]');
             if (defBtn) defBtn.classList.add('selected');
-            
             var inp = document.getElementById('stakeInput');
-            inp.placeholder = '10 - 1000';
-            inp.min = 10;
-            inp.max = 1000;
-            inp.step = 10;
-            
+            inp.placeholder = '10 - 1000'; inp.min = 10; inp.max = 1000; inp.step = 10;
             disableBottomNav();
             document.getElementById('stakeModal').classList.remove('hidden');
         }
@@ -961,61 +965,32 @@
             var val = parseInt(document.getElementById('stakeInput').value);
             document.getElementById('stakeError').textContent = '';
             document.querySelectorAll('.stake-preset-btn').forEach(function(b) { b.classList.remove('selected'); });
-            
             if (isNaN(val)) { selectedStake = 10; return; }
-            if (val < 10) {
-                document.getElementById('stakeError').textContent = 'Мин: 10 Spike';
-                selectedStake = 10;
-            } else if (val > 1000) {
-                document.getElementById('stakeError').textContent = 'Макс: 1000 Spike';
-                selectedStake = 1000;
-            } else {
-                selectedStake = Math.round(val / 10) * 10;
-            }
+            if (val < 10) { document.getElementById('stakeError').textContent = 'Мин: 10 Spike'; selectedStake = 10; }
+            else if (val > 1000) { document.getElementById('stakeError').textContent = 'Макс: 1000 Spike'; selectedStake = 1000; }
+            else { selectedStake = Math.round(val / 10) * 10; }
         }
 
         async function confirmStake() {
             var inputVal = document.getElementById('stakeInput').value;
             var finalStake = selectedStake;
-            
             if (inputVal) {
                 var parsed = parseInt(inputVal);
-                if (parsed < 10 || parsed > 1000 || isNaN(parsed)) {
-                    document.getElementById('stakeError').textContent = 'Введи от 10 до 1000';
-                    return;
-                }
+                if (parsed < 10 || parsed > 1000 || isNaN(parsed)) { document.getElementById('stakeError').textContent = 'Введи от 10 до 1000'; return; }
                 finalStake = Math.round(parsed / 10) * 10;
             }
-            
-            if (currentBalance < finalStake) {
-                document.getElementById('stakeError').textContent = 'Недостаточно средств!';
-                return;
-            }
-            
+            if (currentBalance < finalStake) { document.getElementById('stakeError').textContent = 'Недостаточно средств!'; return; }
             var rawPassword = document.getElementById('roomPassword').value.trim();
-            if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) {
-                document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры';
-                return;
-            }
-            
+            if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; return; }
             closeStakeModal();
-            
             try {
                 await ensureUserExists(MY_ID, user.username);
-                var room = await db('rooms', 'POST', [{
-                    creator_tg_id: MY_ID,
-                    creator_username: user.username,
-                    stake: finalStake,
-                    status: 'waiting',
-                    room_password: rawPassword || null
-                }], '', true);
+                var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: rawPassword || null }], '', true);
                 currentRoom = room;
                 showGameScreen();
                 startPolling();
                 loadRooms();
-            } catch(e) {
-                alert('Ошибка: ' + e.message);
-            }
+            } catch(e) { alert('Ошибка: ' + e.message); }
         }
 
         // ============ КОМНАТЫ ============
@@ -1036,17 +1011,12 @@
                     el.textContent = formatCountdown(remaining);
                     if (remaining <= 60000) el.classList.add('urgent');
                     else el.classList.remove('urgent');
-                    if (remaining <= 0) {
-                        el.textContent = '⌛ Истекло';
-                        el.style.color = 'var(--error)';
-                    }
+                    if (remaining <= 0) { el.textContent = '⌛ Истекло'; el.style.color = 'var(--error)'; }
                 }
             });
         }, 1000);
 
-        function formatStakeDisplay(room) {
-            return (room.stake || 0) + ' Spike';
-        }
+        function formatStakeDisplay(room) { return (room.stake || 0) + ' Spike'; }
 
         async function loadRooms() {
             if (!MY_ID || MY_ID === 999999) {
@@ -1068,12 +1038,10 @@
             var c = document.getElementById(id);
             if (!c) return;
             c.innerHTML = '';
-            
             if (!rooms || rooms.length === 0) {
                 c.innerHTML = '<div style="text-align:center;color:var(--sec);padding:20px;">Нет комнат</div>';
                 return;
             }
-            
             rooms.forEach(function(r, i) {
                 try {
                     var trulyMine = Number(r.creator_tg_id) === MY_ID;
@@ -1084,15 +1052,9 @@
                     
                     var el = document.createElement('div');
                     el.className = 'room-card' + (trulyMine ? ' my-room' : '') + (isPlaying ? ' playing' : '');
+                    if (trulyMine || isOpponent) { el.onclick = function() { resumeRoom(r.id); }; el.style.cursor = 'pointer'; }
                     
-                    if (trulyMine || isOpponent) {
-                        el.onclick = function() { resumeRoom(r.id); };
-                        el.style.cursor = 'pointer';
-                    }
-                    
-                    var badgeHtml = '';
-                    var btnHtml = '';
-                    var timerHtml = '';
+                    var badgeHtml = '', btnHtml = '', timerHtml = '';
                     var hasPassword = r.room_password && r.room_password.length > 0;
                     var lockIcon = hasPassword ? '<span class="lock-icon">🔒</span>' : '';
                     
@@ -1117,11 +1079,8 @@
                             '<div class="room-info"><div class="room-stake">💰 ' + stakeDisplay + ' ' + badgeHtml + timerHtml + '</div><div class="room-creator">@' + (r.creator_username || 'Anonymous') + '</div></div>' +
                             '<div class="room-actions">' + btnHtml + '</div>';
                     }
-                    
                     c.appendChild(el);
-                } catch(err) {
-                    console.error('[ERROR] Render room ' + (i + 1) + ':', err);
-                }
+                } catch(err) { console.error('[ERROR] Render room ' + (i + 1) + ':', err); }
             });
         }
 
@@ -1130,16 +1089,9 @@
                 var room = await db('rooms', 'GET', null, '?id=eq.' + roomId, true);
                 if (!room) { alert('Room not found'); loadRooms(); return; }
                 currentRoom = room;
-                if (currentRoom.status === 'finished') {
-                    showGameScreen();
-                    showGameResult(currentRoom);
-                    return;
-                }
-                showGameScreen();
-                startPolling();
-            } catch(e) {
-                alert('Ошибка: ' + e.message);
-            }
+                if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; }
+                showGameScreen(); startPolling();
+            } catch(e) { alert('Ошибка: ' + e.message); }
         }
 
         async function cancelRoom(roomId) {
@@ -1148,60 +1100,32 @@
                 await db('rooms', 'DELETE', null, '?id=eq.' + roomId);
                 delete window.roomExpiry[roomId];
                 if (currentRoom && currentRoom.id === roomId) {
-                    currentRoom = null;
-                    isGameFinished = true;
+                    currentRoom = null; isGameFinished = true;
                     if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
                     if (window._timerInterval) clearInterval(window._timerInterval);
                     window._timerRunning = false;
                 }
                 loadRooms();
-            } catch(e) {
-                console.warn('Cancel room warning:', e);
-                loadRooms();
-            }
+            } catch(e) { console.warn('Cancel room warning:', e); loadRooms(); }
         }
 
         async function joinRoom(roomId, btnElement) {
             if (!btnElement) return;
-            btnElement.disabled = true;
-            btnElement.textContent = '⏳';
-            
+            btnElement.disabled = true; btnElement.textContent = '⏳';
             try {
                 var roomData = await db('rooms', 'GET', null, '?id=eq.' + roomId, false);
                 if (!roomData || !roomData.length) throw new Error('Комната занята');
                 var room = roomData[0];
-                
-                if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) {
-                    resumeRoom(roomId);
-                    return;
-                }
-                
+                if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
                 if (room.room_password) {
                     var pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:');
-                    if (pwd !== room.room_password) {
-                        alert('Неверный пароль!');
-                        btnElement.disabled = false;
-                        btnElement.textContent = 'Войти';
-                        return;
-                    }
+                    if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = 'Войти'; return; }
                 }
-                
                 await ensureUserExists(MY_ID, user.username);
-                var res = await db('rooms', 'PATCH', {
-                    opponent_tg_id: MY_ID,
-                    opponent_username: user.username,
-                    status: 'playing'
-                }, '?id=eq.' + roomId + '&status=eq.waiting', true);
-                
+                var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
                 if (!res) throw new Error('Ошибка');
-                currentRoom = res;
-                showGameScreen();
-                startPolling();
-                loadRooms();
-            } catch(e) {
-                alert('Ошибка: ' + e.message);
-                if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; }
-            }
+                currentRoom = res; showGameScreen(); startPolling(); loadRooms();
+            } catch(e) { alert('Ошибка: ' + e.message); if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } }
         }
 
         // ============ ИГРА ============
@@ -1210,7 +1134,6 @@
             try {
                 var roomData = await db('rooms', 'GET', null, '?id=eq.' + currentRoom.id, true);
                 if (!roomData) return;
-                
                 var creatorId = roomData.creator_tg_id;
                 var opponentId = roomData.opponent_tg_id;
                 var isCreator = String(creatorId) === String(MY_ID);
@@ -1243,9 +1166,7 @@
                 
                 document.getElementById(isCreator ? 'playerStats' : 'opponentStats').innerHTML = '<span style="color:var(--success)">✅ ' + (cData.wins || 0) + '</span><br><span style="color:var(--error)">❌ ' + (cData.losses || 0) + '</span>';
                 document.getElementById(isCreator ? 'opponentStats' : 'playerStats').innerHTML = '<span style="color:var(--success)">✅ ' + (oData.wins || 0) + '</span><br><span style="color:var(--error)">❌ ' + (oData.losses || 0) + '</span>';
-            } catch(e) {
-                console.warn('Stats load error:', e);
-            }
+            } catch(e) { console.warn('Stats load error:', e); }
         }
 
         function showGameScreen() {
@@ -1254,10 +1175,7 @@
             });
             document.getElementById('gameScreen').classList.remove('hidden');
             
-            if (!currentRoom) {
-                document.getElementById('statusMessage').textContent = '❌ Комната не найдена';
-                return;
-            }
+            if (!currentRoom) { document.getElementById('statusMessage').textContent = '❌ Комната не найдена'; return; }
             
             var isCreator = String(currentRoom.creator_tg_id) === String(MY_ID);
             var myCol = isCreator ? 'creator_choice' : 'opponent_choice';
@@ -1274,25 +1192,20 @@
                 document.getElementById('statusMessage').innerHTML = '<div class="spinner"></div>';
             }
             
-            isGameFinished = false;
-            window._timerRunning = false;
-            
+            isGameFinished = false; window._timerRunning = false;
             var stake = currentRoom.stake || 10;
             document.getElementById('stakeAmount').textContent = stake + ' Spike';
             document.getElementById('winAmount').textContent = (stake * 2) + ' Spike';
-            
             renderPlayerStats();
             updateGameStatus(currentRoom);
         }
 
         function updateGameStatus(room) {
             if (!room || isGameFinished) return;
-            
             var msgEl = document.getElementById('statusMessage');
             var timerText = document.getElementById('timerText');
             var timerBarContainer = document.getElementById('timerBarContainer');
             var timerBar = document.getElementById('timerBar');
-            
             var isCreator = String(room.creator_tg_id) === String(MY_ID);
             var myCol = isCreator ? 'creator_choice' : 'opponent_choice';
             
@@ -1313,23 +1226,14 @@
             if (room.status === 'waiting') {
                 msgEl.textContent = '⏳ Ждём соперника...';
             } else if (room.status === 'playing') {
-                if (room[myCol]) {
-                    msgEl.textContent = '✅ Ход записан';
-                    window._timerRunning = false;
-                } else {
+                if (room[myCol]) { msgEl.textContent = '✅ Ход записан'; window._timerRunning = false; }
+                else {
                     msgEl.innerHTML = '<span style="color:var(--error)">⚠️ Ваш ход!</span>';
                     timerText.classList.add('active');
                     timerBarContainer.style.display = 'block';
-                    if (!window._timerRunning) {
-                        window._timerRunning = true;
-                        window._timerStart = Date.now();
-                        startTimer(window._timerStart);
-                    }
+                    if (!window._timerRunning) { window._timerRunning = true; window._timerStart = Date.now(); startTimer(window._timerStart); }
                 }
-            } else {
-                msgEl.textContent = '🏁 Игра окончена';
-                window._timerRunning = false;
-            }
+            } else { msgEl.textContent = '🏁 Игра окончена'; window._timerRunning = false; }
         }
 
         function startTimer(startTime) {
@@ -1345,34 +1249,24 @@
                 timerBar.style.width = (remaining / timeLimit) * 100 + '%';
                 timerText.textContent = Math.ceil(remaining / 1000) + 's';
                 if (remaining < 10000) timerBar.classList.add('urgent');
-                if (remaining <= 0) {
-                    clearInterval(window._timerInterval);
-                    window._timerRunning = false;
-                    handleTimeout();
-                }
+                if (remaining <= 0) { clearInterval(window._timerInterval); window._timerRunning = false; handleTimeout(); }
             }, 1000);
         }
 
         async function handleTimeout() {
             if (!currentRoom || isGameFinished) return;
             var myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
-            
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
                 if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                
                 await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + currentRoom.id);
-                
                 var opponentId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
                 db('users', 'GET', null, '?telegram_id=eq.' + opponentId + '&select=wins', false).then(function(d) {
                     return db('users', 'PATCH', { wins: ((d[0] && d[0].wins) || 0) + 1 }, '?telegram_id=eq.' + opponentId);
                 }).catch(console.warn);
-                
                 db('users', 'PATCH', { losses: (currentWins || 0) + 1 }, '?telegram_id=eq.' + MY_ID).catch(console.warn);
-                
                 document.getElementById('statusMessage').innerHTML = '<div style="color:var(--error);font-size:18px;">😢 Время вышло!</div>';
-                updateStats();
-                updateBalanceDisplay();
+                updateStats(); updateBalanceDisplay();
                 setTimeout(function() { forceExitToLobby(); }, 3000);
             }
         }
@@ -1389,68 +1283,46 @@
                     var res = await db('rooms', 'GET', null, '?id=eq.' + currentRoom.id);
                     var room = res[0];
                     if (!room) return;
-                    
-                    if (room.opponent_tg_id && !opponentJoined) {
-                        playSound('join');
-                        opponentJoined = true;
-                    }
-                    
+                    if (room.opponent_tg_id && !opponentJoined) { playSound('join'); opponentJoined = true; }
                     currentRoom = room;
                     updateGameStatus(room);
                     renderPlayerStats();
                     
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
-                        isGameFinished = true;
-                        clearInterval(pollInterval);
-                        pollInterval = null;
-                        await showRevealAnimation(room);
-                        return;
+                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null;
+                        await showRevealAnimation(room); return;
                     }
-                    
                     if (room.status === 'finished') {
-                        isGameFinished = true;
-                        clearInterval(pollInterval);
-                        pollInterval = null;
-                        showGameResult(room);
-                        return;
+                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null;
+                        showGameResult(room); return;
                     }
-                } catch(e) {
-                    console.warn('Poll error:', e);
-                }
+                } catch(e) { console.warn('Poll error:', e); }
             }, 2000);
         }
 
         async function makeMove(choice) {
             if (!currentRoom) { alert('❌ Комната не найдена'); return; }
             if (!currentRoom.opponent_tg_id) { alert('⚠️ Игра не активна'); return; }
-            
             var col = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
             if (currentRoom[col]) return;
-            
             document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = true; });
             document.getElementById('statusMessage').textContent = '✅ Ход записан';
             window._timerRunning = false;
             if (window._timerInterval) clearInterval(window._timerInterval);
             document.getElementById('timerText').classList.remove('active');
             document.getElementById('timerBarContainer').style.display = 'none';
-            
             try {
                 await db('rooms', 'PATCH', { [col]: choice }, '?id=eq.' + currentRoom.id);
                 currentRoom[col] = choice;
-            } catch(e) {
-                alert('Ошибка: ' + e.message);
-                document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = false; });
-            }
+            } catch(e) { alert('Ошибка: ' + e.message); document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = false; }); }
         }
 
         async function saveGameHistory(resultStr, playerMove, customStake) {
             var roomStake = customStake;
             if (!roomStake && currentRoom) roomStake = currentRoom.stake;
             if (!roomStake) roomStake = getSkinPrice(currentModalSkin && currentModalSkin.id) || 10000;
-            
             var isCreator = currentRoom ? String(currentRoom.creator_tg_id) === String(MY_ID) : true;
             var opponentName = currentRoom ? (isCreator ? currentRoom.opponent_username : currentRoom.creator_username) : 'Skin Shop';
-            
             var encodedStake;
             if (resultStr === 'win') encodedStake = roomStake;
             else if (resultStr === 'lose') encodedStake = -roomStake;
@@ -1464,18 +1336,12 @@
                 result: resultStr,
                 played_at: new Date().toISOString()
             };
-            
-            try {
-                await db('game_history', 'POST', [historyData]);
-            } catch(e) {
-                console.error('Save history error:', e);
-            }
+            try { await db('game_history', 'POST', [historyData]); } catch(e) { console.error('Save history error:', e); }
         }
 
         async function showRevealAnimation(room) {
             var overlay = document.getElementById('revealOverlay');
             var confetti = document.getElementById('confettiContainer');
-            
             var isCreator = String(room.creator_tg_id) === String(MY_ID);
             var myMove = isCreator ? room.creator_choice : room.opponent_choice;
             var oppMove = isCreator ? room.opponent_choice : room.creator_choice;
@@ -1487,31 +1353,19 @@
             document.getElementById('card2Img').src = moveImages[oppMove];
             document.getElementById('card2Name').textContent = oppMove === 'rock' ? 'Камень' : oppMove === 'scissors' ? 'Ножницы' : 'Бумага';
             
-            overlay.classList.remove('hidden');
-            confetti.classList.add('hidden');
-            confetti.innerHTML = '';
-            
-            document.getElementById('card1').classList.remove('flipped');
-            document.getElementById('card2').classList.remove('flipped');
-            
+            overlay.classList.remove('hidden'); confetti.classList.add('hidden'); confetti.innerHTML = '';
+            document.getElementById('card1').classList.remove('flipped'); document.getElementById('card2').classList.remove('flipped');
             var resultEl = document.getElementById('revealResult');
-            resultEl.className = 'reveal-result';
-            resultEl.textContent = '';
+            resultEl.className = 'reveal-result'; resultEl.textContent = '';
             document.getElementById('revealCountdown').textContent = '';
-            
             var emDiv = document.getElementById('revealEmotion');
             var emImg = document.getElementById('emotionImg');
-            emDiv.classList.add('hidden');
-            emImg.src = '';
+            emDiv.classList.add('hidden'); emImg.src = '';
             
             await sleep(500);
-            document.getElementById('card1').classList.add('flipped');
-            playSound('flip');
-            
+            document.getElementById('card1').classList.add('flipped'); playSound('flip');
             await sleep(1000);
-            document.getElementById('card2').classList.add('flipped');
-            playSound('flip');
-            
+            document.getElementById('card2').classList.add('flipped'); playSound('flip');
             await sleep(800);
             
             var result = calculateWinner(room);
@@ -1521,24 +1375,18 @@
             
             resultEl.textContent = msg;
             resultEl.className = 'reveal-result show ' + (isWin ? 'victory' : isDraw ? 'draw' : 'defeat');
-            
             emDiv.classList.remove('hidden');
             
             if (isWin) {
                 emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';
-                playSound('win');
-                createConfetti();
+                playSound('win'); createConfetti();
             } else if (!isDraw) {
                 emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';
                 playSound('lose');
-            } else {
-                emDiv.classList.add('hidden');
-            }
+            } else { emDiv.classList.add('hidden'); }
             
             var resultForHistory = 'draw';
-            if (result.winnerId) {
-                resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose';
-            }
+            if (result.winnerId) { resultForHistory = (result.winnerId === MY_ID) ? 'win' : 'lose'; }
             await saveGameHistory(resultForHistory, myMove);
             
             var countdown = 3;
@@ -1547,15 +1395,11 @@
             
             var countdownInterval = setInterval(function() {
                 countdown--;
-                if (countdown > 0) {
-                    countdownEl.textContent = countdown;
-                } else {
+                if (countdown > 0) { countdownEl.textContent = countdown; }
+                else {
                     clearInterval(countdownInterval);
-                    overlay.classList.add('hidden');
-                    confetti.classList.add('hidden');
-                    updateStats();
-                    updateBalanceDisplay();
-                    forceExitToLobby();
+                    overlay.classList.add('hidden'); confetti.classList.add('hidden');
+                    updateStats(); updateBalanceDisplay(); forceExitToLobby();
                 }
             }, 1000);
             
@@ -1574,19 +1418,12 @@
             }
         }
 
-        function sleep(ms) {
-            return new Promise(function(resolve) {
-                setTimeout(resolve, ms);
-            });
-        }
-
+        function sleep(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); }
+        
         function createConfetti() {
             var container = document.getElementById('confettiContainer');
-            container.classList.remove('hidden');
-            container.innerHTML = '';
-            
+            container.classList.remove('hidden'); container.innerHTML = '';
             var colors = ['#6366f1', '#10b981', '#fbbf24', '#ef4444', '#8b5cf6', '#f59e0b'];
-            
             for (var i = 0; i < 50; i++) {
                 var confetti = document.createElement('div');
                 confetti.className = 'confetti';
@@ -1604,41 +1441,31 @@
         function showGameResult(room) {
             var msg = calculateWinner(room).msg;
             document.getElementById('statusMessage').innerHTML = '<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">' + msg + '</div>';
-            updateStats();
-            updateBalanceDisplay();
+            updateStats(); updateBalanceDisplay();
             setTimeout(function() { forceExitToLobby(); }, 3000);
         }
 
         function calculateWinner(room) {
-            var c1 = room.creator_choice;
-            var c2 = room.opponent_choice;
-            var id1 = room.creator_tg_id;
-            var id2 = room.opponent_tg_id;
-            
+            var c1 = room.creator_choice, c2 = room.opponent_choice;
+            var id1 = room.creator_tg_id, id2 = room.opponent_tg_id;
             if (!c1 && !c2) return { msg: '🤝 Ничья!', winnerId: null };
             if (!c1) return { msg: (MY_ID === id1) ? '😢 Поражение' : '🏆 Победа!', winnerId: id2 };
             if (!c2) return { msg: (MY_ID === id2) ? '😢 Поражение' : '🏆 Победа!', winnerId: id1 };
             if (c1 === c2) return { msg: '🤝 Ничья!', winnerId: null };
-            
             var beats = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
             var creatorWins = beats[c1] === c2;
-            
-            return {
-                msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? '🏆 Победа!' : '😢 Поражение',
-                winnerId: creatorWins ? id1 : id2
-            };
+            return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
         }
 
         // ============ РЕЙТИНГ ============
         async function loadLeaderboard() {
             var c = document.getElementById('leaderboardList');
             if (!c) return;
-            
             try {
                 var allUsers = await db('users', 'GET', null, '?select=telegram_id,username,wins,losses&order=wins.desc.nullslast&limit=50');
                 var usersList = Array.isArray(allUsers) ? allUsers : [];
-                
                 var leaderboardData = [];
+                
                 for (var j = 0; j < usersList.length; j++) {
                     var u = usersList[j];
                     var games = await db('game_history', 'GET', null, '?player_id=eq.' + u.telegram_id + '&order=played_at.desc&limit=50', false);
@@ -1653,13 +1480,11 @@
                         telegram_id: u.telegram_id,
                         username: u.username,
                         wins: u.wins || 0,
-                        losses: u.losses || 0,
                         balance: Math.round(balance)
                     });
                 }
                 
                 leaderboardData.sort(function(a, b) { return b.balance - a.balance; });
-                
                 c.innerHTML = '';
                 var top20 = leaderboardData.slice(0, 20);
                 
@@ -1667,7 +1492,6 @@
                     var sk = SKINS[Math.min(Math.floor(Math.abs(u.balance) / 100000), 7)] || SKINS[0];
                     var name = u.username || 'User_' + String(u.telegram_id).slice(-4);
                     var isMe = Number(u.telegram_id) === MY_ID;
-                    
                     var el = document.createElement('div');
                     el.className = 'room-card' + (isMe ? ' my-room' : '');
                     el.innerHTML = '<div style="font-weight:700;width:30px;">' + (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1) + '</div>' +
@@ -1683,7 +1507,6 @@
                 if (myRank > 20 && myData) {
                     var ms = SKINS[Math.min(Math.floor(Math.abs(myData.balance) / 100000), 7)] || SKINS[0];
                     var myName = user.username || 'User_' + String(MY_ID).slice(-4);
-                    
                     var el = document.createElement('div');
                     el.className = 'room-card my-room';
                     el.style.border = '1px dashed var(--gold)';
@@ -1693,15 +1516,12 @@
                         '<div class="lb-stats"><span>🦔 ' + formatCompactNumber(myData.balance) + ' Spike</span><span>✅ ' + myData.wins + '</span></div></div>';
                     c.appendChild(el);
                 }
-            } catch(e) {
-                c.innerHTML = '<div style="color:red;padding:15px;">' + e.message + '</div>';
-            }
+            } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">' + e.message + '</div>'; }
         }
 
         // ============ СТАТИСТИКА ============
         async function loadStats() {
             if (!MY_ID || MY_ID === 999999) return;
-            
             var tableBody = document.getElementById('gamesTableBody');
             tableBody.innerHTML = '<div class="loader" style="padding:20px;"><div class="spinner"></div></div>';
             
@@ -1722,23 +1542,14 @@
                 
                 gamesList.forEach(function(game) {
                     var absVal = Math.abs(game.stake || 0);
-                    if (game.result === 'win') {
-                        wins++;
-                        totalSpike += absVal;
-                    } else if (game.result === 'lose') {
-                        losses++;
-                        totalSpike -= absVal;
-                    } else {
-                        draws++;
-                    }
-                    if (game.player_move && moveCounts[game.player_move] !== undefined) {
-                        moveCounts[game.player_move]++;
-                    }
+                    if (game.result === 'win') { wins++; totalSpike += absVal; }
+                    else if (game.result === 'lose') { losses++; totalSpike -= absVal; }
+                    else { draws++; }
+                    if (game.player_move && moveCounts[game.player_move] !== undefined) moveCounts[game.player_move]++;
                 });
                 
                 var totalGames = wins + losses + draws;
                 var winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-                
                 var maxMoves = Object.entries(moveCounts).sort(function(a, b) { return b[1] - a[1]; });
                 var favMove = maxMoves[0] && maxMoves[0][1] > 0 ? maxMoves[0][0] : null;
                 var moveEmojis = { rock: '🪨', scissors: '✂️', paper: '📄' };
@@ -1797,13 +1608,11 @@
             loadOwnedSkins();
             var savedSkin = localStorage.getItem('echidna_selected_skin');
             if (savedSkin && isSkinOwned(savedSkin)) currentSkin = savedSkin;
-            
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.expand();
                 window.Telegram.WebApp.setHeaderColor('#0a0a1a');
                 window.Telegram.WebApp.setBackgroundColor('#0a0a1a');
             }
-            
             loadRooms();
         });
     </script>
