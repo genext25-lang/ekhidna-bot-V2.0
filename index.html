@@ -383,6 +383,133 @@
         // ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
         var moveImages = { rock: 'move-rock.png', scissors: 'move-scissors.png', paper: 'move-paper.png' };
         
+        // ============ ЗВУКИ И ВИБРАЦИЯ ============
+        var audioCtx = null;
+        var soundsInitialized = false;
+        
+        function initAudio() {
+            if (soundsInitialized) return;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                soundsInitialized = true;
+            } catch(e) {
+                console.warn('Audio init failed:', e);
+            }
+        }
+        
+        function vibrate(pattern) {
+            // Вибрация через Telegram WebApp или navigator
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                if (pattern === 'light' || pattern === 50) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                } else if (pattern === 'medium' || pattern === 100) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                } else if (pattern === 'heavy' || pattern === 200) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+                } else if (Array.isArray(pattern)) {
+                    // Для сложных паттернов используем navigator.vibrate
+                    if (navigator.vibrate) navigator.vibrate(pattern);
+                }
+            } else if (navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        }
+        
+        function playBeep(frequency, duration, type, volume) {
+            if (!soundsInitialized) initAudio();
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            
+            try {
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                gain.gain.setValueAtTime(volume || 0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+        
+        function playNoise(duration, volume) {
+            if (!soundsInitialized) initAudio();
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            
+            try {
+                var bufferSize = audioCtx.sampleRate * duration;
+                var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                var data = buffer.getChannelData(0);
+                for (var i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                var noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                var filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 2000;
+                filter.Q.value = 0.5;
+                var gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(volume || 0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                noise.start();
+            } catch(e) {}
+        }
+        
+        // 🔊 Звук присоединения игрока + вибрация
+        function playJoinSound() {
+            playBeep(523, 0.15, 'sine', 0.15);
+            setTimeout(function() { playBeep(784, 0.15, 'sine', 0.1); }, 80);
+            vibrate([30, 20, 30]); // Короткая вибрация
+        }
+        
+        // 🔊 Звук открытия карточки
+        function playFlipCardSound() {
+            playNoise(0.12, 0.18);
+            vibrate(20); // Лёгкая вибрация
+        }
+        
+        // 🔊 Звук победы
+        function playWinSound() {
+            playBeep(523, 0.1, 'triangle', 0.15);
+            setTimeout(function() { playBeep(659, 0.1, 'triangle', 0.12); }, 100);
+            setTimeout(function() { playBeep(784, 0.1, 'triangle', 0.1); }, 200);
+            setTimeout(function() { playBeep(1047, 0.2, 'triangle', 0.08); }, 300);
+            vibrate([50, 30, 50]); // Приятная вибрация победы
+        }
+        
+        // 🔊 Звук поражения
+        function playLoseSound() {
+            playBeep(280, 0.3, 'sawtooth', 0.12);
+            setTimeout(function() { playBeep(180, 0.2, 'sawtooth', 0.08); }, 200);
+            vibrate([100]); // Долгая грустная вибрация
+        }
+        
+        // 🔊 Звук покупки скина
+        function playBuySound() {
+            playBeep(880, 0.1, 'sine', 0.15);
+            setTimeout(function() { playBeep(1175, 0.15, 'sine', 0.1); }, 80);
+            vibrate([20, 20, 20]);
+        }
+        
+        // 🔊 Звук ошибки/недостаточно средств
+        function playErrorSound() {
+            playBeep(150, 0.2, 'square', 0.1);
+            vibrate([50, 30, 50]);
+        }
+        
+        // Инициализация аудио при первом взаимодействии
+        document.addEventListener('click', function initAudioOnFirstClick() {
+            initAudio();
+            document.removeEventListener('click', initAudioOnFirstClick);
+        }, { once: true });
+        
         function setLanguage(lang) {
             document.querySelectorAll('.lang-mini-btn').forEach(function(b) {
                 b.classList.toggle('active', b.textContent.toLowerCase() === lang);
@@ -588,107 +715,6 @@
         function disableBottomNav() { document.getElementById('bottomNav').classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav').classList.remove('disabled'); }
 
-        // ============ ЗВУКИ ============
-        var audioCtx = null;
-        
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-        
-        function playSound(type) {
-            initAudio();
-            var now = audioCtx.currentTime;
-            var osc = audioCtx.createOscillator();
-            var gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            if (type === 'join') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.15);
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                osc.start(now);
-                osc.stop(now + 0.4);
-            } else if (type === 'flip') {
-                var bufferSize = audioCtx.sampleRate * 0.15;
-                var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-                var data = buffer.getChannelData(0);
-                for (var i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
-                var noise = audioCtx.createBufferSource();
-                noise.buffer = buffer;
-                var filter = audioCtx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.value = 2000;
-                filter.Q.value = 0.5;
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                noise.start(now);
-            } else if (type === 'win') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.setValueAtTime(659.25, now + 0.1);
-                osc.frequency.setValueAtTime(783.99, now + 0.2);
-                osc.frequency.setValueAtTime(1046.5, now + 0.3);
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.6);
-                osc.start(now);
-                osc.stop(now + 0.6);
-            } else if (type === 'lose') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(280, now);
-                osc.frequency.linearRampToValueAtTime(140, now + 0.5);
-                gain.gain.setValueAtTime(0.12, now);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
-            } else if (type === 'flipDaily') {
-                var bufferSize2 = audioCtx.sampleRate * 0.12;
-                var buffer2 = audioCtx.createBuffer(1, bufferSize2, audioCtx.sampleRate);
-                var data2 = buffer2.getChannelData(0);
-                for (var i = 0; i < bufferSize2; i++) {
-                    data2[i] = Math.random() * 2 - 1;
-                }
-                var noise2 = audioCtx.createBufferSource();
-                noise2.buffer = buffer2;
-                var filter2 = audioCtx.createBiquadFilter();
-                filter2.type = 'bandpass';
-                filter2.frequency.value = 2200;
-                filter2.Q.value = 0.6;
-                noise2.connect(filter2);
-                filter2.connect(gain);
-                gain.gain.setValueAtTime(0.18, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-                noise2.start(now);
-            }
-        }
-
-        // ============ ОГРАНИЧЕНИЕ КОМНАТ ============
-        async function canCreateRoom() {
-            try {
-                var myRooms = await db('rooms', 'GET', null, '?creator_tg_id=eq.' + MY_ID + '&status=neq.finished&limit=10');
-                var activeRooms = Array.isArray(myRooms) ? myRooms.filter(function(r) { return r.status !== 'finished'; }) : [];
-                if (activeRooms.length >= 5) {
-                    alert('❌ У вас уже есть 5 активных комнат! Дождитесь их завершения (5 минут) или отмените созданные.');
-                    return false;
-                }
-                return true;
-            } catch(e) {
-                console.error('Check rooms limit error:', e);
-                return true;
-            }
-        }
-
         // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
         async function loadDailyDataFromDB() {
             try {
@@ -802,7 +828,7 @@
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
             if (cardEl) {
                 cardEl.classList.add('flipped');
-                playSound('flipDaily');
+                playFlipCardSound(); // 🔊 Звук открытия карточки
             }
             
             setTimeout(async function() {
@@ -1126,7 +1152,11 @@
         async function buySkin(skinId) {
             if (isSkinOwned(skinId)) return;
             var price = getSkinPrice(skinId);
-            if (currentBalance < price) { alert('Недостаточно Spike!'); return; }
+            if (currentBalance < price) { 
+                playErrorSound(); // 🔊 Звук ошибки
+                alert('Недостаточно Spike!'); 
+                return; 
+            }
             
             console.log('[SKINS] Buying skin:', skinId, 'price:', price);
             
@@ -1147,6 +1177,7 @@
             
             var s = SKINS.find(function(s) { return s.id === skinId; });
             if (s) openSkinModal(s);
+            playBuySound(); // 🔊 Звук покупки
             alert('✅ Скин "' + getSkinNameById(skinId) + '" куплен за ' + formatCompactNumber(price) + ' Spike!');
         }
 
@@ -1172,7 +1203,11 @@
 
         // ============ СТАВКИ ============
         function openStakeModal() {
-            if (currentBalance < 10) { alert('Недостаточно средств!'); return; }
+            if (currentBalance < 10) { 
+                playErrorSound(); // 🔊 Звук ошибки
+                alert('Недостаточно средств!'); 
+                return; 
+            }
             selectedStake = 10;
             document.getElementById('stakeInput').value = '';
             document.getElementById('stakeError').textContent = '';
@@ -1219,12 +1254,24 @@
             var finalStake = selectedStake;
             if (inputVal) {
                 var parsed = parseInt(inputVal);
-                if (parsed < 10 || parsed > 1000 || isNaN(parsed)) { document.getElementById('stakeError').textContent = 'Введи от 10 до 1000'; return; }
+                if (parsed < 10 || parsed > 1000 || isNaN(parsed)) { 
+                    playErrorSound(); // 🔊 Звук ошибки
+                    document.getElementById('stakeError').textContent = 'Введи от 10 до 1000'; 
+                    return; 
+                }
                 finalStake = Math.round(parsed / 10) * 10;
             }
-            if (currentBalance < finalStake) { document.getElementById('stakeError').textContent = 'Недостаточно средств!'; return; }
+            if (currentBalance < finalStake) { 
+                playErrorSound(); // 🔊 Звук ошибки
+                document.getElementById('stakeError').textContent = 'Недостаточно средств!'; 
+                return; 
+            }
             var rawPassword = document.getElementById('roomPassword').value.trim();
-            if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; return; }
+            if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { 
+                playErrorSound(); // 🔊 Звук ошибки
+                document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; 
+                return; 
+            }
             closeStakeModal();
             try {
                 await ensureUserExists(MY_ID, user.username);
@@ -1233,7 +1280,10 @@
                 showGameScreen();
                 startPolling();
                 loadRooms();
-            } catch(e) { alert('Ошибка: ' + e.message); }
+            } catch(e) { 
+                playErrorSound(); // 🔊 Звук ошибки
+                alert('Ошибка: ' + e.message); 
+            }
         }
 
         // ============ КОМНАТЫ ============
@@ -1362,14 +1412,24 @@
                 if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
                 if (room.room_password) {
                     var pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:');
-                    if (pwd !== room.room_password) { alert('Неверный пароль!'); btnElement.disabled = false; btnElement.textContent = 'Войти'; return; }
+                    if (pwd !== room.room_password) { 
+                        playErrorSound(); // 🔊 Звук ошибки
+                        alert('Неверный пароль!'); 
+                        btnElement.disabled = false; 
+                        btnElement.textContent = 'Войти'; 
+                        return; 
+                    }
                 }
                 await ensureUserExists(MY_ID, user.username);
                 var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
                 if (!res) throw new Error('Ошибка');
                 currentRoom = res; showGameScreen(); startPolling(); loadRooms();
                 closeRoomsScreen();
-            } catch(e) { alert('Ошибка: ' + e.message); if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } }
+            } catch(e) { 
+                playErrorSound(); // 🔊 Звук ошибки
+                alert('Ошибка: ' + e.message); 
+                if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } 
+            }
         }
 
         // ============ ИГРА ============
@@ -1530,7 +1590,7 @@
                     if (!room) return;
                     if (room.opponent_tg_id && !opponentJoined) { 
                         opponentJoined = true;
-                        playSound('join');
+                        playJoinSound(); // 🔊 Звук присоединения + вибрация
                     }
                     currentRoom = room;
                     updateGameStatus(room);
@@ -1562,7 +1622,11 @@
             try {
                 await db('rooms', 'PATCH', { [col]: choice }, '?id=eq.' + currentRoom.id);
                 currentRoom[col] = choice;
-            } catch(e) { alert('Ошибка: ' + e.message); document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = false; }); }
+            } catch(e) { 
+                playErrorSound(); // 🔊 Звук ошибки
+                alert('Ошибка: ' + e.message); 
+                document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = false; }); 
+            }
         }
 
         async function saveGameHistory(resultStr, playerMove, customStake) {
@@ -1611,9 +1675,11 @@
             emDiv.classList.add('hidden'); emImg.src = '';
             
             await sleep(500);
-            document.getElementById('card1').classList.add('flipped'); playSound('flip');
+            document.getElementById('card1').classList.add('flipped'); 
+            playFlipCardSound(); // 🔊 Звук переворота карты 1
             await sleep(1000);
-            document.getElementById('card2').classList.add('flipped'); playSound('flip');
+            document.getElementById('card2').classList.add('flipped'); 
+            playFlipCardSound(); // 🔊 Звук переворота карты 2
             await sleep(800);
             
             var result = calculateWinner(room);
@@ -1627,10 +1693,11 @@
             
             if (isWin) {
                 emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';
-                playSound('win'); createConfetti();
+                playWinSound(); // 🔊 Звук победы
+                createConfetti();
             } else if (!isDraw) {
                 emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';
-                playSound('lose');
+                playLoseSound(); // 🔊 Звук поражения
             } else { emDiv.classList.add('hidden'); }
             
             var resultForHistory = 'draw';
