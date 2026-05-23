@@ -388,7 +388,7 @@
         var soundsInitialized = false;
         var audioUnlockAttempts = 0;
         
-        // 🔊 Инициализация аудио (исправлено для мобильных)
+        // 🔊 Инициализация аудио
         function initAudio() {
             if (soundsInitialized) return true;
             try {
@@ -409,7 +409,7 @@
             }
         }
         
-        // 🔊 Принудительная разблокировка звука при старте игры
+        // 🔊 Разблокировка звука
         function forceUnlockAudio() {
             if (!soundsInitialized && audioUnlockAttempts < 5) {
                 audioUnlockAttempts++;
@@ -429,7 +429,6 @@
             }
         }
         
-        // Привязываем разблокировку к различным событиям
         ['click', 'touchstart', 'touchend'].forEach(function(evt) {
             document.addEventListener(evt, function() {
                 if (!soundsInitialized) forceUnlockAudio();
@@ -439,26 +438,18 @@
         // 📳 Вибрация
         function vibrate(pattern) {
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-                if (pattern === 'light' || pattern === 50) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                } else if (pattern === 'medium' || pattern === 100) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                } else if (pattern === 'heavy' || pattern === 200) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
-                } else if (Array.isArray(pattern)) {
-                    if (navigator.vibrate) navigator.vibrate(pattern);
-                }
+                if (pattern === 'light' || pattern === 50) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                else if (pattern === 'medium' || pattern === 100) window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                else if (pattern === 'heavy' || pattern === 200) window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+                else if (Array.isArray(pattern)) { if (navigator.vibrate) navigator.vibrate(pattern); }
             } else if (navigator.vibrate) {
                 navigator.vibrate(pattern);
             }
         }
         
-        // 🔊 Генерация звуков
+        // 🔊 Звуки
         function playBeep(frequency, duration, type, volume) {
-            if (!soundsInitialized) {
-                forceUnlockAudio();
-                if (!audioCtx || audioCtx.state !== 'running') return;
-            }
+            if (!soundsInitialized) { forceUnlockAudio(); if (!audioCtx || audioCtx.state !== 'running') return; }
             if (!audioCtx) return;
             try {
                 var osc = audioCtx.createOscillator();
@@ -475,18 +466,13 @@
         }
         
         function playNoise(duration, volume) {
-            if (!soundsInitialized) {
-                forceUnlockAudio();
-                if (!audioCtx || audioCtx.state !== 'running') return;
-            }
+            if (!soundsInitialized) { forceUnlockAudio(); if (!audioCtx || audioCtx.state !== 'running') return; }
             if (!audioCtx) return;
             try {
                 var bufferSize = audioCtx.sampleRate * duration;
                 var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 var data = buffer.getChannelData(0);
-                for (var i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
+                for (var i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
                 var noise = audioCtx.createBufferSource();
                 noise.buffer = buffer;
                 var filter = audioCtx.createBiquadFilter();
@@ -503,69 +489,56 @@
             } catch(e) {}
         }
         
-        function playJoinSound() {
-            playBeep(523, 0.15, 'sine', 0.15);
-            setTimeout(function() { playBeep(784, 0.15, 'sine', 0.1); }, 80);
-            vibrate([30, 20, 30]);
-        }
+        function playJoinSound() { playBeep(523, 0.15, 'sine', 0.15); setTimeout(function() { playBeep(784, 0.15, 'sine', 0.1); }, 80); vibrate([30, 20, 30]); }
+        function playFlipCardSound() { playNoise(0.12, 0.18); vibrate(20); }
+        function playWinSound() { playBeep(523, 0.1, 'triangle', 0.15); setTimeout(function() { playBeep(659, 0.1, 'triangle', 0.12); }, 100); setTimeout(function() { playBeep(784, 0.1, 'triangle', 0.1); }, 200); setTimeout(function() { playBeep(1047, 0.2, 'triangle', 0.08); }, 300); vibrate([50, 30, 50]); }
+        function playLoseSound() { playBeep(280, 0.3, 'sawtooth', 0.12); setTimeout(function() { playBeep(180, 0.2, 'sawtooth', 0.08); }, 200); vibrate([100]); }
+        function playBuySound() { playBeep(880, 0.1, 'sine', 0.15); setTimeout(function() { playBeep(1175, 0.15, 'sine', 0.1); }, 80); vibrate([20, 20, 20]); }
+        function playErrorSound() { playBeep(150, 0.2, 'square', 0.1); vibrate([50, 30, 50]); }
         
-        function playFlipCardSound() {
-            playNoise(0.12, 0.18);
-            vibrate(20);
-        }
-        
-        function playWinSound() {
-            playBeep(523, 0.1, 'triangle', 0.15);
-            setTimeout(function() { playBeep(659, 0.1, 'triangle', 0.12); }, 100);
-            setTimeout(function() { playBeep(784, 0.1, 'triangle', 0.1); }, 200);
-            setTimeout(function() { playBeep(1047, 0.2, 'triangle', 0.08); }, 300);
-            vibrate([50, 30, 50]);
-        }
-        
-        function playLoseSound() {
-            playBeep(280, 0.3, 'sawtooth', 0.12);
-            setTimeout(function() { playBeep(180, 0.2, 'sawtooth', 0.08); }, 200);
-            vibrate([100]);
-        }
-        
-        function playBuySound() {
-            playBeep(880, 0.1, 'sine', 0.15);
-            setTimeout(function() { playBeep(1175, 0.15, 'sine', 0.1); }, 80);
-            vibrate([20, 20, 20]);
-        }
-        
-        function playErrorSound() {
-            playBeep(150, 0.2, 'square', 0.1);
-            vibrate([50, 30, 50]);
-        }
-        
-        // ============ ФУНКЦИЯ ЭКРАНИРОВАНИЯ ДЛЯ XSS ============
+        // ============ 🔒 ИСПРАВЛЕНИЕ 1: БЕЗОПАСНАЯ ФУНКЦИЯ ЭКРАНИРОВАНИЯ (XSS ЗАЩИТА) ============
         function escapeHtml(str) {
             if (!str) return '';
-            return String(str).replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-                return c;
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+                '/': '&#x2F;',
+                '`': '&#x60;',
+                '=': '&#x3D;',
+                '(': '&#40;',
+                ')': '&#41;'
+            };
+            return String(str).replace(/[&<>"'\/`=()]/g, function(m) {
+                return map[m] || m;
             });
         }
         
-        // ============ БЕЗОПАСНАЯ ФУНКЦИЯ ДЛЯ ЗАПРОСОВ К БД (исправлена SQL инъекция) ============
+        // ============ БЕЗОПАСНАЯ ФУНКЦИЯ ДЛЯ ЗАПРОСОВ К БД ============
+        function sanitizeFilter(filter) {
+            if (!filter) return '';
+            const validPattern = /^\?[a-zA-Z_][a-zA-Z0-9_]*=(eq|neq|gt|lt|gte|lte|like|ilike|is|in)\.[a-zA-Z0-9_\-\@.:,]+(&[a-zA-Z_][a-zA-Z0-9_]*=(eq|neq|gt|lt|gte|lte|like|ilike|is|in)\.[a-zA-Z0-9_\-\@.:,]+)*$/;
+            if (!validPattern.test(filter)) {
+                console.error('[SECURITY] Invalid filter rejected:', filter);
+                throw new Error('Invalid filter parameter');
+            }
+            return filter;
+        }
+        
         async function db(table, method, payload, filters, single) {
             payload = payload || null;
             filters = filters || '';
             single = single || false;
             
-            // Экранируем фильтры для предотвращения инъекций
-            var safeFilters = filters.replace(/[^a-zA-Z0-9_=,.&?\-]/g, '');
-            
+            var safeFilters = sanitizeFilter(filters);
             var url = SUPABASE_URL + '/rest/v1/' + table + safeFilters;
             var headers = {
                 'apikey': SUPABASE_ANON_KEY,
                 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             };
             
             if (method === 'POST') headers['Prefer'] = 'return=representation';
@@ -576,7 +549,8 @@
                 var response = await fetch(url, {
                     method: method,
                     headers: headers,
-                    body: payload ? JSON.stringify(payload) : null
+                    body: payload ? JSON.stringify(payload) : null,
+                    cache: 'no-store'
                 });
                 
                 if (!response.ok) {
@@ -594,7 +568,7 @@
             }
         }
         
-        // ============ УПРАВЛЕНИЕ ИНТЕРВАЛАМИ (предотвращение утечек памяти) ============
+        // ============ 🧹 ИСПРАВЛЕНИЕ 3: УПРАВЛЕНИЕ ИНТЕРВАЛАМИ (ПРЕДОТВРАЩЕНИЕ УТЕЧЕК ПАМЯТИ) ============
         var activeIntervals = {
             pollInterval: null,
             lobbyRefreshInterval: null,
@@ -650,7 +624,6 @@
         
         function startGame() {
             document.getElementById('splashScreen').classList.add('hidden');
-            // Принудительно разблокируем звук при старте игры
             forceUnlockAudio();
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.expand();
@@ -663,6 +636,7 @@
         var SUPABASE_URL = 'https://tejndwtckdvueufqhitu.supabase.co';
         var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlam5kd3Rja2R2dWV1ZnFoaXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjY5MjcsImV4cCI6MjA5MzgwMjkyN30.tDP9B-nWPMsuANJ4JiASs0UYgJqJZtm9Sj3jUs13l9c';
         
+        // ============ 🛡️ ИСПРАВЛЕНИЕ 4: ЗАЩИТА ПАРСИНГА ДАННЫХ ============
         function getCurrentUser() {
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
                 return window.Telegram.WebApp.initDataUnsafe.user;
@@ -675,8 +649,11 @@
                     var userJSON = dataParams.get('user');
                     if (userJSON) return JSON.parse(decodeURIComponent(userJSON));
                 }
-            } catch(e) {}
-            return { id: Math.floor(Math.random() * 1000000), username: 'Guest' };
+            } catch(e) { 
+                console.error('User parse error:', e); 
+            }
+            // Fallback на гостя при ошибке
+            return { id: Math.floor(Math.random() * 1000000), username: 'Guest' }; 
         }
         
         var user = getCurrentUser();
@@ -719,40 +696,25 @@
         async function loadSkinsFromDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return false;
-                
-                console.log('[SKINS] Loading from DB for player:', MY_ID);
-                
                 var result = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
-                
                 if (result && result.length > 0) {
                     var userSkinData = result[0];
-                    console.log('[SKINS] Data from DB:', userSkinData);
-                    
                     if (userSkinData.owned_skins) {
                         try {
                             var loadedOwned = JSON.parse(userSkinData.owned_skins);
                             if (Array.isArray(loadedOwned) && loadedOwned.length > 0) {
                                 ownedSkins = loadedOwned;
                                 if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
-                                console.log('[SKINS] Loaded owned skins:', ownedSkins);
                             }
                         } catch(e) { console.warn('Parse owned skins error:', e); }
                     }
-                    
-                    if (userSkinData.current_skin) {
-                        currentSkin = userSkinData.current_skin;
-                        console.log('[SKINS] Loaded current skin:', currentSkin);
-                    }
-                    
+                    if (userSkinData.current_skin) currentSkin = userSkinData.current_skin;
                     try {
                         localStorage.setItem('echidna_owned_skins_v2', JSON.stringify(ownedSkins));
                         localStorage.setItem('echidna_selected_skin', currentSkin);
-                        console.log('[SKINS] Saved to localStorage cache');
                     } catch(e) {}
-                    
                     return true;
                 } else {
-                    console.log('[SKINS] No data in DB, will create new record');
                     await saveSkinsToDB();
                     return false;
                 }
@@ -767,29 +729,13 @@
         async function saveSkinsToDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return false;
-                
-                console.log('[SKINS] Saving to DB for player:', MY_ID);
-                console.log('[SKINS] ownedSkins:', ownedSkins);
-                console.log('[SKINS] currentSkin:', currentSkin);
-                
                 var existing = await db('user_skins', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
-                
-                var payload = {
-                    player_id: MY_ID,
-                    owned_skins: JSON.stringify(ownedSkins),
-                    current_skin: currentSkin,
-                    updated_at: new Date().toISOString()
-                };
-                
+                var payload = { player_id: MY_ID, owned_skins: JSON.stringify(ownedSkins), current_skin: currentSkin, updated_at: new Date().toISOString() };
                 if (existing && existing.length > 0) {
-                    console.log('[SKINS] Updating existing record');
                     await db('user_skins', 'PATCH', payload, '?player_id=eq.' + MY_ID);
                 } else {
-                    console.log('[SKINS] Creating new record');
                     await db('user_skins', 'POST', [payload]);
                 }
-                
-                console.log('[SKINS] Successfully saved to DB');
                 return true;
             } catch(e) {
                 console.error('[SKINS] Failed to save skins to DB:', e);
@@ -837,55 +783,26 @@
                 if (!MY_ID || MY_ID === 999999) return null;
                 var result = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
                 if (result && result.length > 0) {
-                    return {
-                        streak: result[0].streak || 0,
-                        lastClaimDate: result[0].last_claim_date || null,
-                        collectedCards: result[0].collected_cards || []
-                    };
+                    return { streak: result[0].streak || 0, lastClaimDate: result[0].last_claim_date || null, collectedCards: result[0].collected_cards || [] };
                 }
                 return null;
-            } catch(e) {
-                console.error('Failed to load daily data from DB:', e);
-                return null;
-            }
+            } catch(e) { return null; }
         }
         
         async function saveDailyDataToDB(data) {
             try {
                 if (!MY_ID || MY_ID === 999999) return;
-                
                 var existing = await db('daily_tasks', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1');
-                
-                var payload = {
-                    player_id: MY_ID,
-                    streak: data.streak || 0,
-                    last_claim_date: data.lastClaimDate || null,
-                    collected_cards: data.collectedCards || [],
-                    updated_at: new Date().toISOString()
-                };
-                
-                if (existing && existing.length > 0) {
-                    await db('daily_tasks', 'PATCH', payload, '?player_id=eq.' + MY_ID);
-                } else {
-                    await db('daily_tasks', 'POST', [payload]);
-                }
-            } catch(e) {
-                console.error('Failed to save daily data to DB:', e);
-            }
+                var payload = { player_id: MY_ID, streak: data.streak || 0, last_claim_date: data.lastClaimDate || null, collected_cards: data.collectedCards || [], updated_at: new Date().toISOString() };
+                if (existing && existing.length > 0) await db('daily_tasks', 'PATCH', payload, '?player_id=eq.' + MY_ID);
+                else await db('daily_tasks', 'POST', [payload]);
+            } catch(e) {}
         }
         
         async function getDailyData() {
             var dbData = await loadDailyDataFromDB();
-            if (dbData) {
-                try { localStorage.setItem('echidna_daily_v5', JSON.stringify(dbData)); } catch(e) {}
-                return dbData;
-            }
-            
-            try {
-                var s = localStorage.getItem('echidna_daily_v5');
-                if (s) return JSON.parse(s);
-            } catch(e) {}
-            
+            if (dbData) { try { localStorage.setItem('echidna_daily_v5', JSON.stringify(dbData)); } catch(e) {} return dbData; }
+            try { var s = localStorage.getItem('echidna_daily_v5'); if (s) return JSON.parse(s); } catch(e) {}
             return { streak: 0, lastClaimDate: null, collectedCards: [] };
         }
         
@@ -894,29 +811,35 @@
             saveDailyDataToDB(data);
         }
         
-        function getTodayDate() {
-            var d = new Date();
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        // ============ ИСПРАВЛЕННОЕ СРАВНЕНИЕ ДАТ ============
+        function isSameUTCDate(dateStr1, dateStr2) {
+            if (!dateStr1 || !dateStr2) return false;
+            const d1 = new Date(dateStr1 + 'T00:00:00Z');
+            const d2 = new Date(dateStr2 + 'T00:00:00Z');
+            return d1.getUTCFullYear() === d2.getUTCFullYear() && d1.getUTCMonth() === d2.getUTCMonth() && d1.getUTCDate() === d2.getUTCDate();
         }
         
-        function getDailyReward(day) {
-            return (day + 1) * 100;
+        function getTodayDate() {
+            var d = new Date();
+            return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
         }
+        
+        function getDailyReward(day) { return (day + 1) * 100; }
 
         async function claimDailyCard(cardIndex) {
             var today = getTodayDate();
             var data = await getDailyData();
             
-            if (data.lastClaimDate === today) {
+            if (isSameUTCDate(data.lastClaimDate, today)) {
                 alert('Вы уже открыли карточку сегодня! Возвращайтесь завтра.');
                 return;
             }
             
             var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            var yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
+            yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+            var yesterdayStr = yesterday.getUTCFullYear() + '-' + String(yesterday.getUTCMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getUTCDate()).padStart(2, '0');
             
-            if (data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr && data.lastClaimDate !== null) {
+            if (data.lastClaimDate && !isSameUTCDate(data.lastClaimDate, today) && !isSameUTCDate(data.lastClaimDate, yesterdayStr)) {
                 data.streak = 0;
                 data.collectedCards = [];
             }
@@ -927,7 +850,6 @@
             }
             
             var reward = getDailyReward(cardIndex);
-            
             currentBalance += reward;
             
             data.streak = cardIndex + 1;
@@ -936,7 +858,6 @@
             data.collectedCards.push(cardIndex);
             
             saveDailyData(data);
-            
             await updateBalanceDisplay();
             
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
@@ -960,10 +881,10 @@
             var today = getTodayDate();
             
             var yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            var yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
+            yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+            var yesterdayStr = yesterday.getUTCFullYear() + '-' + String(yesterday.getUTCMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getUTCDate()).padStart(2, '0');
             
-            if (data.lastClaimDate !== today && data.lastClaimDate !== yesterdayStr && data.lastClaimDate !== null) {
+            if (data.lastClaimDate && !isSameUTCDate(data.lastClaimDate, today) && !isSameUTCDate(data.lastClaimDate, yesterdayStr)) {
                 data.streak = 0;
                 data.collectedCards = [];
                 saveDailyData(data);
@@ -975,7 +896,7 @@
             for (var i = 0; i < 9; i++) {
                 var reward = getDailyReward(i);
                 var isCollected = data.collectedCards && data.collectedCards.indexOf(i) !== -1;
-                var isToday = (i === data.streak && !isCollected && data.lastClaimDate !== today);
+                var isToday = (i === data.streak && !isCollected && !isSameUTCDate(data.lastClaimDate, today));
                 var isLocked = !isCollected && !isToday;
                 
                 var wrapper = document.createElement('div');
@@ -994,8 +915,8 @@
                 var cardImgUrl = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/daily-card-' + (i + 1) + '.png';
                 var lockIcon = isLocked ? ' 🔒' : '';
                 
-                front.innerHTML = '<img class="card-cover" src="' + cardImgUrl + '" alt="Card ' + (i + 1) + '" onerror="this.style.display=\'none\'">' +
-                    '<div class="card-overlay"><div class="day-badge">' + (isCollected ? '✓' : ('#' + (i + 1))) + lockIcon + '</div></div>';
+                front.innerHTML = '<img class="card-cover" src="' + escapeHtml(cardImgUrl) + '" alt="Card ' + (i + 1) + '" onerror="this.style.display=\'none\'">' +
+                    '<div class="card-overlay"><div class="day-badge">' + (isCollected ? '✓' : ('#' + (i + 1))) + escapeHtml(lockIcon) + '</div></div>';
                 
                 var back = document.createElement('div');
                 back.className = 'daily-card-back';
@@ -1030,9 +951,7 @@
                 if (!existing || existing.length === 0) {
                     await db('users', 'POST', [{ telegram_id: userId, username: escapeHtml(username || 'User_' + userId), wins: 0, losses: 0 }]);
                 }
-            } catch(e) {
-                console.error('Failed to ensure user exists:', e);
-            }
+            } catch(e) { console.error('Failed to ensure user exists:', e); }
         }
         
         function renderAvatar(elementId, photoUrl, username) {
@@ -1155,17 +1074,18 @@
                 if (equipped) {
                     btnHtml = '<button class="room-btn equipped">Надето</button>';
                 } else if (owned) {
-                    btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();equipSkin(\'' + s.id + '\')">Надеть</button>';
+                    btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();equipSkin(\'' + escapeHtml(s.id) + '\')">Надеть</button>';
                 } else {
                     if (canBuy) {
-                        btnHtml = '<button class="room-btn buy" onclick="event.stopPropagation();buySkin(\'' + s.id + '\')">' + formatCompactNumber(s.price) + ' Spike</button>';
+                        btnHtml = '<button class="room-btn buy" onclick="event.stopPropagation();buySkin(\'' + escapeHtml(s.id) + '\')">' + formatCompactNumber(s.price) + ' Spike</button>';
                     } else {
                         btnHtml = '<button class="room-btn buy-disabled" disabled>' + formatCompactNumber(s.price) + ' Spike</button>';
                     }
                 }
                 
+                // ✅ ИСПРАВЛЕНИЕ 6: ЗАПАСНЫЕ КАРТИНКИ (onerror)
                 el.innerHTML = '<div style="font-weight:700;width:30px;color:var(--sec);">#' + (i + 1) + '</div>' +
-                    '<div class="room-icon skin-room-icon"><img src="' + s.img + '" alt=""></div>' +
+                    '<div class="room-icon skin-room-icon"><img src="' + escapeHtml(s.img) + '" alt="" onerror="this.src=\'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png\'"></div>' +
                     '<div class="room-info"><div class="skin-card-name">' + escapeHtml(getSkinNameById(s.id)) + '</div>' +
                     (!owned ? '<div class="skin-price">💰 ' + formatCompactNumber(s.price) + ' Spike</div>' : '<div class="skin-price" style="color:var(--success);">✅ Куплено</div>') +
                     '</div><div class="room-actions">' + btnHtml + '</div>';
@@ -1178,7 +1098,7 @@
             currentModalSkin = s;
             disableBottomNav();
             var m = document.getElementById('skinModal');
-            document.getElementById('modalImg').src = s.img;
+            document.getElementById('modalImg').src = escapeHtml(s.img);
             document.getElementById('modalTitle').textContent = escapeHtml(getSkinNameById(s.id));
             document.getElementById('modalDesc').textContent = '';
             var priceEl = document.getElementById('modalPrice');
@@ -1218,29 +1138,41 @@
             else buySkin(currentModalSkin.id);
         }
 
+        // ✅ ИСПРАВЛЕНИЕ 2: ПРОВЕРКА БАЛАНСА ПЕРЕД ПОКУПКОЙ
         async function buySkin(skinId) {
             if (isSkinOwned(skinId)) return;
             var price = getSkinPrice(skinId);
-            if (currentBalance < price) { 
-                playErrorSound();
-                alert('Недостаточно Spike!'); 
-                return; 
+            
+            // Пересчитываем реальный баланс перед покупкой
+            try {
+                var games = await db('game_history', 'GET', null, '?player_id=eq.' + MY_ID + '&limit=1000', false);
+                var gamesList = Array.isArray(games) ? games : [];
+                var realBalance = 0;
+                gamesList.forEach(function(game) {
+                    var absVal = Math.abs(game.stake || 0);
+                    if (game.result === 'win') realBalance += absVal;
+                    else if (game.result === 'lose') realBalance -= absVal;
+                });
+                
+                if (realBalance < price) { 
+                    playErrorSound();
+                    alert('Недостаточно средств! (Баланс рассинхронизирован, обновите страницу)');
+                    updateBalanceDisplay();
+                    return; 
+                }
+                currentBalance = realBalance; // Синхронизируем локальный баланс
+            } catch(e) {
+                console.error('Balance check error:', e);
             }
             
-            console.log('[SKINS] Buying skin:', skinId, 'price:', price);
-            
             currentBalance -= price;
-            
             ownedSkins.push(skinId);
             saveOwnedSkinsLocally();
             
             var saved = await saveSkinsToDB();
-            if (!saved) {
-                console.warn('[SKINS] Could not save to DB, but skin purchased locally');
-            }
+            if (!saved) console.warn('[SKINS] Could not save to DB, but skin purchased locally');
             
             await saveGameHistory('lose', 'rock', price);
-            
             await updateBalanceDisplay();
             renderSkins();
             
@@ -1252,17 +1184,10 @@
 
         async function equipSkin(id) {
             if (!isSkinOwned(id)) return;
-            
-            console.log('[SKINS] Equipping skin:', id);
-            
             currentSkin = id;
             try { localStorage.setItem('echidna_selected_skin', id); } catch(e) {}
-            
             var saved = await saveSkinsToDB();
-            if (!saved) {
-                console.warn('[SKINS] Could not save to DB, but skin equipped locally');
-            }
-            
+            if (!saved) console.warn('[SKINS] Could not save to DB, but skin equipped locally');
             updateStats();
             renderSkins();
             document.getElementById('skinModal').classList.add('hidden');
@@ -1272,11 +1197,7 @@
 
         // ============ СТАВКИ ============
         function openStakeModal() {
-            if (currentBalance < 10) { 
-                playErrorSound();
-                alert('Недостаточно средств!'); 
-                return; 
-            }
+            if (currentBalance < 10) { playErrorSound(); alert('Недостаточно средств!'); return; }
             selectedStake = 10;
             document.getElementById('stakeInput').value = '';
             document.getElementById('stakeError').textContent = '';
@@ -1341,6 +1262,14 @@
                 document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; 
                 return; 
             }
+            
+            // ✅ ИСПРАВЛЕНИЕ 5: ЖЕСТКАЯ ВАЛИДАЦИЯ СТАВКИ
+            if (finalStake < 10 || finalStake > 1000) {
+                playErrorSound();
+                alert('Недопустимая ставка!');
+                return;
+            }
+
             closeStakeModal();
             try {
                 await ensureUserExists(MY_ID, user.username);
@@ -1431,13 +1360,13 @@
                     var creatorName = escapeHtml(r.creator_username || 'Anonymous');
                     
                     if (trulyMine) {
-                        if (isPlaying) btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();resumeRoom(\'' + r.id + '\')">🔄 Вернуться</button>';
-                        var cancelBtn = !isFinished ? '<button class="room-btn cancel" onclick="event.stopPropagation();cancelRoom(\'' + r.id + '\')">✕</button>' : '';
+                        if (isPlaying) btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();resumeRoom(\'' + escapeHtml(r.id) + '\')">🔄 Вернуться</button>';
+                        var cancelBtn = !isFinished ? '<button class="room-btn cancel" onclick="event.stopPropagation();cancelRoom(\'' + escapeHtml(r.id) + '\')">✕</button>' : '';
                         el.innerHTML = '<div class="room-icon"><img src="' + escapeHtml(MY_PHOTO_URL || '') + '" alt="You" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'' + escapeHtml(MY_INITIAL) + '\'">' + lockIcon + '</div>' +
                             '<div class="room-info"><div class="room-stake">💰 ' + stakeDisplay + ' ' + badgeHtml + timerHtml + '</div><div class="room-creator">Твоя комната</div></div>' +
                             '<div class="room-actions">' + btnHtml + cancelBtn + '</div>';
                     } else {
-                        btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();joinRoom(\'' + r.id + '\',this)">Войти</button>';
+                        btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();joinRoom(\'' + escapeHtml(r.id) + '\',this)">Войти</button>';
                         el.innerHTML = '<div class="room-icon">' + escapeHtml(creatorName.charAt(0).toUpperCase()) + lockIcon + '</div>' +
                             '<div class="room-info"><div class="room-stake">💰 ' + stakeDisplay + ' ' + badgeHtml + timerHtml + '</div><div class="room-creator">@' + creatorName + '</div></div>' +
                             '<div class="room-actions">' + btnHtml + '</div>';
@@ -1449,7 +1378,7 @@
 
         async function resumeRoom(roomId) {
             try {
-                var room = await db('rooms', 'GET', null, '?id=eq.' + roomId, true);
+                var room = await db('rooms', 'GET', null, '?id=eq.' + escapeHtml(roomId), true);
                 if (!room) { alert('Room not found'); loadRooms(); return; }
                 currentRoom = room;
                 if (currentRoom.status === 'finished') { showGameScreen(); showGameResult(currentRoom); return; }
@@ -1460,7 +1389,7 @@
         async function cancelRoom(roomId) {
             if (!roomId) return;
             try {
-                await db('rooms', 'DELETE', null, '?id=eq.' + roomId);
+                await db('rooms', 'DELETE', null, '?id=eq.' + escapeHtml(roomId));
                 delete window.roomExpiry[roomId];
                 if (currentRoom && currentRoom.id === roomId) {
                     currentRoom = null; isGameFinished = true;
@@ -1474,7 +1403,7 @@
             if (!btnElement) return;
             btnElement.disabled = true; btnElement.textContent = '⏳';
             try {
-                var roomData = await db('rooms', 'GET', null, '?id=eq.' + roomId, false);
+                var roomData = await db('rooms', 'GET', null, '?id=eq.' + escapeHtml(roomId), false);
                 if (!roomData || !roomData.length) throw new Error('Комната занята');
                 var room = roomData[0];
                 if (Number(room.creator_tg_id) === MY_ID || Number(room.opponent_tg_id) === MY_ID) { resumeRoom(roomId); return; }
@@ -1489,7 +1418,7 @@
                     }
                 }
                 await ensureUserExists(MY_ID, user.username);
-                var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: escapeHtml(user.username || 'Anonymous'), status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
+                var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: escapeHtml(user.username || 'Anonymous'), status: 'playing' }, '?id=eq.' + escapeHtml(roomId) + '&status=eq.waiting', true);
                 if (!res) throw new Error('Ошибка');
                 currentRoom = res; showGameScreen(); startPolling(); loadRooms();
                 closeRoomsScreen();
@@ -1504,7 +1433,7 @@
         async function renderPlayerStats() {
             if (!currentRoom || !currentRoom.id) return;
             try {
-                var roomData = await db('rooms', 'GET', null, '?id=eq.' + currentRoom.id, true);
+                var roomData = await db('rooms', 'GET', null, '?id=eq.' + escapeHtml(currentRoom.id), true);
                 if (!roomData) return;
                 var creatorId = roomData.creator_tg_id;
                 var opponentId = roomData.opponent_tg_id;
@@ -1632,7 +1561,7 @@
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
                 clearAllIntervals();
-                await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + currentRoom.id);
+                await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + escapeHtml(currentRoom.id));
                 var opponentId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
                 db('users', 'GET', null, '?telegram_id=eq.' + opponentId + '&select=wins', false).then(function(d) {
                     return db('users', 'PATCH', { wins: ((d[0] && d[0].wins) || 0) + 1 }, '?telegram_id=eq.' + opponentId);
@@ -1653,7 +1582,7 @@
             activeIntervals.pollInterval = setInterval(async function() {
                 if (!currentRoom || isGameFinished) return;
                 try {
-                    var res = await db('rooms', 'GET', null, '?id=eq.' + currentRoom.id);
+                    var res = await db('rooms', 'GET', null, '?id=eq.' + escapeHtml(currentRoom.id));
                     var room = res[0];
                     if (!room) return;
                     if (room.opponent_tg_id && !opponentJoined) { 
@@ -1688,7 +1617,7 @@
             document.getElementById('timerText').classList.remove('active');
             document.getElementById('timerBarContainer').style.display = 'none';
             try {
-                await db('rooms', 'PATCH', { [col]: choice }, '?id=eq.' + currentRoom.id);
+                await db('rooms', 'PATCH', { [col]: choice }, '?id=eq.' + escapeHtml(currentRoom.id));
                 currentRoom[col] = choice;
             } catch(e) { 
                 playErrorSound();
@@ -1728,9 +1657,9 @@
             
             document.getElementById('revealPlayer1Label').textContent = 'Вы';
             document.getElementById('revealPlayer2Label').textContent = 'Соперник';
-            document.getElementById('card1Img').src = moveImages[myMove];
+            document.getElementById('card1Img').src = escapeHtml(moveImages[myMove]);
             document.getElementById('card1Name').textContent = myMove === 'rock' ? 'Камень' : myMove === 'scissors' ? 'Ножницы' : 'Бумага';
-            document.getElementById('card2Img').src = moveImages[oppMove];
+            document.getElementById('card2Img').src = escapeHtml(moveImages[oppMove]);
             document.getElementById('card2Name').textContent = oppMove === 'rock' ? 'Камень' : oppMove === 'scissors' ? 'Ножницы' : 'Бумага';
             
             overlay.classList.remove('hidden'); confetti.classList.add('hidden'); confetti.innerHTML = '';
@@ -1786,7 +1715,7 @@
                 }
             }, 1000);
             
-            await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + room.id);
+            await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + escapeHtml(room.id));
             
             var loserId = String(result.winnerId) === String(room.creator_tg_id) ? room.opponent_tg_id : room.creator_tg_id;
             if (result.winnerId) {
@@ -1823,7 +1752,7 @@
 
         function showGameResult(room) {
             var msg = calculateWinner(room).msg;
-            document.getElementById('statusMessage').innerHTML = '<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">' + msg + '</div>';
+            document.getElementById('statusMessage').innerHTML = '<div style="animation:celebrate 0.5s ease-in-out;font-size:18px;">' + escapeHtml(msg) + '</div>';
             updateStats(); updateBalanceDisplay();
             setTimeout(function() { forceExitToLobby(); }, 3000);
         }
@@ -1880,7 +1809,7 @@
                     el.innerHTML = '<div class="leaderboard-row">' +
                         '<div class="leaderboard-left">' +
                         '<div style="font-weight:700;width:30px;">' + (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1) + '</div>' +
-                        '<div class="room-icon"><img src="' + sk.img + '" alt=""></div>' +
+                        '<div class="room-icon"><img src="' + escapeHtml(sk.img) + '" alt=""></div>' +
                         '<div class="room-info"><div class="room-stake">@' + name + '</div></div>' +
                         '</div>' +
                         '<div class="leaderboard-right">' +
@@ -1902,7 +1831,7 @@
                     el.innerHTML = '<div class="leaderboard-row">' +
                         '<div class="leaderboard-left">' +
                         '<div style="font-weight:700;width:30px;color:var(--gold);">' + myRank + '</div>' +
-                        '<div class="room-icon"><img src="' + ms.img + '" alt=""></div>' +
+                        '<div class="room-icon"><img src="' + escapeHtml(ms.img) + '" alt=""></div>' +
                         '<div class="room-info"><div class="room-stake">@' + myName + ' <span style="color:var(--success);font-size:10px;">(Вы)</span></div></div>' +
                         '</div>' +
                         '<div class="leaderboard-right">' +
@@ -1911,7 +1840,7 @@
                         '</div>';
                     c.appendChild(el);
                 }
-            } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">' + e.message + '</div>'; }
+            } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">' + escapeHtml(e.message) + '</div>'; }
         }
 
         // ============ СТАТИСТИКА ============
