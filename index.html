@@ -257,24 +257,7 @@
         .loading-overlay.active { display: flex; }
         .loading-text { color: var(--gold); font-size: 16px; font-weight: 600; }
         
-        /* Анимация получения монет - старт снизу экрана */
-        @keyframes coinFlyFromBottom {
-            0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
-            10% { transform: translate(calc(-100px + 50vw), -200px) scale(1.2); opacity: 1; }
-            30% { transform: translate(calc(-150px + 50vw), -350px) scale(1.1); opacity: 1; }
-            60% { transform: translate(calc(-200px + 50vw), -500px) scale(0.9); opacity: 0.8; }
-            100% { transform: translate(calc(-250px + 50vw), -650px) scale(0.5); opacity: 0; }
-        }
-        .coin-animation {
-            position: fixed;
-            width: 50px;
-            height: 50px;
-            pointer-events: none;
-            z-index: 10001;
-            filter: drop-shadow(0 0 10px rgba(251,191,36,0.8));
-        }
-        .coin-animation img { width: 100%; height: 100%; object-fit: contain; }
-        
+        /* Анимация получения монет - старт от картинки ехидны */
         @keyframes coinFlyFromHero {
             0% { transform: translate(0, 0) scale(1); opacity: 1; }
             20% { transform: translate(calc(-120px + 50vw), -300px) scale(1.3); opacity: 1; }
@@ -349,7 +332,7 @@
                     <div class="stat-label">Игр</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value" id="statSkinName">Обычная</div>
+                    <div class="stat-value" id="statSkinName">Бедняк</div>
                     <div class="stat-label">Скин</div>
                     <div class="skin-badge-small" id="statSkinBadge">#1</div>
                 </div>
@@ -447,7 +430,6 @@
         }
         
         function showCoinAnimation(amount) {
-            // Находим картинку ехидны для старта анимации
             var heroImg = document.getElementById('heroEchidnaImg');
             if (heroImg) {
                 var rect = heroImg.getBoundingClientRect();
@@ -461,10 +443,8 @@
                 coin.innerHTML = '<img src="https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/spike-coin.png" alt="+">';
                 document.body.appendChild(coin);
                 
-                // Добавляем анимацию
                 coin.style.animation = 'coinFlyFromHero 1.2s ease-out forwards';
                 
-                // Показываем текст с суммой
                 var amountDiv = document.createElement('div');
                 amountDiv.className = 'coin-animation-from-hero';
                 amountDiv.style.left = startX + 15 + 'px';
@@ -552,21 +532,28 @@
 
         var USER_HASH = btoa(MY_ID + 'echidna_secret_salt_2024');
 
+        // НОВЫЕ СКИНЫ С НОВЫМИ НАЗВАНИЯМИ
         var SKINS = [
             { id: 'default', price: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
-            { id: 'socks', price: 10000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-socks.png' },
-            { id: 'sporty', price: 50000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-sporty.png' },
-            { id: 'sneakers', price: 100000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-sneakers.png' },
-            { id: 'cap', price: 500000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-cap.png' },
-            { id: 'cool', price: 1000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-cool.png' },
+            { id: 'beggar', price: 10000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-socks.png' },
+            { id: 'tramp', price: 50000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-sporty.png' },
+            { id: 'poor', price: 100000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-sneakers.png' },
+            { id: 'survivor', price: 500000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-cap.png' },
+            { id: 'worker', price: 1000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-cool.png' },
             { id: 'rich', price: 2000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-rich.png' },
-            { id: 'collector', price: 3000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-collector.png' }
+            { id: 'tycoon', price: 3000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-collector.png' }
         ];
         
+        // НОВЫЕ НАЗВАНИЯ СКИНОВ
         var skinNames = {
-            'default': 'Обычная', 'socks': 'В носках', 'sporty': 'Спортсмен',
-            'sneakers': 'Кроссовки', 'cap': 'Бейсболка', 'cool': 'Крутой',
-            'rich': 'Богач', 'collector': 'Коллекционер'
+            'default': 'Бедняк',
+            'beggar': 'Оборванец',
+            'tramp': 'Нищий',
+            'poor': 'Выживший',
+            'survivor': 'Работяга',
+            'worker': 'Мажор',
+            'rich': 'Миллионер',
+            'tycoon': 'Магнат'
         };
         
         var ownedSkins = ['default'];
