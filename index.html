@@ -532,16 +532,16 @@
 
         var USER_HASH = btoa(MY_ID + 'echidna_secret_salt_2024');
 
-        // НОВЫЕ СКИНЫ С НОВЫМИ НАЗВАНИЯМИ
+        // НОВЫЕ СКИНЫ С ПРАВИЛЬНЫМИ ССЫЛКАМИ НА ПЕРЕИМЕНОВАННЫЕ ФАЙЛЫ
         var SKINS = [
             { id: 'default', price: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
-            { id: 'beggar', price: 10000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-socks.png' },
-            { id: 'tramp', price: 50000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-sporty.png' },
-            { id: 'poor', price: 100000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-sneakers.png' },
-            { id: 'survivor', price: 500000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-cap.png' },
-            { id: 'worker', price: 1000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-cool.png' },
+            { id: 'beggar', price: 10000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-beggar.png' },
+            { id: 'tramp', price: 50000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-tramp.png' },
+            { id: 'poor', price: 100000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-poor.png' },
+            { id: 'survivor', price: 500000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-survivor.png' },
+            { id: 'worker', price: 1000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-worker.png' },
             { id: 'rich', price: 2000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-rich.png' },
-            { id: 'tycoon', price: 3000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-collector.png' }
+            { id: 'tycoon', price: 3000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-tycoon.png' }
         ];
         
         // НОВЫЕ НАЗВАНИЯ СКИНОВ
@@ -565,6 +565,7 @@
         function getSkinImg(id) { var s = SKINS.find(function(s) { return s.id === id; }); return s ? s.img : ''; }
         function isSkinOwned(id) { return ownedSkins.indexOf(id) !== -1; }
         
+        // ============ ЗАГРУЗКА СКИНОВ ИЗ SUPABASE ============
         async function loadSkinsFromDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return false;
@@ -605,6 +606,7 @@
             }
         }
         
+        // ============ СОХРАНЕНИЕ СКИНОВ В SUPABASE ============
         async function saveSkinsToDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return false;
@@ -661,6 +663,7 @@
         function disableBottomNav() { document.getElementById('bottomNav').classList.add('disabled'); }
         function enableBottomNav() { document.getElementById('bottomNav').classList.remove('disabled'); }
 
+        // ============ ЗВУКИ ============
         var audioCtx = null;
         
         function initAudio() {
@@ -727,6 +730,7 @@
             }
         }
 
+        // ============ ОГРАНИЧЕНИЕ КОМНАТ ============
         async function canCreateRoom() {
             try {
                 var myRooms = await db('rooms', 'GET', null, '?creator_tg_id=eq.' + MY_ID + '&status=neq.finished&limit=10');
@@ -739,6 +743,7 @@
             } catch(e) { console.error('Check rooms limit error:', e); return true; }
         }
 
+        // ============ УПРАВЛЕНИЕ БАЛАНСОМ В БД ============
         async function updateUserBalance(changeAmount) {
             try {
                 var userData = await db('users', 'GET', null, '?select=current_balance&telegram_id=eq.' + MY_ID, false);
@@ -760,6 +765,7 @@
             } catch(e) { console.error('Get balance error:', e); return 0; }
         }
 
+        // ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============
         async function loadDailyDataFromDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return null;
@@ -858,6 +864,7 @@
             }
         }
 
+        // ============ БАЗА ДАННЫХ ============
         async function db(table, method, payload, filters, single) {
             payload = payload || null;
             filters = filters || '';
@@ -895,6 +902,7 @@
             else el.innerHTML = username ? username.charAt(0).toUpperCase() : '?';
         }
 
+        // ============ НАВИГАЦИЯ ============
         function showScreen(name) {
             var screens = ['lobbyScreen', 'statsScreen', 'gameScreen', 'skinsScreen', 'leaderboardScreen', 'tasksScreen'];
             screens.forEach(function(id) { var el = document.getElementById(id); if (el) el.classList.add('hidden'); });
@@ -1001,6 +1009,7 @@
             } catch(e) { console.error('Balance update error:', e); }
         }
 
+        // ============ СКИНЫ ============
         function renderSkins() {
             var c = document.getElementById('skinsList');
             if (!c) return;
@@ -1081,6 +1090,7 @@
             enableBottomNav();
         }
 
+        // ============ СТАВКИ ============
         function openStakeModal() {
             if (currentBalance < 10) { alert('Недостаточно средств!'); return; }
             selectedStake = 10;
@@ -1127,6 +1137,7 @@
             finally { isCreatingRoom = false; if (btn) { btn.classList.remove('loading'); btn.textContent = '🚪 СОЗДАТЬ КОМНАТУ'; } }
         }
 
+        // ============ КОМНАТЫ ============
         function formatCountdown(ms) { if (ms <= 0) return "00:00"; var totalSeconds = Math.floor(ms / 1000); var minutes = Math.floor(totalSeconds / 60); var seconds = totalSeconds % 60; return (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds; }
 
         setInterval(function() { var now = Date.now(); document.querySelectorAll('.room-timer').forEach(function(el) { var roomId = el.dataset.roomId; if (roomId && window.roomExpiry[roomId]) { var remaining = window.roomExpiry[roomId] - now; el.textContent = formatCountdown(remaining); if (remaining <= 60000) el.classList.add('urgent'); else el.classList.remove('urgent'); if (remaining <= 0) { el.textContent = '⌛ Истекло'; el.style.color = 'var(--error)'; } } }); }, 1000);
@@ -1225,6 +1236,7 @@
             } catch(e) { alert('Ошибка: ' + e.message); if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } }
         }
 
+        // ============ ИГРА ============
         async function renderPlayerStats() {
             if (!currentRoom || !currentRoom.id) return;
             try {
@@ -1477,6 +1489,7 @@
             return { msg: (creatorWins ? (MY_ID === id1) : (MY_ID === id2)) ? '🏆 Победа!' : '😢 Поражение', winnerId: creatorWins ? id1 : id2 };
         }
 
+        // ============ РЕЙТИНГ ============
         async function loadLeaderboard() {
             var c = document.getElementById('leaderboardList');
             if (!c) return;
@@ -1505,6 +1518,7 @@
             } catch(e) { c.innerHTML = '<div style="color:red;padding:15px;">' + e.message + '</div>'; }
         }
 
+        // ============ СТАТИСТИКА ============
         async function loadStats() {
             if (!MY_ID || MY_ID === 999999) return;
             var tableBody = document.getElementById('gamesTableBody');
@@ -1551,6 +1565,7 @@
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
         function filterRooms() { var query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('#roomsList .room-card').forEach(function(el) { var creatorText = (el.querySelector('.room-creator') && el.querySelector('.room-creator').textContent || '').toLowerCase(); el.style.display = creatorText.indexOf(query) !== -1 ? 'flex' : 'none'; }); }
 
+        // ============ ИНИЦИАЛИЗАЦИЯ ============
         window.addEventListener('load', async function() {
             await loadSkinsFromDB();
             loadOwnedSkinsLocally();
