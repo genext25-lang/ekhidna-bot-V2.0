@@ -386,17 +386,61 @@
         // ============ ЗВУКИ И ВИБРАЦИЯ ============
         var audioCtx = null;
         var soundsInitialized = false;
+        var audioUnlockAttempts = 0;
         
+        // 🔊 Инициализация аудио (исправлено для мобильных)
         function initAudio() {
-            if (soundsInitialized) return;
+            if (soundsInitialized) return true;
             try {
+                // Пробуем создать контекст
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                soundsInitialized = true;
+                
+                // На мобильных: если контекст в состоянии suspended, пробуем активировать
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume().then(function() {
+                        soundsInitialized = true;
+                    }).catch(function(e) {
+                        console.warn('Audio resume failed:', e);
+                    });
+                } else {
+                    soundsInitialized = true;
+                }
+                return soundsInitialized;
             } catch(e) {
                 console.warn('Audio init failed:', e);
+                return false;
             }
         }
         
+        // 🔊 Попытка разблокировать аудио при взаимодействии
+        function unlockAudioOnInteraction() {
+            if (!soundsInitialized && audioUnlockAttempts < 3) {
+                audioUnlockAttempts++;
+                initAudio();
+                
+                // Пробуем воспроизвести тихий звук для активации
+                try {
+                    if (audioCtx && audioCtx.state === 'suspended') {
+                        var osc = audioCtx.createOscillator();
+                        var gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        gain.gain.value = 0.001; // Почти бесшумно
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.01);
+                    }
+                } catch(e) {}
+            }
+        }
+        
+        // Привязываем разблокировку к различным событиям
+        ['click', 'touchstart', 'touchend'].forEach(function(evt) {
+            document.addEventListener(evt, function() {
+                unlockAudioOnInteraction();
+            }, { passive: true });
+        });
+        
+        // 📳 Вибрация (Telegram HapticFeedback + navigator.vibrate)
         function vibrate(pattern) {
             // Вибрация через Telegram WebApp или navigator
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
@@ -415,9 +459,13 @@
             }
         }
         
+        // 🔊 Генерация звуков через Web Audio API
         function playBeep(frequency, duration, type, volume) {
-            if (!soundsInitialized) initAudio();
-            if (!audioCtx || audioCtx.state === 'suspended') return;
+            if (!soundsInitialized) {
+                initAudio();
+                if (!audioCtx || audioCtx.state !== 'running') return;
+            }
+            if (!audioCtx) return;
             
             try {
                 var osc = audioCtx.createOscillator();
@@ -436,8 +484,11 @@
         }
         
         function playNoise(duration, volume) {
-            if (!soundsInitialized) initAudio();
-            if (!audioCtx || audioCtx.state === 'suspended') return;
+            if (!soundsInitialized) {
+                initAudio();
+                if (!audioCtx || audioCtx.state !== 'running') return;
+            }
+            if (!audioCtx) return;
             
             try {
                 var bufferSize = audioCtx.sampleRate * duration;
@@ -504,11 +555,21 @@
             vibrate([50, 30, 50]);
         }
         
-        // Инициализация аудио при первом взаимодействии
-        document.addEventListener('click', function initAudioOnFirstClick() {
-            initAudio();
-            document.removeEventListener('click', initAudioOnFirstClick);
-        }, { once: true });
+        // ============ ОГРАНИЧЕНИЕ КОМНАТ ✅ ДОБАВЛЕНО ============
+        async function canCreateRoom() {
+            try {
+                var myRooms = await db('rooms', 'GET', null, '?creator_tg_id=eq.' + MY_ID + '&status=neq.finished&limit=10');
+                var activeRooms = Array.isArray(myRooms) ? myRooms.filter(function(r) { return r.status !== 'finished'; }) : [];
+                if (activeRooms.length >= 5) {
+                    alert('❌ У вас уже есть 5 активных комнат! Дождитесь их завершения (5 минут) или отмените созданные.');
+                    return false;
+                }
+                return true;
+            } catch(e) {
+                console.error('Check rooms limit error:', e);
+                return true;
+            }
+        }
         
         function setLanguage(lang) {
             document.querySelectorAll('.lang-mini-btn').forEach(function(b) {
@@ -569,10 +630,16 @@
             { id: 'collector', price: 3000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-tycoon.png' }
         ];
         
+        // ✅ ОБНОВЛЁННЫЕ НАЗВАНИЯ СКИНОВ
         var skinNames = {
-            'default': 'Обычная', 'socks': 'В носках', 'sporty': 'Спортсмен',
-            'sneakers': 'Кроссовки', 'cap': 'Бейсболка', 'cool': 'Крутой',
-            'rich': 'Богач', 'collector': 'Коллекционер'
+            'default': 'Обычная',
+            'socks': 'Оборванец',
+            'sporty': 'Нищий',
+            'sneakers': 'Выживший',
+            'cap': 'Работяга',
+            'cool': 'Мажор',
+            'rich': 'Миллионер',
+            'collector': 'Магнат'
         };
         
         var ownedSkins = ['default'];
@@ -1247,7 +1314,7 @@
         }
 
         async function confirmStake() {
-            var canCreate = await canCreateRoom();
+            var canCreate = await canCreateRoom(); // ✅ Теперь функция определена
             if (!canCreate) return;
             
             var inputVal = document.getElementById('stakeInput').value;
