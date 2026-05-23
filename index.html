@@ -269,7 +269,7 @@
                     <li>Зарабатывай Spike и прокачивай Ехидну — покупай новые скины!</li>
                 </ul>
             </div>
-            <button class="splash-btn" onclick="startGame()">🎮 ИГРАТЬ</button>
+            <button class="splash-btn" id="startGameBtn">🎮 ИГРАТЬ</button>
         </div>
     </div>
 
@@ -392,10 +392,7 @@
         function initAudio() {
             if (soundsInitialized) return true;
             try {
-                // Пробуем создать контекст
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // На мобильных: если контекст в состоянии suspended, пробуем активировать
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume().then(function() {
                         soundsInitialized = true;
@@ -412,22 +409,21 @@
             }
         }
         
-        // 🔊 Попытка разблокировать аудио при взаимодействии
-        function unlockAudioOnInteraction() {
-            if (!soundsInitialized && audioUnlockAttempts < 3) {
+        // 🔊 Принудительная разблокировка звука при старте игры
+        function forceUnlockAudio() {
+            if (!soundsInitialized && audioUnlockAttempts < 5) {
                 audioUnlockAttempts++;
                 initAudio();
-                
-                // Пробуем воспроизвести тихий звук для активации
                 try {
                     if (audioCtx && audioCtx.state === 'suspended') {
                         var osc = audioCtx.createOscillator();
                         var gain = audioCtx.createGain();
                         osc.connect(gain);
                         gain.connect(audioCtx.destination);
-                        gain.gain.value = 0.001; // Почти бесшумно
+                        gain.gain.value = 0.001;
                         osc.start();
                         osc.stop(audioCtx.currentTime + 0.01);
+                        soundsInitialized = true;
                     }
                 } catch(e) {}
             }
@@ -436,13 +432,12 @@
         // Привязываем разблокировку к различным событиям
         ['click', 'touchstart', 'touchend'].forEach(function(evt) {
             document.addEventListener(evt, function() {
-                unlockAudioOnInteraction();
+                if (!soundsInitialized) forceUnlockAudio();
             }, { passive: true });
         });
         
-        // 📳 Вибрация (Telegram HapticFeedback + navigator.vibrate)
+        // 📳 Вибрация
         function vibrate(pattern) {
-            // Вибрация через Telegram WebApp или navigator
             if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
                 if (pattern === 'light' || pattern === 50) {
                     window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
@@ -451,7 +446,6 @@
                 } else if (pattern === 'heavy' || pattern === 200) {
                     window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
                 } else if (Array.isArray(pattern)) {
-                    // Для сложных паттернов используем navigator.vibrate
                     if (navigator.vibrate) navigator.vibrate(pattern);
                 }
             } else if (navigator.vibrate) {
@@ -459,25 +453,22 @@
             }
         }
         
-        // 🔊 Генерация звуков через Web Audio API
+        // 🔊 Генерация звуков
         function playBeep(frequency, duration, type, volume) {
             if (!soundsInitialized) {
-                initAudio();
+                forceUnlockAudio();
                 if (!audioCtx || audioCtx.state !== 'running') return;
             }
             if (!audioCtx) return;
-            
             try {
                 var osc = audioCtx.createOscillator();
                 var gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-                
                 osc.type = type || 'sine';
                 osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
                 gain.gain.setValueAtTime(volume || 0.1, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                
                 osc.start();
                 osc.stop(audioCtx.currentTime + duration);
             } catch(e) {}
@@ -485,11 +476,10 @@
         
         function playNoise(duration, volume) {
             if (!soundsInitialized) {
-                initAudio();
+                forceUnlockAudio();
                 if (!audioCtx || audioCtx.state !== 'running') return;
             }
             if (!audioCtx) return;
-            
             try {
                 var bufferSize = audioCtx.sampleRate * duration;
                 var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -513,54 +503,127 @@
             } catch(e) {}
         }
         
-        // 🔊 Звук присоединения игрока + вибрация
         function playJoinSound() {
             playBeep(523, 0.15, 'sine', 0.15);
             setTimeout(function() { playBeep(784, 0.15, 'sine', 0.1); }, 80);
-            vibrate([30, 20, 30]); // Короткая вибрация
+            vibrate([30, 20, 30]);
         }
         
-        // 🔊 Звук открытия карточки
         function playFlipCardSound() {
             playNoise(0.12, 0.18);
-            vibrate(20); // Лёгкая вибрация
+            vibrate(20);
         }
         
-        // 🔊 Звук победы
         function playWinSound() {
             playBeep(523, 0.1, 'triangle', 0.15);
             setTimeout(function() { playBeep(659, 0.1, 'triangle', 0.12); }, 100);
             setTimeout(function() { playBeep(784, 0.1, 'triangle', 0.1); }, 200);
             setTimeout(function() { playBeep(1047, 0.2, 'triangle', 0.08); }, 300);
-            vibrate([50, 30, 50]); // Приятная вибрация победы
+            vibrate([50, 30, 50]);
         }
         
-        // 🔊 Звук поражения
         function playLoseSound() {
             playBeep(280, 0.3, 'sawtooth', 0.12);
             setTimeout(function() { playBeep(180, 0.2, 'sawtooth', 0.08); }, 200);
-            vibrate([100]); // Долгая грустная вибрация
+            vibrate([100]);
         }
         
-        // 🔊 Звук покупки скина
         function playBuySound() {
             playBeep(880, 0.1, 'sine', 0.15);
             setTimeout(function() { playBeep(1175, 0.15, 'sine', 0.1); }, 80);
             vibrate([20, 20, 20]);
         }
         
-        // 🔊 Звук ошибки/недостаточно средств
         function playErrorSound() {
             playBeep(150, 0.2, 'square', 0.1);
             vibrate([50, 30, 50]);
         }
         
-        // ============ ОГРАНИЧЕНИЕ КОМНАТ ✅ ДОБАВЛЕНО ============
+        // ============ ФУНКЦИЯ ЭКРАНИРОВАНИЯ ДЛЯ XSS ============
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+        
+        // ============ БЕЗОПАСНАЯ ФУНКЦИЯ ДЛЯ ЗАПРОСОВ К БД (исправлена SQL инъекция) ============
+        async function db(table, method, payload, filters, single) {
+            payload = payload || null;
+            filters = filters || '';
+            single = single || false;
+            
+            // Экранируем фильтры для предотвращения инъекций
+            var safeFilters = filters.replace(/[^a-zA-Z0-9_=,.&?\-]/g, '');
+            
+            var url = SUPABASE_URL + '/rest/v1/' + table + safeFilters;
+            var headers = {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                'Content-Type': 'application/json'
+            };
+            
+            if (method === 'POST') headers['Prefer'] = 'return=representation';
+            else if (method === 'DELETE') headers['Prefer'] = 'return=minimal';
+            else if (method === 'PATCH') headers['Prefer'] = 'return=representation';
+            
+            try {
+                var response = await fetch(url, {
+                    method: method,
+                    headers: headers,
+                    body: payload ? JSON.stringify(payload) : null
+                });
+                
+                if (!response.ok) {
+                    var errorText = await response.text();
+                    throw new Error(response.status + ' ' + errorText);
+                }
+                
+                if (method === 'DELETE') return true;
+                
+                var responseData = await response.json();
+                return single && Array.isArray(responseData) ? responseData[0] : responseData;
+            } catch(e) {
+                console.error('[DB ERROR]', e);
+                throw e;
+            }
+        }
+        
+        // ============ УПРАВЛЕНИЕ ИНТЕРВАЛАМИ (предотвращение утечек памяти) ============
+        var activeIntervals = {
+            pollInterval: null,
+            lobbyRefreshInterval: null,
+            timerInterval: null
+        };
+        
+        function clearAllIntervals() {
+            if (activeIntervals.pollInterval) {
+                clearInterval(activeIntervals.pollInterval);
+                activeIntervals.pollInterval = null;
+            }
+            if (activeIntervals.lobbyRefreshInterval) {
+                clearInterval(activeIntervals.lobbyRefreshInterval);
+                activeIntervals.lobbyRefreshInterval = null;
+            }
+            if (activeIntervals.timerInterval) {
+                clearInterval(activeIntervals.timerInterval);
+                activeIntervals.timerInterval = null;
+            }
+            window._timerRunning = false;
+        }
+        
+        // ============ ОГРАНИЧЕНИЕ КОМНАТ ============
         async function canCreateRoom() {
             try {
                 var myRooms = await db('rooms', 'GET', null, '?creator_tg_id=eq.' + MY_ID + '&status=neq.finished&limit=10');
                 var activeRooms = Array.isArray(myRooms) ? myRooms.filter(function(r) { return r.status !== 'finished'; }) : [];
                 if (activeRooms.length >= 5) {
+                    playErrorSound();
                     alert('❌ У вас уже есть 5 активных комнат! Дождитесь их завершения (5 минут) или отмените созданные.');
                     return false;
                 }
@@ -587,6 +650,8 @@
         
         function startGame() {
             document.getElementById('splashScreen').classList.add('hidden');
+            // Принудительно разблокируем звук при старте игры
+            forceUnlockAudio();
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.expand();
                 window.Telegram.WebApp.setHeaderColor('#0a0a1a');
@@ -617,7 +682,7 @@
         var user = getCurrentUser();
         var MY_ID = Number(user.id);
         var MY_PHOTO_URL = user.photo_url || null;
-        var MY_INITIAL = user.username ? user.username.charAt(0).toUpperCase() : '?';
+        var MY_INITIAL = user.username ? escapeHtml(user.username.charAt(0).toUpperCase()) : '?';
 
         var SKINS = [
             { id: 'default', price: 0, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-default.png' },
@@ -630,7 +695,6 @@
             { id: 'collector', price: 3000000, img: 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/skin-tycoon.png' }
         ];
         
-        // ✅ ОБНОВЛЁННЫЕ НАЗВАНИЯ СКИНОВ
         var skinNames = {
             'default': 'Обычная',
             'socks': 'Оборванец',
@@ -694,25 +758,12 @@
                 }
             } catch(e) {
                 console.error('[SKINS] Failed to load skins from DB:', e);
-                try {
-                    var s = localStorage.getItem('echidna_owned_skins_v2');
-                    if (s) {
-                        ownedSkins = JSON.parse(s);
-                        if (ownedSkins.indexOf('default') === -1) ownedSkins.unshift('default');
-                        console.log('[SKINS] Fallback loaded owned from localStorage:', ownedSkins);
-                    }
-                    
-                    var savedSkin = localStorage.getItem('echidna_selected_skin');
-                    if (savedSkin && isSkinOwned(savedSkin)) {
-                        currentSkin = savedSkin;
-                        console.log('[SKINS] Fallback loaded current skin from localStorage:', currentSkin);
-                    }
-                } catch(le) { console.warn('LocalStorage fallback error:', le); }
+                playErrorSound();
+                alert('⚠️ Ошибка загрузки скинов. Попробуйте обновить страницу.');
                 return false;
             }
         }
         
-        // ============ СОХРАНЕНИЕ СКИНОВ В SUPABASE ============
         async function saveSkinsToDB() {
             try {
                 if (!MY_ID || MY_ID === 999999) return false;
@@ -760,8 +811,6 @@
 
         var selectedStake = 10;
         var currentRoom = null;
-        var pollInterval = null;
-        var lobbyRefreshInterval = null;
         var isGameFinished = false;
         var currentWins = 0;
         var currentBalance = 0;
@@ -879,7 +928,6 @@
             
             var reward = getDailyReward(cardIndex);
             
-            // Добавляем монеты к балансу
             currentBalance += reward;
             
             data.streak = cardIndex + 1;
@@ -889,13 +937,12 @@
             
             saveDailyData(data);
             
-            // Обновляем отображение баланса
             await updateBalanceDisplay();
             
             var cardEl = document.querySelector('.daily-card[data-index="' + cardIndex + '"] .daily-card-inner');
             if (cardEl) {
                 cardEl.classList.add('flipped');
-                playFlipCardSound(); // 🔊 Звук открытия карточки
+                playFlipCardSound();
             }
             
             setTimeout(async function() {
@@ -974,45 +1021,6 @@
             }
         }
 
-        // ============ БАЗА ДАННЫХ ============
-        async function db(table, method, payload, filters, single) {
-            payload = payload || null;
-            filters = filters || '';
-            single = single || false;
-            
-            var url = SUPABASE_URL + '/rest/v1/' + table + filters;
-            var headers = {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                'Content-Type': 'application/json'
-            };
-            
-            if (method === 'POST') headers['Prefer'] = 'return=representation';
-            else if (method === 'DELETE') headers['Prefer'] = 'return=minimal';
-            else if (method === 'PATCH') headers['Prefer'] = 'return=representation';
-            
-            try {
-                var response = await fetch(url, {
-                    method: method,
-                    headers: headers,
-                    body: payload ? JSON.stringify(payload) : null
-                });
-                
-                if (!response.ok) {
-                    var errorText = await response.text();
-                    throw new Error(response.status + ' ' + errorText);
-                }
-                
-                if (method === 'DELETE') return true;
-                
-                var responseData = await response.json();
-                return single && Array.isArray(responseData) ? responseData[0] : responseData;
-            } catch(e) {
-                console.error('[DB ERROR]', e);
-                throw e;
-            }
-        }
-
         var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready && tg.ready(); tg.expand && tg.expand(); }
         
@@ -1020,7 +1028,7 @@
             try {
                 var existing = await db('users', 'GET', null, '?telegram_id=eq.' + userId + '&limit=1');
                 if (!existing || existing.length === 0) {
-                    await db('users', 'POST', [{ telegram_id: userId, username: username || 'User_' + userId, wins: 0, losses: 0 }]);
+                    await db('users', 'POST', [{ telegram_id: userId, username: escapeHtml(username || 'User_' + userId), wins: 0, losses: 0 }]);
                 }
             } catch(e) {
                 console.error('Failed to ensure user exists:', e);
@@ -1031,9 +1039,9 @@
             var el = document.getElementById(elementId);
             if (!el) return;
             if (photoUrl) {
-                el.innerHTML = '<img src="' + photoUrl + '" alt="' + (username || 'User') + '" onerror="this.parentElement.innerHTML=\'' + (username ? username.charAt(0).toUpperCase() : '?') + '\'">';
+                el.innerHTML = '<img src="' + escapeHtml(photoUrl) + '" alt="' + escapeHtml(username || 'User') + '" onerror="this.parentElement.innerHTML=\'' + escapeHtml(username ? username.charAt(0).toUpperCase() : '?') + '\'">';
             } else {
-                el.innerHTML = username ? username.charAt(0).toUpperCase() : '?';
+                el.innerHTML = escapeHtml(username ? username.charAt(0).toUpperCase() : '?');
             }
         }
 
@@ -1053,27 +1061,23 @@
                 b.classList.toggle('active', navOrder[i] === name);
             });
             
+            // Очищаем все интервалы перед новым экраном
+            clearAllIntervals();
+            
             if (name === 'lobby') {
                 currentRoom = null;
                 isGameFinished = false;
-                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
-                lobbyRefreshInterval = setInterval(loadRooms, 3000);
+                activeIntervals.lobbyRefreshInterval = setInterval(loadRooms, 3000);
                 loadRooms();
                 updateStats();
                 updateBalanceDisplay();
                 updateHeroImage();
             } else if (name === 'tasks') {
-                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 setTimeout(function() { renderDailyCards(); }, 100);
             } else if (name === 'stats') {
-                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 loadStats();
             } else if (name === 'leaderboard') {
-                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
                 loadLeaderboard();
-            } else {
-                if (lobbyRefreshInterval) { clearInterval(lobbyRefreshInterval); lobbyRefreshInterval = null; }
             }
             
             if (name === 'skins') renderSkins();
@@ -1089,9 +1093,7 @@
         function forceExitToLobby() {
             isGameFinished = true;
             currentRoom = null;
-            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-            if (window._timerInterval) clearInterval(window._timerInterval);
-            window._timerRunning = false;
+            clearAllIntervals();
             document.getElementById('revealOverlay').classList.add('hidden');
             document.getElementById('confettiContainer').classList.add('hidden');
             updateBalanceDisplay();
@@ -1164,7 +1166,7 @@
                 
                 el.innerHTML = '<div style="font-weight:700;width:30px;color:var(--sec);">#' + (i + 1) + '</div>' +
                     '<div class="room-icon skin-room-icon"><img src="' + s.img + '" alt=""></div>' +
-                    '<div class="room-info"><div class="skin-card-name">' + getSkinNameById(s.id) + '</div>' +
+                    '<div class="room-info"><div class="skin-card-name">' + escapeHtml(getSkinNameById(s.id)) + '</div>' +
                     (!owned ? '<div class="skin-price">💰 ' + formatCompactNumber(s.price) + ' Spike</div>' : '<div class="skin-price" style="color:var(--success);">✅ Куплено</div>') +
                     '</div><div class="room-actions">' + btnHtml + '</div>';
                 
@@ -1177,7 +1179,7 @@
             disableBottomNav();
             var m = document.getElementById('skinModal');
             document.getElementById('modalImg').src = s.img;
-            document.getElementById('modalTitle').textContent = getSkinNameById(s.id);
+            document.getElementById('modalTitle').textContent = escapeHtml(getSkinNameById(s.id));
             document.getElementById('modalDesc').textContent = '';
             var priceEl = document.getElementById('modalPrice');
             var btnEl = document.getElementById('modalBtn');
@@ -1220,7 +1222,7 @@
             if (isSkinOwned(skinId)) return;
             var price = getSkinPrice(skinId);
             if (currentBalance < price) { 
-                playErrorSound(); // 🔊 Звук ошибки
+                playErrorSound();
                 alert('Недостаточно Spike!'); 
                 return; 
             }
@@ -1244,7 +1246,7 @@
             
             var s = SKINS.find(function(s) { return s.id === skinId; });
             if (s) openSkinModal(s);
-            playBuySound(); // 🔊 Звук покупки
+            playBuySound();
             alert('✅ Скин "' + getSkinNameById(skinId) + '" куплен за ' + formatCompactNumber(price) + ' Spike!');
         }
 
@@ -1271,7 +1273,7 @@
         // ============ СТАВКИ ============
         function openStakeModal() {
             if (currentBalance < 10) { 
-                playErrorSound(); // 🔊 Звук ошибки
+                playErrorSound();
                 alert('Недостаточно средств!'); 
                 return; 
             }
@@ -1314,7 +1316,7 @@
         }
 
         async function confirmStake() {
-            var canCreate = await canCreateRoom(); // ✅ Теперь функция определена
+            var canCreate = await canCreateRoom();
             if (!canCreate) return;
             
             var inputVal = document.getElementById('stakeInput').value;
@@ -1322,33 +1324,33 @@
             if (inputVal) {
                 var parsed = parseInt(inputVal);
                 if (parsed < 10 || parsed > 1000 || isNaN(parsed)) { 
-                    playErrorSound(); // 🔊 Звук ошибки
+                    playErrorSound();
                     document.getElementById('stakeError').textContent = 'Введи от 10 до 1000'; 
                     return; 
                 }
                 finalStake = Math.round(parsed / 10) * 10;
             }
             if (currentBalance < finalStake) { 
-                playErrorSound(); // 🔊 Звук ошибки
+                playErrorSound();
                 document.getElementById('stakeError').textContent = 'Недостаточно средств!'; 
                 return; 
             }
             var rawPassword = document.getElementById('roomPassword').value.trim();
             if (rawPassword && !/^\d{1,4}$/.test(rawPassword)) { 
-                playErrorSound(); // 🔊 Звук ошибки
+                playErrorSound();
                 document.getElementById('stakeError').textContent = 'Пароль: 1-4 цифры'; 
                 return; 
             }
             closeStakeModal();
             try {
                 await ensureUserExists(MY_ID, user.username);
-                var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: user.username, stake: finalStake, status: 'waiting', room_password: rawPassword || null }], '', true);
+                var room = await db('rooms', 'POST', [{ creator_tg_id: MY_ID, creator_username: escapeHtml(user.username || 'Anonymous'), stake: finalStake, status: 'waiting', room_password: rawPassword || null }], '', true);
                 currentRoom = room;
                 showGameScreen();
                 startPolling();
                 loadRooms();
             } catch(e) { 
-                playErrorSound(); // 🔊 Звук ошибки
+                playErrorSound();
                 alert('Ошибка: ' + e.message); 
             }
         }
@@ -1426,17 +1428,18 @@
                     }
                     
                     var stakeDisplay = formatStakeDisplay(r);
+                    var creatorName = escapeHtml(r.creator_username || 'Anonymous');
                     
                     if (trulyMine) {
                         if (isPlaying) btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();resumeRoom(\'' + r.id + '\')">🔄 Вернуться</button>';
                         var cancelBtn = !isFinished ? '<button class="room-btn cancel" onclick="event.stopPropagation();cancelRoom(\'' + r.id + '\')">✕</button>' : '';
-                        el.innerHTML = '<div class="room-icon"><img src="' + MY_PHOTO_URL + '" alt="You" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'' + MY_INITIAL + '\'">' + lockIcon + '</div>' +
+                        el.innerHTML = '<div class="room-icon"><img src="' + escapeHtml(MY_PHOTO_URL || '') + '" alt="You" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'' + escapeHtml(MY_INITIAL) + '\'">' + lockIcon + '</div>' +
                             '<div class="room-info"><div class="room-stake">💰 ' + stakeDisplay + ' ' + badgeHtml + timerHtml + '</div><div class="room-creator">Твоя комната</div></div>' +
                             '<div class="room-actions">' + btnHtml + cancelBtn + '</div>';
                     } else {
                         btnHtml = '<button class="room-btn join" onclick="event.stopPropagation();joinRoom(\'' + r.id + '\',this)">Войти</button>';
-                        el.innerHTML = '<div class="room-icon">' + (r.creator_username ? r.creator_username.charAt(0).toUpperCase() : '?') + lockIcon + '</div>' +
-                            '<div class="room-info"><div class="room-stake">💰 ' + stakeDisplay + ' ' + badgeHtml + timerHtml + '</div><div class="room-creator">@' + (r.creator_username || 'Anonymous') + '</div></div>' +
+                        el.innerHTML = '<div class="room-icon">' + escapeHtml(creatorName.charAt(0).toUpperCase()) + lockIcon + '</div>' +
+                            '<div class="room-info"><div class="room-stake">💰 ' + stakeDisplay + ' ' + badgeHtml + timerHtml + '</div><div class="room-creator">@' + creatorName + '</div></div>' +
                             '<div class="room-actions">' + btnHtml + '</div>';
                     }
                     c.appendChild(el);
@@ -1461,9 +1464,7 @@
                 delete window.roomExpiry[roomId];
                 if (currentRoom && currentRoom.id === roomId) {
                     currentRoom = null; isGameFinished = true;
-                    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-                    if (window._timerInterval) clearInterval(window._timerInterval);
-                    window._timerRunning = false;
+                    clearAllIntervals();
                 }
                 loadRooms();
             } catch(e) { console.warn('Cancel room warning:', e); loadRooms(); }
@@ -1480,7 +1481,7 @@
                 if (room.room_password) {
                     var pwd = prompt('🔒 Комната защищена паролем.\nВведите пароль:');
                     if (pwd !== room.room_password) { 
-                        playErrorSound(); // 🔊 Звук ошибки
+                        playErrorSound();
                         alert('Неверный пароль!'); 
                         btnElement.disabled = false; 
                         btnElement.textContent = 'Войти'; 
@@ -1488,12 +1489,12 @@
                     }
                 }
                 await ensureUserExists(MY_ID, user.username);
-                var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: user.username, status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
+                var res = await db('rooms', 'PATCH', { opponent_tg_id: MY_ID, opponent_username: escapeHtml(user.username || 'Anonymous'), status: 'playing' }, '?id=eq.' + roomId + '&status=eq.waiting', true);
                 if (!res) throw new Error('Ошибка');
                 currentRoom = res; showGameScreen(); startPolling(); loadRooms();
                 closeRoomsScreen();
             } catch(e) { 
-                playErrorSound(); // 🔊 Звук ошибки
+                playErrorSound();
                 alert('Ошибка: ' + e.message); 
                 if (btnElement) { btnElement.disabled = false; btnElement.textContent = 'Войти'; } 
             }
@@ -1586,7 +1587,7 @@
                 timerText.classList.remove('active');
                 timerBarContainer.style.display = 'none';
                 window._timerRunning = false;
-                if (window._timerInterval) clearInterval(window._timerInterval);
+                if (activeIntervals.timerInterval) clearInterval(activeIntervals.timerInterval);
                 return;
             }
             
@@ -1609,19 +1610,19 @@
         }
 
         function startTimer(startTime) {
-            if (window._timerInterval) clearInterval(window._timerInterval);
+            if (activeIntervals.timerInterval) clearInterval(activeIntervals.timerInterval);
             var timeLimit = 30000;
             var timerBar = document.getElementById('timerBar');
             var timerText = document.getElementById('timerText');
             
-            window._timerInterval = setInterval(function() {
-                if (!window._timerRunning) return clearInterval(window._timerInterval);
+            activeIntervals.timerInterval = setInterval(function() {
+                if (!window._timerRunning) return;
                 var elapsed = Date.now() - startTime;
                 var remaining = Math.max(0, timeLimit - elapsed);
                 timerBar.style.width = (remaining / timeLimit) * 100 + '%';
                 timerText.textContent = Math.ceil(remaining / 1000) + 's';
                 if (remaining < 10000) timerBar.classList.add('urgent');
-                if (remaining <= 0) { clearInterval(window._timerInterval); window._timerRunning = false; handleTimeout(); }
+                if (remaining <= 0) { clearInterval(activeIntervals.timerInterval); activeIntervals.timerInterval = null; window._timerRunning = false; handleTimeout(); }
             }, 1000);
         }
 
@@ -1630,7 +1631,7 @@
             var myCol = String(currentRoom.creator_tg_id) === String(MY_ID) ? 'creator_choice' : 'opponent_choice';
             if (!currentRoom[myCol]) {
                 isGameFinished = true;
-                if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+                clearAllIntervals();
                 await db('rooms', 'PATCH', { status: 'finished' }, '?id=eq.' + currentRoom.id);
                 var opponentId = String(currentRoom.creator_tg_id) === String(MY_ID) ? currentRoom.opponent_tg_id : currentRoom.creator_tg_id;
                 db('users', 'GET', null, '?telegram_id=eq.' + opponentId + '&select=wins', false).then(function(d) {
@@ -1644,12 +1645,12 @@
         }
 
         function startPolling() {
-            if (pollInterval) clearInterval(pollInterval);
+            clearAllIntervals();
             if (!currentRoom) return;
             isGameFinished = false;
             var opponentJoined = false;
             
-            pollInterval = setInterval(async function() {
+            activeIntervals.pollInterval = setInterval(async function() {
                 if (!currentRoom || isGameFinished) return;
                 try {
                     var res = await db('rooms', 'GET', null, '?id=eq.' + currentRoom.id);
@@ -1657,18 +1658,18 @@
                     if (!room) return;
                     if (room.opponent_tg_id && !opponentJoined) { 
                         opponentJoined = true;
-                        playJoinSound(); // 🔊 Звук присоединения + вибрация
+                        playJoinSound();
                     }
                     currentRoom = room;
                     updateGameStatus(room);
                     renderPlayerStats();
                     
                     if (room.creator_choice && room.opponent_choice && room.status !== 'finished') {
-                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null;
+                        isGameFinished = true; clearAllIntervals();
                         await showRevealAnimation(room); return;
                     }
                     if (room.status === 'finished') {
-                        isGameFinished = true; clearInterval(pollInterval); pollInterval = null;
+                        isGameFinished = true; clearAllIntervals();
                         showGameResult(room); return;
                     }
                 } catch(e) { console.warn('Poll error:', e); }
@@ -1683,14 +1684,14 @@
             document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = true; });
             document.getElementById('statusMessage').textContent = '✅ Ход записан';
             window._timerRunning = false;
-            if (window._timerInterval) clearInterval(window._timerInterval);
+            if (activeIntervals.timerInterval) clearInterval(activeIntervals.timerInterval);
             document.getElementById('timerText').classList.remove('active');
             document.getElementById('timerBarContainer').style.display = 'none';
             try {
                 await db('rooms', 'PATCH', { [col]: choice }, '?id=eq.' + currentRoom.id);
                 currentRoom[col] = choice;
             } catch(e) { 
-                playErrorSound(); // 🔊 Звук ошибки
+                playErrorSound();
                 alert('Ошибка: ' + e.message); 
                 document.querySelectorAll('.choice-btn').forEach(function(b) { b.disabled = false; }); 
             }
@@ -1709,7 +1710,7 @@
             
             var historyData = {
                 player_id: MY_ID,
-                opponent_name: opponentName || 'unknown',
+                opponent_name: escapeHtml(opponentName || 'unknown'),
                 stake: encodedStake,
                 player_move: playerMove || 'rock',
                 result: resultStr,
@@ -1743,10 +1744,10 @@
             
             await sleep(500);
             document.getElementById('card1').classList.add('flipped'); 
-            playFlipCardSound(); // 🔊 Звук переворота карты 1
+            playFlipCardSound();
             await sleep(1000);
             document.getElementById('card2').classList.add('flipped'); 
-            playFlipCardSound(); // 🔊 Звук переворота карты 2
+            playFlipCardSound();
             await sleep(800);
             
             var result = calculateWinner(room);
@@ -1760,11 +1761,11 @@
             
             if (isWin) {
                 emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-happy.png';
-                playWinSound(); // 🔊 Звук победы
+                playWinSound();
                 createConfetti();
             } else if (!isDraw) {
                 emImg.src = 'https://raw.githubusercontent.com/genext25-lang/ekhidna-bot-V2.0/refs/heads/main/echidna-sad.png';
-                playLoseSound(); // 🔊 Звук поражения
+                playLoseSound();
             } else { emDiv.classList.add('hidden'); }
             
             var resultForHistory = 'draw';
@@ -1872,7 +1873,7 @@
                 
                 top20.forEach(function(u, i) {
                     var sk = SKINS[Math.min(Math.floor(Math.abs(u.balance) / 100000), 7)] || SKINS[0];
-                    var name = u.username || 'User_' + String(u.telegram_id).slice(-4);
+                    var name = escapeHtml(u.username || 'User_' + String(u.telegram_id).slice(-4));
                     var isMe = Number(u.telegram_id) === MY_ID;
                     var el = document.createElement('div');
                     el.className = 'room-card' + (isMe ? ' my-room' : '');
@@ -1894,7 +1895,7 @@
                 
                 if (myRank > 20 && myData) {
                     var ms = SKINS[Math.min(Math.floor(Math.abs(myData.balance) / 100000), 7)] || SKINS[0];
-                    var myName = user.username || 'User_' + String(MY_ID).slice(-4);
+                    var myName = escapeHtml(user.username || 'User_' + String(MY_ID).slice(-4));
                     var el = document.createElement('div');
                     el.className = 'room-card my-room';
                     el.style.border = '1px dashed var(--gold)';
@@ -1959,7 +1960,7 @@
                 
                 var rowsHtml = '';
                 gamesList.slice(0, 20).forEach(function(game) {
-                    var opponentName = game.opponent_name || '???';
+                    var opponentName = escapeHtml(game.opponent_name || '???');
                     var resultClass = game.result === 'win' ? 'win' : game.result === 'lose' ? 'lose' : 'draw';
                     var resultText = game.result === 'win' ? 'Победа' : game.result === 'lose' ? 'Поражение' : 'Ничья';
                     var moveEmoji = '';
@@ -1970,7 +1971,7 @@
                     var absVal = Math.abs(game.stake || 0);
                     var stakeDisplay = game.stake === 0 ? '0' : formatCompactNumber(absVal) + ' Spike';
                     
-                    rowsHtml += '<div class="game-row"><span class="game-opponent">' + escapeHtml(opponentName) + '</span>' +
+                    rowsHtml += '<div class="game-row"><span class="game-opponent">' + opponentName + '</span>' +
                         '<span class="game-stake">' + stakeDisplay + '</span>' +
                         '<span class="game-result ' + resultClass + '">' + resultText + '</span>' +
                         '<div class="game-move">' + moveEmoji + '</div></div>';
@@ -1983,16 +1984,6 @@
             }
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
         function filterRooms() {
             var query = document.getElementById('searchInput').value.toLowerCase();
             document.querySelectorAll('#roomsList .room-card').forEach(function(el) {
@@ -2002,6 +1993,8 @@
         }
 
         // ============ ИНИЦИАЛИЗАЦИЯ ============
+        document.getElementById('startGameBtn').addEventListener('click', startGame);
+        
         window.addEventListener('load', async function() {
             await loadSkinsFromDB();
             
